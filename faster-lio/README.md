@@ -4,11 +4,10 @@
 
 ### 개요
 - **개발자**: Chunge Bai, Tao Xiang, Yajie Chen, Haoqian Wang, Fang Zhang, Xiang Gao
-- **기반 시스템**: [FastLIO2](https://github.com/hku-mars/FAST_LIO)
+- **기반 시스템**: [FastLIO](https://github.com/hku-mars/FAST_LIO)
 - **목적**: 라이다-관성 오도메트리(Lidar-Inertial Odometry)를 위한 경량화된 시스템
 
 ### 주요 특징
-- **성능 향상**: FastLIO2 대비 약 1.5-2배 속도 향상
 - **고성능 처리**:
   - 고체상태 라이다: 1k-2k Hz 달성
   - 일반적인 32라인 회전식 라이다: 100Hz 이상 달성
@@ -16,9 +15,6 @@
 - **실시간 처리**: 라이다 포즈 추적과 포인트 클라우드 매핑 동시 수행
 
 ### 성능 비교
-- **테스트 환경**:
-  - AMD R7 5800X 프로세서
-  - Intel Xeon Gold 5218 프로세서
 - **테스트 데이터**: [NCLT](http://robots.engin.umich.edu/nclt/) 데이터셋
 - **지원 라이다**: Avia, Velodyne 32라인, Ouster 32라인 등
 
@@ -80,10 +76,8 @@ roslaunch faster_lio mapping_ouster32.launch
 
 # 터미널 2: 데이터 재생
 rosbag play your_bag_file.bag
-```
 
-#### 다른 라이다 센서 사용
-```bash
+# 다른 라이다 센서 사용
 # Avia 라이다
 roslaunch faster_lio mapping_avia.launch
 
