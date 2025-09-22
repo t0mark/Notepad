@@ -1,7 +1,7 @@
 <launch>
 <!-- Launch file for ouster OS2-32 LiDAR -->
 
-    <arg name="rviz" default="false" />
+    <arg name="rviz" default="true" />
 
     <rosparam command="load" file="$(find faster_lio)/config/ouster32.yaml" />
 

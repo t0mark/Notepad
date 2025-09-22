@@ -78,43 +78,10 @@ void PointCloudPreprocess::AviaHandler(const livox_ros_driver::CustomMsg::ConstP
     }
 }
 
-// 실제 월드 용도
-// void PointCloudPreprocess::Oust64Handler(const sensor_msgs::PointCloud2::ConstPtr &msg) {
-//     cloud_out_.clear();
-//     cloud_full_.clear();
-//     pcl::PointCloud<ouster_ros::Point> pl_orig;
-//     pcl::fromROSMsg(*msg, pl_orig);
-//     int plsize = pl_orig.size();
-//     cloud_out_.reserve(plsize);
-
-//     for (int i = 0; i < pl_orig.points.size(); i++) {
-//         if (i % point_filter_num_ != 0) continue;
-
-//         double range = pl_orig.points[i].x * pl_orig.points[i].x + pl_orig.points[i].y * pl_orig.points[i].y +
-//                        pl_orig.points[i].z * pl_orig.points[i].z;
-
-//         if (range < (blind_ * blind_)) continue;
-
-//         Eigen::Vector3d pt_vec;
-//         PointType added_pt;
-//         added_pt.x = pl_orig.points[i].x;
-//         added_pt.y = pl_orig.points[i].y;
-//         added_pt.z = pl_orig.points[i].z;
-//         added_pt.intensity = pl_orig.points[i].intensity;
-//         added_pt.normal_x = 0;
-//         added_pt.normal_y = 0;
-//         added_pt.normal_z = 0;
-//         added_pt.curvature = pl_orig.points[i].t / 1e6;  // curvature unit: ms
-
-//         cloud_out_.points.push_back(added_pt);
-//     }
-// }
 void PointCloudPreprocess::Oust64Handler(const sensor_msgs::PointCloud2::ConstPtr &msg) {
     cloud_out_.clear();
     cloud_full_.clear();
-    
-    // 시뮬레이션용: 표준 PCL 포인트로 파싱
-    pcl::PointCloud<pcl::PointXYZI> pl_orig;
+    pcl::PointCloud<ouster_ros::Point> pl_orig;
     pcl::fromROSMsg(*msg, pl_orig);
     int plsize = pl_orig.size();
     cloud_out_.reserve(plsize);
@@ -122,21 +89,22 @@ void PointCloudPreprocess::Oust64Handler(const sensor_msgs::PointCloud2::ConstPt
     for (int i = 0; i < pl_orig.points.size(); i++) {
         if (i % point_filter_num_ != 0) continue;
 
-        double range = pl_orig.points[i].x * pl_orig.points[i].x + 
-                       pl_orig.points[i].y * pl_orig.points[i].y +
+        double range = pl_orig.points[i].x * pl_orig.points[i].x + pl_orig.points[i].y * pl_orig.points[i].y +
                        pl_orig.points[i].z * pl_orig.points[i].z;
 
         if (range < (blind_ * blind_)) continue;
 
+        Eigen::Vector3d pt_vec;
         PointType added_pt;
         added_pt.x = pl_orig.points[i].x;
         added_pt.y = pl_orig.points[i].y;
         added_pt.z = pl_orig.points[i].z;
         added_pt.intensity = pl_orig.points[i].intensity;
-        
-        // 시뮬레이션에서는 시간 정보 추정
-        added_pt.curvature = float(i) / float(plsize); // 정규화된 시간
-        
+        added_pt.normal_x = 0;
+        added_pt.normal_y = 0;
+        added_pt.normal_z = 0;
+        added_pt.curvature = pl_orig.points[i].t / 1e6;  // curvature unit: ms
+
         cloud_out_.points.push_back(added_pt);
     }
 }
