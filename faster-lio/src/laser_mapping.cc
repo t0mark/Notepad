@@ -60,7 +60,7 @@ bool LaserMapping::InitWithoutROS(const std::string &config_yaml) {
 }
 
 // ROS 파라미터 서버에서 설정값들을 로드
-// YAML 설정 파일의 값들을 클래스 멤버 변수들에 할당
+// YAML 설정 파일의 값들을 클래스 멤버 변수들에 할당 (nh로 ROS Master와 연결)
 bool LaserMapping::LoadParams(ros::NodeHandle &nh) {
     int lidar_type, ivox_nearby_type;
     double gyr_cov, acc_cov, b_gyr_cov, b_acc_cov;
