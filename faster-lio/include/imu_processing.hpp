@@ -308,7 +308,7 @@ void ImuProcess::Process(const common::MeasureGroup &meas, esekfom::esekf<state_
             cov_acc_ = cov_acc_scale_;
             cov_gyr_ = cov_gyr_scale_;
             LOG(INFO) << "IMU Initial Done";
-            fout_imu_.open(common::DEBUG_FILE_DIR("imu_.txt"), std::ios::out);
+            // fout_imu_.open(common::DEBUG_FILE_DIR("imu_.txt"), std::ios::out);
         }
 
         return;

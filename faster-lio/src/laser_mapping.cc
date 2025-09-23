@@ -377,19 +377,19 @@ void LaserMapping::Run() {
         if (path_pub_en_ || path_save_en_) {
             PublishPath(pub_path_);
         }
-        if (scan_pub_en_ || pcd_save_en_) {
-            PublishFrameWorld();
-        }
-        if (scan_pub_en_ && scan_body_pub_en_) {
-            PublishFrameBody(pub_laser_cloud_body_);
-        }
-        if (scan_pub_en_ && scan_effect_pub_en_) {
-            PublishFrameEffectWorld(pub_laser_cloud_effect_world_);
-        }
+        // if (scan_pub_en_ || pcd_save_en_) {
+        //     PublishFrameWorld();
+        // }
+        // if (scan_pub_en_ && scan_body_pub_en_) {
+        //     PublishFrameBody(pub_laser_cloud_body_);
+        // }
+        // if (scan_pub_en_ && scan_effect_pub_en_) {
+        //     PublishFrameEffectWorld(pub_laser_cloud_effect_world_);
+        // }
     }
 
-    // 디버그 변수 증가
-    frame_num_++;
+    // // 디버그 변수 증가
+    // frame_num_++;
 }
 
 // 표준 PointCloud2 메시지 콜백 함수

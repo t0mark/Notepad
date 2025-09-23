@@ -6,9 +6,8 @@
 #include <csignal>
 
 #include "laser_mapping.h"
+#include <ros/package.h>
 
-// 궤적 로그 파일 경로 설정 플래그
-DEFINE_string(traj_log_file, "./Log/traj.txt", "path to traj log file");
 
 // 프로그램 종료 시그널 핸들러
 // Ctrl+C 등의 신호를 받으면 프로그램을 안전하게 종료하도록 플래그 설정
@@ -52,8 +51,10 @@ int main(int argc, char **argv) {
 
     // 성능 통계 출력 및 궤적 저장
     faster_lio::Timer::PrintAll();
-    LOG(INFO) << "save trajectory to: " << FLAGS_traj_log_file;
-    laser_mapping->Savetrajectory(FLAGS_traj_log_file);
+    std::string package_path = ros::package::getPath("faster_lio");
+    std::string traj_file = package_path + "/Log/traj.txt";
+    LOG(INFO) << "save trajectory to: " << traj_file;
+    laser_mapping->Savetrajectory(traj_file);
 
     return 0;
 }
