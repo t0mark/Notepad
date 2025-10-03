@@ -258,31 +258,9 @@ Move Base Costmap - 장애물 인식
 </node>
 ```
 
-## 트러블슈팅
-
-### 로봇이 움직이지 않는 경우
-
-1. **TF 확인**: `rosrun tf view_frames` 실행 후 TF 트리 확인
-2. **토픽 확인**: `rostopic echo /husky_velocity_controller/cmd_vel` 명령어 실행
-3. **Costmap 확인**: RViz에서 costmap이 표시되는지 확인
-
-### LiDAR 데이터가 표시되지 않는 경우
-
-1. 빌드 확인: `catkin_make` 재실행
-2. 플러그인 경로 확인: `export GAZEBO_PLUGIN_PATH=$GAZEBO_PLUGIN_PATH:~/catkin_ws/devel/lib`
 
 ## 참고 자료
 
 - [Clearpath Husky Documentation](https://clearpathrobotics.com/husky-unmanned-ground-vehicle-robot/)
 - [DWA Local Planner](http://wiki.ros.org/dwa_local_planner)
 - [Ouster Gazebo Simulation](https://github.com/Gepetto/ouster-gazebo-simulation)
-
-## 라이선스
-
-본 패키지는 연구 및 교육 목적으로 사용됩니다.
-
-## 기여자
-
-- 시뮬레이션 환경 구축 및 DWA 네비게이션 구현
-- Ouster LiDAR 플러그인 통합
-- Skid Steer Drive 제어 시스템 개발
