@@ -97,7 +97,7 @@ source devel/setup.bash
 roslaunch dwa gazebo_spawn.launch
 
 # Terminal 2: DWA 네비게이션 실행
-roslaunch dwa dwa_test.launch
+roslaunch dwa dwa_navigation.launch
 ```
 
 ### RViz에서 목표 설정
@@ -143,7 +143,7 @@ roslaunch dwa dwa_test.launch
 ### Launch 파일
 
 - `gazebo_spawn.launch`: Gazebo 환경 및 로봇 스폰
-- `dwa_test.launch`: DWA 네비게이션 + RViz 실행
+- `dwa_navigation.launch`: DWA 네비게이션 + RViz 실행
 - `husky_control_nav_localization.launch`: 실제 로봇용 통합 시스템 (Faster-LIO + GPS)
 
 ### Config 파일 (`config/`)
@@ -249,7 +249,7 @@ Move Base Costmap - 장애물 인식
 - Move Base 발행: `/cmd_vel`
 - Skid Steer 구독: `/husky_velocity_controller/cmd_vel`
 
-**해결:** [dwa_test.launch](launch/dwa_test.launch)에서 리매핑
+**해결:** [dwa_navigation.launch](launch/dwa_navigation.launch)에서 리매핑
 ```xml
 <node pkg="move_base" type="move_base" name="move_base">
   <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>

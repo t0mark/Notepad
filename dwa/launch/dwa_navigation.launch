@@ -1,63 +1,43 @@
 <?xml version="1.0"?>
 <launch>
-  
+  <!-- DWA Navigation: 센서 처리 + Move Base -->
+
   <param name="/use_sim_time" value="true"/>
+  
+  <!-- 외부에서 프레임 설정 받기 (기본값: odom for Gazebo) -->
+  <arg name="global_frame" default="odom"/>
+  <arg name="enable_rviz" default="true"/>
+  <arg name="rviz_config" default="$(find dwa)/rviz/dwa.rviz"/>
 
-  <!-- ===== 로봇 제어, 네비게이션, localization 및 모니터링 담당 ===== -->
-  <!-- 환경 독립적: 시뮬레이션과 실제 환경에서 동일하게 사용 -->
-
-  <arg name="enable_ekf" default="false"/>
-  <arg name="config_extras" default="$(eval optenv('HUSKY_CONFIG_EXTRAS', find('husky_control') + '/config/empty.yaml'))"/>
-
-  <!-- Load robot description -->
-  <param name="robot_description" command="$(find xacro)/xacro '$(find dwa)/urdf/custom_description_ouster_gps.urdf.xacro'"/>
-
-  <!-- Load controller configuration -->
-  <rosparam command="load" file="$(find husky_control)/config/control.yaml"/>
-  <rosparam command="load" file="$(find husky_control)/config/teleop_ps4.yaml"/>
-
-  <!-- Spawn controllers -->
-  <node name="base_controller_spawner" pkg="controller_manager" type="spawner"
-        args="husky_joint_publisher husky_velocity_controller"/>
-  <rosparam param="wheel_radius_multiplier" ns="husky_velocity_controller" subst_value="True">
-        $(optenv HUSKY_WHEEL_MULTIPLIER 1.0)
-  </rosparam>
-
-  <node pkg="interactive_marker_twist_server" type="marker_server" name="twist_marker_server" output="screen">
-    <param name="link_name" value="base_link"/>
-  </node>
-
+  <!-- ===== 로봇 상태 발행 ===== -->
+  <!-- robot_description은 gazebo_spawn.launch에서 로드됨 -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher">
     <param name="use_tf_static" value="false"/>
     <param name="publish_frequency" value="50"/>
   </node>
 
-  <!-- 조이스틱 조종을 우선순위로 설정할수 있는 노드 -->
-  <node pkg="twist_mux" type="twist_mux" name="twist_mux">
-    <rosparam command="load" file="$(find husky_control)/config/twist_mux.yaml"/>
-    <remap from="cmd_vel_out" to="husky_velocity_controller/cmd_vel"/>
-  </node>
+  <!-- ===== 로봇 제어 (ros_control) ===== -->
+  <!-- Load controller configuration -->
+  <rosparam command="load" file="$(find husky_control)/config/control.yaml"/>
 
-  <!-- Override the default control parameters, see config/empty.yaml for default. -->
-  <rosparam command="load" file="$(arg config_extras)" subst_value="true"/>
-
-  <!-- ===== Faster-LIO Localization (Ouster 32) ===== -->
-  <include file="$(find faster_lio)/launch/mapping_ouster32.launch">
-  </include>
+  <!-- Spawn controllers -->
+  <node name="base_controller_spawner" pkg="controller_manager" type="spawner"
+        args="husky_joint_publisher husky_velocity_controller"/>
 
   <!-- ===== 포인트 클라우드 처리 파이프라인 ===== -->
   <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen"/>
-  <!-- Ouster 데이터 다운샘플링을 위한 VoxelGrid 필터 -->
+
+  <!-- Ouster 데이터 다운샘플링을 위한 VoxelGrid 필터 (실제 로봇용 파라미터) -->
   <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
     <remap from="~input" to="/ouster/points"/>
     <remap from="~output" to="/points_filtered"/>
     <param name="leaf_size" value="0.10"/>
     <param name="filter_field_name" value="z"/>
-    <param name="filter_limit_min" value="-0.85"/>
+    <param name="filter_limit_min" value="-0.5"/>
     <param name="filter_limit_max" value="2"/>
   </node>
 
-  <!-- PointCloud2를 LaserScan으로 변환 -->
+  <!-- PointCloud2를 LaserScan으로 변환 (실제 로봇용 파라미터) -->
   <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
     <remap from="cloud_in" to="/points_filtered"/>
     <remap from="scan" to="/scan"/>
@@ -70,6 +50,9 @@
 
   <!-- ===== DWA Navigation (Move Base) ===== -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!-- cmd_vel 토픽 리매핑 (ros_control이 husky_velocity_controller/cmd_vel 구독) -->
+    <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
+
     <!-- Costmap 설정 -->
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
@@ -77,6 +60,11 @@
     <rosparam file="$(find dwa)/config/global_costmap_params.yaml" command="load"/>
     <rosparam file="$(find dwa)/config/robot_dynamics_params.yaml" command="load"/>
     <rosparam file="$(find dwa)/config/path_planning_params.yaml" command="load"/>
+
+    <!-- 프레임 override (config 파일은 utm_local 유지) -->
+    <param name="global_costmap/global_frame" value="$(arg global_frame)"/>
+    <param name="local_costmap/global_frame" value="$(arg global_frame)"/>
+    <param name="DWAPlannerROS/global_frame_id" value="$(arg global_frame)"/>
   </node>
 
   <!-- ===== Navigation Manager ===== -->
@@ -91,7 +79,8 @@
   </node>
 
   <!-- ===== RViz 시각화 ===== -->
-  <node name="rviz" pkg="rviz" type="rviz" 
-        args="-d $(find faster_lio)/rviz_cfg/loam_livox.rviz" 
+  <node if="$(arg enable_rviz)" name="rviz" pkg="rviz" type="rviz"
+        args="-d $(arg rviz_config)"
         output="screen"/>
+
 </launch>

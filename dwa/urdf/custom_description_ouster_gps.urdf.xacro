@@ -26,7 +26,7 @@
 
   <!-- 3) GPS 추가 -->
   <!-- <xacro:include filename="$(find dwa)/urdf/gps_sensor.urdf.xacro"/> -->
-  
-  <!-- Gazebo 플러그인 포함 -->
-  <!-- <xacro:include filename="$(find dwa)/urdf/custom_description.gazebo.xacro"/> -->
+
+  <!-- Gazebo 플러그인 포함 (ros_control + GPS) -->
+  <xacro:include filename="$(find dwa)/urdf/custom_description.gazebo.xacro"/>
 </robot>
