@@ -92,13 +92,11 @@ source devel/setup.bash
 
 ### Gazebo 시뮬레이션 + DWA 네비게이션
 
-**Terminal 1: Gazebo 환경 및 로봇 스폰**
 ```bash
+# Terminal 1: Gazebo 환경 및 로봇 스폰
 roslaunch dwa gazebo_spawn.launch
-```
 
-**Terminal 2: DWA 네비게이션 실행**
-```bash
+# Terminal 2: DWA 네비게이션 실행
 roslaunch dwa dwa_test.launch
 ```
 
