@@ -370,54 +370,11 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <xacro:outdoornav_sensors outdoornav_configuration="$(arg outdoornav_configuration)"/>
   </xacro:if>
 
-  <!-- Skid Steer Drive Plugin: 실제 로봇과 동일한 좌/우 차동 구동 방식 -->
-  <!-- 4개 바퀴를 좌/우 2개 그룹으로 제어 (HuskyHardware::writeCommandsToHardware와 동일) -->
-  <gazebo>
-    <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
-      <updateRate>100.0</updateRate>
-      <robotNamespace>$(arg robot_namespace)</robotNamespace>
+  <!-- Optional for Clearpath internal softwares -->
+  <xacro:include filename="$(arg cpr_urdf_extras)"/>
 
-      <!-- 좌측 바퀴 2개 -->
-      <leftFrontJoint>front_left_wheel</leftFrontJoint>
-      <leftRearJoint>rear_left_wheel</leftRearJoint>
-
-      <!-- 우측 바퀴 2개 -->
-      <rightFrontJoint>front_right_wheel</rightFrontJoint>
-      <rightRearJoint>rear_right_wheel</rightRearJoint>
-
-      <!-- 바퀴 간격 및 직경 (control.yaml과 일치) -->
-      <wheelSeparation>0.5708</wheelSeparation>
-      <wheelDiameter>0.3302</wheelDiameter>
-
-      <!-- 토크 및 속도 제한 -->
-      <torque>200</torque>
-      <commandTopic>husky_velocity_controller/cmd_vel</commandTopic>
-      <odometryTopic>husky_velocity_controller/odom</odometryTopic>
-      <odometryFrame>odom</odometryFrame>
-      <robotBaseFrame>base_link</robotBaseFrame>
-
-      <!-- 공분산 설정 (control.yaml과 일치) -->
-      <covariance_x>0.001</covariance_x>
-      <covariance_y>0.001</covariance_y>
-      <covariance_yaw>0.03</covariance_yaw>
-
-      <broadcastTF>true</broadcastTF>
-      <publishWheelTF>false</publishWheelTF>
-      <publishWheelJointState>false</publishWheelJointState>
-      <legacyMode>false</legacyMode>
-      <alwaysOn>true</alwaysOn>
-    </plugin>
-  </gazebo>
-
-  <!-- Joint State Publisher Plugin: 바퀴 4개의 joint_state 발행 (TF 생성용) -->
-  <!-- 실제 로봇의 엔코더 피드백과 동일한 역할 -->
-  <gazebo>
-    <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
-      <robotNamespace>$(arg robot_namespace)</robotNamespace>
-      <jointName>front_left_wheel, front_right_wheel, rear_left_wheel, rear_right_wheel</jointName>
-      <updateRate>50.0</updateRate>
-    </plugin>
-  </gazebo>
+  <!-- Gazebo-specific plugins -->
+  <!-- custom_description_ouster_gps.urdf.xacro에서 플러그인 정의 -->
 
   <gazebo>
     <plugin name="imu_controller" filename="libhector_gazebo_ros_imu.so">

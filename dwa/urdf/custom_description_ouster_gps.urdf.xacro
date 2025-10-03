@@ -27,6 +27,16 @@
   <!-- 3) GPS 추가 -->
   <!-- <xacro:include filename="$(find dwa)/urdf/gps_sensor.urdf.xacro"/> -->
 
-  <!-- Gazebo 플러그인 포함 (ros_control + GPS) -->
-  <xacro:include filename="$(find dwa)/urdf/custom_description.gazebo.xacro"/>
+  <!-- 4) Gazebo 제어 플러그인 -->
+  <gazebo>
+    <!-- Husky Velocity Control Plugin -->
+    <!-- ros_control과 연동하여 diff_drive_controller가 바퀴 속도 제어 -->
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+      <robotSimType>husky_gazebo_plugins/HuskyVelocityControlPlugin</robotSimType>
+      <wheel_diameter>0.3302</wheel_diameter>
+      <max_accel>5.0</max_accel>
+      <max_speed>1.0</max_speed>
+    </plugin>
+  </gazebo>
 </robot>

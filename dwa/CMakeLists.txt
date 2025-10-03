@@ -23,6 +23,9 @@ find_package(catkin REQUIRED COMPONENTS
   geodesy
   gazebo_ros
   gazebo_plugins
+  gazebo_ros_control
+  hardware_interface
+  pluginlib
   urdf
   xacro
 )
@@ -33,7 +36,7 @@ find_package(gazebo REQUIRED)
 ## Catkin package configuration
 catkin_package(
   INCLUDE_DIRS plugins/include
-  LIBRARIES gazebo_ros_ouster_gpu_laser gazebo_ros_ouster_laser
+  LIBRARIES gazebo_ros_ouster_gpu_laser gazebo_ros_ouster_laser husky_velocity_control_plugin
   CATKIN_DEPENDS
     roscpp
     rospy
@@ -55,6 +58,9 @@ catkin_package(
     geodesy
     gazebo_ros
     gazebo_plugins
+    gazebo_ros_control
+    hardware_interface
+    pluginlib
   DEPENDS
     gazebo
 )
@@ -108,6 +114,20 @@ add_dependencies(gazebo_ros_ouster_laser
   ${catkin_EXPORTED_TARGETS}
 )
 
+## Build Husky Velocity Control Plugin
+add_library(husky_velocity_control_plugin
+  plugins/src/husky_velocity_control_plugin.cpp
+)
+
+target_link_libraries(husky_velocity_control_plugin
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)
+
+add_dependencies(husky_velocity_control_plugin
+  ${catkin_EXPORTED_TARGETS}
+)
+
 ## Python scripts installation (only existing scripts)
 catkin_install_python(
   PROGRAMS
@@ -129,10 +149,15 @@ install(
 )
 
 ## Install Gazebo plugin libraries
-install(TARGETS gazebo_ros_ouster_gpu_laser gazebo_ros_ouster_laser
+install(TARGETS gazebo_ros_ouster_gpu_laser gazebo_ros_ouster_laser husky_velocity_control_plugin
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
+
+## Install plugin XML
+install(FILES plugins/husky_velocity_control_plugin.xml
+  DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
 ## Install plugin headers

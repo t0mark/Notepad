@@ -1,0 +1,7 @@
+<library path="lib/libhusky_velocity_control_plugin">
+  <class name="husky_gazebo_plugins/HuskyVelocityControlPlugin" type="husky_gazebo_plugins::HuskyVelocityControlPlugin" base_class_type="gazebo_ros_control::RobotHWSim">
+    <description>
+      Husky Velocity Control Plugin for ros_control integration with differential drive
+    </description>
+  </class>
+</library>

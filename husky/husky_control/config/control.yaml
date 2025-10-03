@@ -50,8 +50,8 @@ husky_velocity_controller:
   publish_cmd: true           # 최종 cmd_vel 명령을 /husky_velocity_controller/cmd_vel_out으로 발행
   base_frame_id: base_link    # 로봇 기준 프레임 ID
   
-  # 오도메트리 TF 발행 비활성화 (robot_localization에서 IMU 융합 오도메트리 사용)
-  enable_odom_tf: false       # 엔코더만으로는 TF 발행하지 않음 (센서 융합 사용)
+  # 오도메트리 TF 발행 비활성화 (커스텀 플러그인에서 처리)
+  enable_odom_tf: false       # diff_drive_controller에서 odom->base_link TF 발행 안 함
 
   # ==========================================================================
   # 바퀴 형상 보정 계수 (하드웨어 캘리브레이션)

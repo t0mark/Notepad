@@ -32,6 +32,9 @@
   <!-- Gazebo & Simulation dependencies -->
   <build_depend>gazebo_ros</build_depend>
   <build_depend>gazebo_plugins</build_depend>
+  <build_depend>gazebo_ros_control</build_depend>
+  <build_depend>hardware_interface</build_depend>
+  <build_depend>pluginlib</build_depend>
 
   <!-- URDF dependencies -->
   <build_depend>urdf</build_depend>
@@ -61,6 +64,9 @@
   <!-- Gazebo & Simulation dependencies -->
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>gazebo_plugins</exec_depend>
+  <exec_depend>gazebo_ros_control</exec_depend>
+  <exec_depend>hardware_interface</exec_depend>
+  <exec_depend>pluginlib</exec_depend>
 
   <!-- URDF dependencies -->
   <exec_depend>urdf</exec_depend>
@@ -72,5 +78,6 @@
 
   <export>
     <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}"/>
+    <gazebo_ros_control plugin="${prefix}/plugins/husky_velocity_control_plugin.xml"/>
   </export>
 </package>

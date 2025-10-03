@@ -3,7 +3,7 @@
   <!-- DWA Navigation: 센서 처리 + Move Base -->
 
   <param name="/use_sim_time" value="true"/>
-  
+
   <!-- 외부에서 프레임 설정 받기 (기본값: odom for Gazebo) -->
   <arg name="global_frame" default="odom"/>
   <arg name="enable_rviz" default="true"/>
