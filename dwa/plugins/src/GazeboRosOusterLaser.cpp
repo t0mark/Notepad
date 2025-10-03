@@ -33,7 +33,7 @@
  *********************************************************************/
 
 #include <assert.h>
-#include <ouster_gazebo_plugins/GazeboRosOusterLaser.h>
+#include <GazeboRosOusterLaser.h>
 
 #include <algorithm>
 #include <gazebo/common/Exception.hh>
