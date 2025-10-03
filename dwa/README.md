@@ -2,15 +2,6 @@
 
 Gazebo 시뮬레이션 환경에서 Husky 로봇과 Ouster LiDAR를 활용한 DWA(Dynamic Window Approach) 기반 장애물 회피 네비게이션 패키지입니다.
 
-## 📋 목차
-
-- [개요](#개요)
-- [주요 기능](#주요-기능)
-- [시스템 구조](#시스템-구조)
-- [설치 방법](#설치-방법)
-- [실행 방법](#실행-방법)
-- [시연 영상](#시연-영상)
-
 ## 개요
 
 본 패키지는 Gazebo 시뮬레이션 환경에서 Husky A200 로봇에 Ouster OS1-32 LiDAR를 장착하여 DWA Local Planner를 이용한 자율 주행 네비게이션을 구현합니다.
@@ -18,7 +9,6 @@ Gazebo 시뮬레이션 환경에서 Husky 로봇과 Ouster LiDAR를 활용한 DW
 ### 주요 특징
 
 - **Gazebo 시뮬레이션**: 현실적인 물리 엔진 기반 로봇 시뮬레이션
-- **Ouster OS1-32 LiDAR**: 3D 포인트 클라우드 기반 장애물 인식
 - **DWA Local Planner**: 동적 장애물 회피 경로 계획
 - **실시간 Costmap**: Laser scan 기반 장애물 맵 생성
 
@@ -133,7 +123,7 @@ roslaunch dwa dwa_test.launch
 ### RViz 시각화
 
 <div align="center">
-  <img src="docs/images/rviz.png" alt="RViz Visualization" width="100%"/>
+  <img src="docs/images/rviz.png" alt="RViz Visualization" width="70%"/>
   <p><em>Ouster LiDAR 포인트 클라우드 및 네비게이션 시각화</em></p>
 </div>
 
@@ -146,7 +136,7 @@ roslaunch dwa dwa_test.launch
 ### 실행 영상
 
 <div align="center">
-  <img src="docs/video/실행.gif" alt="DWA Navigation Demo" width="100%"/>
+  <img src="docs/video/실행.gif" alt="DWA Navigation Demo" width="70%"/>
   <p><em>DWA 네비게이션 실행 데모</em></p>
 </div>
 
@@ -168,26 +158,104 @@ roslaunch dwa dwa_test.launch
 
 ## 기술 상세
 
-### 1. Skid Steer Drive 제어
+### 1. 커스텀 Husky URDF 구성
 
-실제 Husky 하드웨어와 동일하게 4개 바퀴를 좌/우 2개 그룹으로 제어:
-- 좌측: `front_left_wheel`, `rear_left_wheel`
-- 우측: `front_right_wheel`, `rear_right_wheel`
+#### 1.1 Skid Steer Drive 제어 방식 변경
 
-### 2. Ouster LiDAR 플러그인
+기존 Husky는 `gazebo_ros_control` + PID 방식을 사용했으나, 실제 로봇 하드웨어와 일치시키기 위해 **Skid Steer Drive Plugin**으로 변경:
 
-Gepetto의 Ouster Gazebo 플러그인 사용:
-- GPU Ray Sensor 지원
-- 32채널 레이저 스캔
-- 0.3~75m 거리 감지
+**변경 이유:**
+- 실제 Husky 하드웨어([husky_hardware.cpp](../husky_robot/husky_base/src/husky_hardware.cpp#L196-L204))는 4개 바퀴를 LEFT/RIGHT 2개 그룹으로 제어
+- Gazebo PID는 각 바퀴를 개별 제어하므로 실제 하드웨어와 동작 방식이 다름
 
-### 3. 포인트 클라우드 처리
+**수정 내용:**
+
+1. **[husky.urdf.xacro](../husky/husky_description/urdf/husky.urdf.xacro#L373-L410)**: Skid Steer Drive Plugin 추가
+   ```xml
+   <plugin name="skid_steer_drive_controller" filename="libgazebo_ros_skid_steer_drive.so">
+     <leftFrontJoint>front_left_wheel</leftFrontJoint>
+     <leftRearJoint>rear_left_wheel</leftRearJoint>
+     <rightFrontJoint>front_right_wheel</rightFrontJoint>
+     <rightRearJoint>rear_right_wheel</rightRearJoint>
+     <wheelSeparation>0.5708</wheelSeparation>
+     <wheelDiameter>0.3302</wheelDiameter>
+     <broadcastTF>true</broadcastTF>  <!-- odom → base_link TF 발행 -->
+   </plugin>
+   ```
+
+2. **[wheel.urdf.xacro](../husky/husky_description/urdf/wheel.urdf.xacro#L64-L74)**: Transmission 주석 처리
+   - PID 제어와 Skid Steer 제어의 충돌 방지
+   - 각 바퀴의 `<transmission>` 태그 비활성화
+
+3. **[husky.urdf.xacro](../husky/husky_description/urdf/husky.urdf.xacro#L412-L420)**: Joint State Publisher 추가
+   ```xml
+   <plugin name="joint_state_publisher" filename="libgazebo_ros_joint_state_publisher.so">
+     <jointName>front_left_wheel, front_right_wheel, rear_left_wheel, rear_right_wheel</jointName>
+   </plugin>
+   ```
+   - 바퀴 조인트의 TF 발행 (RViz 시각화용)
+
+#### 1.2 Ouster OS1-32 LiDAR 통합
+
+**파일 구조:**
+- [custom_description_ouster_gps.urdf.xacro](urdf/custom_description_ouster_gps.urdf.xacro): Husky에 Ouster + GPS 장착
+- [OS1-32.urdf.xacro](urdf/OS1-32.urdf.xacro): Ouster 센서 정의
+
+**Gepetto 플러그인 사용 ([GitHub](https://github.com/Gepetto/ouster-gazebo-simulation)):**
+
+1. **소스 파일 다운로드:**
+   - [GazeboRosOusterLaser.cpp](plugins/src/GazeboRosOusterLaser.cpp)
+   - [GazeboRosOusterLaser.h](plugins/include/ouster_gazebo_plugins/GazeboRosOusterLaser.h)
+
+2. **CMakeLists.txt 수정 ([CMakeLists.txt](CMakeLists.txt)):**
+   ```cmake
+   # GPU 버전 빌드
+   add_library(gazebo_ros_ouster_gpu_laser plugins/src/GazeboRosOusterLaser.cpp)
+   target_compile_definitions(gazebo_ros_ouster_gpu_laser PRIVATE GAZEBO_GPU_RAY=1)
+   target_link_libraries(gazebo_ros_ouster_gpu_laser GpuRayPlugin)
+
+   # CPU 버전 빌드
+   add_library(gazebo_ros_ouster_laser plugins/src/GazeboRosOusterLaser.cpp)
+   target_compile_definitions(gazebo_ros_ouster_laser PRIVATE GAZEBO_GPU_RAY=0)
+   ```
+
+3. **OS1-32.urdf.xacro 수정:**
+   ```xml
+   <xacro:arg name="gpu" default="true"/>
+   <xacro:if value="${gpu}">
+     <sensor type="gpu_ray" name="${name}-OS1-32">
+       <plugin name="gazebo_ros_laser_controller" filename="libgazebo_ros_ouster_gpu_laser.so">
+   ```
+
+**센서 사양:**
+- 32채널 수직 해상도
+- 수평 해상도: 512, 1024, 2048 선택 가능
+- 거리: 0.3m ~ 75m
+- 주파수: 10Hz
+
+### 2. 포인트 클라우드 처리 파이프라인
 
 ```
-Ouster (32 beams, 512 samples)
-  → VoxelGrid (0.1m)
-  → PointCloud2LaserScan
-  → DWA Costmap
+Ouster Raw PointCloud2 (32×512 points)
+  ↓
+VoxelGrid Filter (0.1m leaf size) - 다운샘플링
+  ↓
+PointCloud to LaserScan - 2D 변환
+  ↓
+Move Base Costmap - 장애물 인식
+```
+
+### 3. 네비게이션 토픽 리매핑
+
+**문제:** Move Base와 Skid Steer Plugin의 cmd_vel 토픽 불일치
+- Move Base 발행: `/cmd_vel`
+- Skid Steer 구독: `/husky_velocity_controller/cmd_vel`
+
+**해결:** [dwa_test.launch](launch/dwa_test.launch)에서 리매핑
+```xml
+<node pkg="move_base" type="move_base" name="move_base">
+  <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
+</node>
 ```
 
 ## 트러블슈팅
