@@ -15,25 +15,6 @@ ouster/imu를 활용하다 보니, 초기 heading이 맞지 않는 모습을 보
     <p style="text-align: center;">시연영상</p>
   </div>
 </div>
-<!--
-<div align="center">
-  <div style="margin-bottom: 10px;">
-    <img src="docs/images/rqt.png" width="100%">
-    <p style="text-align: center;">rqt_graph</p>
-  </div>
-</div>
-<div align="center">
-  <div style="margin-bottom: 10px;">
-    <img src="docs/images/laserScan.png" width="100%">
-    <p style="text-align: center;">laserScan</p>
-  </div>
-</div>
-<div align="center">
-  <div style="margin-bottom: 10px;">
-    <img src="docs/video/move.gif" width="100%">
-    <p style="text-align: center;">동적 장애물</p>
-  </div>
-</div> -->
 <div align="center">
   <div style="margin-bottom: 10px;">
     <img src="docs/images/rqt_graph_final.png" width="100%">
@@ -74,9 +55,6 @@ sudo apt-get install ros-noetic-gazebo-ros \
                      ros-noetic-tf2-geometry-msgs \
                      ros-noetic-velodyne-description \
                      ros-noetic-velodyne-gazebo-plugins \
-                     ros-noetic-husky-description \
-                     ros-noetic-husky-gazebo \
-                     ros-noetic-husky-control \
                      ros-noetic-dwa-local-planner \
                      ros-noetic-global-planner \
                      ros-noetic-move-base \
