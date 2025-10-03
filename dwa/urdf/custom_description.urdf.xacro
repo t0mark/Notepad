@@ -4,7 +4,7 @@
   <!-- 1) Husky 추가 -->
   <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro" />
 
-  <!-- 2) OS1-64 LiDAR 추가 -->
+  <!-- 2) OS1-32 LiDAR 추가 -->
   <xacro:include filename="$(find dwa)/urdf/OS1-32.urdf.xacro"/>
   <xacro:OS1-32
     parent="top_chassis_link"
@@ -25,7 +25,7 @@
   </xacro:OS1-32>
 
   <!-- 3) GPS 추가 -->
-  <!-- <xacro:include filename="$(find dwa)/urdf/gps_sensor.urdf.xacro"/> -->
+  <!-- <xacro:include filename="$(find dwa)/urdf/gps.urdf.xacro"/> -->
 
   <!-- 4) Gazebo 제어 플러그인 -->
   <gazebo>

@@ -26,7 +26,7 @@
   </include>
 
   <!-- Ouster + GPS가 장착된 Husky 로봇 설정 -->
-  <param name="robot_description" command="$(find xacro)/xacro '$(find dwa)/urdf/custom_description_ouster_gps.urdf.xacro'"/>
+  <param name="robot_description" command="$(find xacro)/xacro '$(find dwa)/urdf/custom_description.urdf.xacro'"/>
 
   <!-- 로봇 스폰 -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
