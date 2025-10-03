@@ -37,11 +37,6 @@
   <build_depend>urdf</build_depend>
   <build_depend>xacro</build_depend>
 
-  <!-- Husky robot dependencies -->
-  <build_depend>husky_description</build_depend>
-  <build_depend>husky_gazebo</build_depend>
-  <build_depend>husky_control</build_depend>
-
   <!-- Exec dependencies -->
   <exec_depend>roscpp</exec_depend>
   <exec_depend>rospy</exec_depend>
@@ -70,11 +65,6 @@
   <!-- URDF dependencies -->
   <exec_depend>urdf</exec_depend>
   <exec_depend>xacro</exec_depend>
-
-  <!-- Husky robot dependencies -->
-  <exec_depend>husky_description</exec_depend>
-  <exec_depend>husky_gazebo</exec_depend>
-  <exec_depend>husky_control</exec_depend>
 
   <!-- Python 3 dependencies -->
   <depend>python3-numpy</depend>

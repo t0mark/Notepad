@@ -33,7 +33,7 @@ find_package(gazebo REQUIRED)
 ## Catkin package configuration
 catkin_package(
   INCLUDE_DIRS plugins/include
-  LIBRARIES gazebo_ros_ouster_gpu_laser
+  LIBRARIES gazebo_ros_ouster_gpu_laser gazebo_ros_ouster_laser
   CATKIN_DEPENDS
     roscpp
     rospy
@@ -70,18 +70,41 @@ link_directories(
   ${GAZEBO_LIBRARY_DIRS}
 )
 
-## Build Ouster Gazebo Plugin
+## Build Ouster Gazebo Plugin (GPU version - Gepetto 방식)
 add_library(gazebo_ros_ouster_gpu_laser
   plugins/src/GazeboRosOusterLaser.cpp
+)
+
+target_compile_definitions(gazebo_ros_ouster_gpu_laser
+  PRIVATE GAZEBO_GPU_RAY=1
 )
 
 target_link_libraries(gazebo_ros_ouster_gpu_laser
   ${catkin_LIBRARIES}
   ${GAZEBO_LIBRARIES}
-  RayPlugin
+  GpuRayPlugin
 )
 
 add_dependencies(gazebo_ros_ouster_gpu_laser
+  ${catkin_EXPORTED_TARGETS}
+)
+
+## Build Ouster Gazebo Plugin (CPU version)
+add_library(gazebo_ros_ouster_laser
+  plugins/src/GazeboRosOusterLaser.cpp
+)
+
+target_compile_definitions(gazebo_ros_ouster_laser
+  PRIVATE GAZEBO_GPU_RAY=0
+)
+
+target_link_libraries(gazebo_ros_ouster_laser
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+  RayPlugin
+)
+
+add_dependencies(gazebo_ros_ouster_laser
   ${catkin_EXPORTED_TARGETS}
 )
 
@@ -105,8 +128,8 @@ install(
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )
 
-## Install Gazebo plugin library
-install(TARGETS gazebo_ros_ouster_gpu_laser
+## Install Gazebo plugin libraries
+install(TARGETS gazebo_ros_ouster_gpu_laser gazebo_ros_ouster_laser
   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
