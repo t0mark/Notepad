@@ -27,8 +27,9 @@ include_directories(
 # Python 스크립트 설치 (kakao_api 전용)
 catkin_install_python(
   PROGRAMS
-    scripts/gps_server.py
-    scripts/waypoints_manager.py
+    scripts/kakao_route_planner.py
+    scripts/web_server.py
+    scripts/debug_gps_publisher.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
