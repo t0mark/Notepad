@@ -1,0 +1,36 @@
+# Robot Physical Parameters
+robot:
+  name: "husky"
+
+  # Dimensions (meters)
+  dimensions:
+    length: 0.98
+    width: 0.56
+    height: 0.18
+
+  # Wheel parameters
+  wheel:
+    radius: 0.1651
+    width: 0.0889
+    wheelbase: 0.5120  # front-rear distance
+    track: 0.5708      # left-right distance
+
+  # Mass (kg)
+  mass:
+    total: 46.034
+    wheel: 2.637
+
+  # Sensor positions (relative to base_link)
+  sensors:
+    ouster_lidar:
+      position: [0.0, 0.0, 0.3]
+      orientation: [0.0, 0.0, 0.0]
+
+    gps_antenna:
+      position: [-0.15, 0.0, 0.25]
+      orientation: [0.0, 0.0, 0.0]
+
+# TF Publishing
+tf:
+  publish_frequency: 50.0  # Hz
+  use_tf_static: false

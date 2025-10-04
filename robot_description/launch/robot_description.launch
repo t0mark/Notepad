@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- ===================================================== -->
+  <!-- Robot Description - URDF & TF Publisher -->
+  <!-- base_link → os_sensor, wheel_links 등 모든 정적 TF 발행 -->
+  <!-- ===================================================== -->
+
+  <!-- URDF 모델 로드 -->
+  <param name="robot_description"
+         command="$(find xacro)/xacro '$(find robot_description)/urdf/custom_description.urdf.xacro'"/>
+
+  <!-- Robot State Publisher: URDF 기반 TF 발행 -->
+  <node name="robot_state_publisher"
+        pkg="robot_state_publisher"
+        type="robot_state_publisher"
+        output="screen">
+    <param name="publish_frequency" value="50.0"/>
+    <param name="use_tf_static" value="false"/>
+  </node>
+</launch>

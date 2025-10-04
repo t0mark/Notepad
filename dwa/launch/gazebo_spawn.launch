@@ -17,7 +17,7 @@
 
   <!-- Gazebo 월드 실행 -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" default="$(find dwa)/worlds/example.world"/>
+    <arg name="world_name" default="$(find dwa)/worlds/citysim_gazebo.world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="true"/>
     <arg name="gui" value="true"/>
@@ -31,5 +31,10 @@
   <!-- 로봇 스폰 -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
         output="screen"
-        args="-urdf -model husky -param robot_description -z 1"/>   
+        args="-urdf -model husky -param robot_description -z 0.2"/>
+
+  <!-- map → odom static transform (Gazebo 시뮬레이션용) -->
+  <!-- SLAM이 없으므로 map과 odom을 동일하게 설정 (drift 없음) -->
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_odom_broadcaster"
+        args="0 0 0 0 0 0 map odom"/>
 </launch>

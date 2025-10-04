@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<robot name="husky" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <!-- 1) Husky 추가 -->
+  <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro" />
+
+  <!-- 2) OS1-32 LiDAR 추가 -->
+  <xacro:include filename="$(find robot_description)/urdf/OS1-32.urdf.xacro"/>
+
+  <!-- 3) GPS 추가 -->
+  <xacro:include filename="$(find robot_description)/urdf/gps.urdf.xacro"/>
+</robot>
