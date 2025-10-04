@@ -116,8 +116,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <xacro:arg name="blackfly_secondary_rpy"            default="$(optenv HUSKY_BLACKFLY_SECONDARY_RPY 0 0 0)"/> -->
 
   <!-- Bumper Extension -->
-  <!-- <xacro:property name="husky_front_bumper_extend"  value="$(optenv HUSKY_FRONT_BUMPER_EXTEND 0)" />
-  <xacro:property name="husky_rear_bumper_extend"   value="$(optenv HUSKY_REAR_BUMPER_EXTEND 0)" /> -->
+  <xacro:property name="husky_front_bumper_extend"  value="$(optenv HUSKY_FRONT_BUMPER_EXTEND 0)" />
+  <xacro:property name="husky_rear_bumper_extend"   value="$(optenv HUSKY_REAR_BUMPER_EXTEND 0)" />
 
   <!-- Height of the sensor arch in mm.  Must be either 510 or 300 -->
   <!-- <xacro:arg name="sensor_arch"         default="$(optenv HUSKY_SENSOR_ARCH 0)" />
@@ -126,13 +126,13 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <xacro:arg name="sensor_arch_rpy"     default="$(optenv HUSKY_SENSOR_ARCH_RPY 0 0 0)"/> -->
 
   <!-- Extras -->
-  <!-- <xacro:arg name="robot_namespace" default="$(optenv ROBOT_NAMESPACE /)" />
+  <xacro:arg name="robot_namespace" default="$(optenv ROBOT_NAMESPACE /)" />
   <xacro:arg name="urdf_extras"     default="$(optenv HUSKY_URDF_EXTRAS empty.urdf)" />
-  <xacro:arg name="cpr_urdf_extras" default="$(optenv CPR_URDF_EXTRAS empty.urdf)" /> -->
+  <xacro:arg name="cpr_urdf_extras" default="$(optenv CPR_URDF_EXTRAS empty.urdf)" />
 
   <!-- OutdoorNav -->
-  <!-- <xacro:arg name="outdoornav_enabled"       default="$(optenv OUTDOORNAV_ENABLED 0)" />
-  <xacro:arg name="outdoornav_configuration" default="$(optenv OUTDOORNAV_CONFIGURATION standard)" /> -->
+  <xacro:arg name="outdoornav_enabled"       default="$(optenv OUTDOORNAV_ENABLED 0)" />
+  <xacro:arg name="outdoornav_configuration" default="$(optenv OUTDOORNAV_CONFIGURATION standard)" />
 
   <!-- Included URDF/XACRO Files -->
   <!-- <xacro:include filename="$(find husky_description)/urdf/accessories/hokuyo_ust10.urdf.xacro" />
@@ -140,8 +140,8 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <xacro:include filename="$(find husky_description)/urdf/accessories/flir_blackfly_mount.urdf.xacro"/>
   <xacro:include filename="$(find husky_description)/urdf/accessories/sensor_arch.urdf.xacro"/>
   <xacro:include filename="$(find husky_description)/urdf/accessories/sick_lms1xx_mount.urdf.xacro"/>
-  <xacro:include filename="$(find husky_description)/urdf/accessories/vlp16_mount.urdf.xacro"/>
-  <xacro:include filename="$(find husky_description)/urdf/decorations.urdf.xacro" /> -->
+  <xacro:include filename="$(find husky_description)/urdf/accessories/vlp16_mount.urdf.xacro"/> -->
+  <xacro:include filename="$(find husky_description)/urdf/decorations.urdf.xacro" />
   <xacro:include filename="$(find husky_description)/urdf/wheel.urdf.xacro" />
 
   <xacro:property name="M_PI" value="3.14159"/>
@@ -183,16 +183,16 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   </link>
 
   <!-- Base footprint is on the ground under the robot -->
-  <link name="base_footprint"/>
+  <!-- <link name="base_footprint"/>
 
   <joint name="base_footprint_joint" type="fixed">
     <origin xyz="0 0 ${wheel_vertical_offset - wheel_radius}" rpy="0 0 0" />
     <parent link="base_link" />
     <child link="base_footprint" />
-  </joint>
+  </joint> -->
 
   <!-- Inertial link stores the robot's inertial information -->
-  <link name="inertial_link">
+  <!-- <link name="inertial_link">
     <inertial>
       <mass value="46.034" />
       <origin xyz="-0.00065 -0.085 0.062" />
@@ -204,7 +204,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <origin xyz="0 0 0" rpy="0 0 0" />
     <parent link="base_link" />
     <child link="inertial_link" />
-  </joint>
+  </joint> -->
 
   <!-- Husky wheel macros -->
   <xacro:husky_wheel wheel_prefix="front_left">
@@ -221,7 +221,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   </xacro:husky_wheel>
 
   <!-- Husky Decorations -->
-  <!-- <xacro:husky_decorate /> -->
+  <xacro:husky_decorate />
 
   <!--
     Add the main sensor arch if the user has specifically enabled it, or if a sensor
@@ -364,9 +364,9 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   <!-- <xacro:if value="$(arg outdoornav_enabled)">
     <xacro:include filename="$(find cpr_onav_description)/urdf/outdoornav_description.urdf.xacro" />
     <xacro:outdoornav_sensors outdoornav_configuration="$(arg outdoornav_configuration)" />
-  </xacro:if>
+  </xacro:if> -->
 
-  <gazebo>
+  <!-- <gazebo>
     <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
       <robotNamespace>$(arg robot_namespace)</robotNamespace>
       <legacyModeNS>true</legacyModeNS>

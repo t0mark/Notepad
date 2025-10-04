@@ -32,7 +32,7 @@
  *  POSSIBILITY OF SUCH DAMAGE.
  *********************************************************************/
 
-#include <ouster_gazebo_plugins/GazeboRosOusterLaser.h>
+#include <GazeboRosOusterLaser.h>
 
 #include <algorithm>
 #include <assert.h>

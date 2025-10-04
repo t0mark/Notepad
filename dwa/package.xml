@@ -78,6 +78,5 @@
 
   <export>
     <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}"/>
-    <gazebo_ros_control plugin="${prefix}/plugins/husky_velocity_control_plugin.xml"/>
   </export>
 </package>

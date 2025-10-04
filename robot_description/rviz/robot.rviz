@@ -58,43 +58,17 @@ Visualization Manager:
           Value: true
         base_link:
           Value: true
-        front_bumper_link:
-          Value: true
         front_left_wheel_link:
           Value: true
         front_right_wheel_link:
           Value: true
         gps_link:
           Value: true
-        imu_link:
-          Value: true
         inertial_link:
-          Value: true
-        os1_imu:
-          Value: true
-        os1_lidar:
-          Value: true
-        ouster:
-          Value: true
-        ouster_base_link:
-          Value: true
-        ouster_baseplate:
-          Value: true
-        rear_bumper_link:
           Value: true
         rear_left_wheel_link:
           Value: true
         rear_right_wheel_link:
-          Value: true
-        top_chassis_link:
-          Value: true
-        top_plate_front_link:
-          Value: true
-        top_plate_link:
-          Value: true
-        top_plate_rear_link:
-          Value: true
-        user_rail_link:
           Value: true
       Marker Alpha: 1
       Marker Scale: 1
@@ -106,38 +80,17 @@ Visualization Manager:
         base_link:
           base_footprint:
             {}
-          front_bumper_link:
-            {}
           front_left_wheel_link:
             {}
           front_right_wheel_link:
             {}
           gps_link:
             {}
-          imu_link:
-            {}
           inertial_link:
-            {}
-          rear_bumper_link:
             {}
           rear_left_wheel_link:
             {}
           rear_right_wheel_link:
-            {}
-          top_chassis_link:
-            ouster_base_link:
-              ouster_baseplate:
-                ouster:
-                  os1_imu:
-                    {}
-                  os1_lidar:
-                    {}
-          top_plate_link:
-            top_plate_front_link:
-              {}
-            top_plate_rear_link:
-              {}
-          user_rail_link:
             {}
       Update Interval: 0
       Value: true
@@ -160,11 +113,6 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        front_bumper_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         front_left_wheel_link:
           Alpha: 1
           Show Axes: false
@@ -180,70 +128,16 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         inertial_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        os1_imu:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        os1_lidar:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ouster:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        ouster_base_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ouster_baseplate:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        rear_bumper_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
         rear_left_wheel_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
         rear_right_wheel_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        top_chassis_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        top_plate_front_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        top_plate_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-          Value: true
-        top_plate_rear_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        user_rail_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -293,9 +187,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.9349997639656067
+      Pitch: 0.5199999809265137
       Target Frame: <Fixed Frame>
-      Yaw: 3.108182668685913
+      Yaw: 3.1381828784942627
     Saved: ~
 Window Geometry:
   Displays:
