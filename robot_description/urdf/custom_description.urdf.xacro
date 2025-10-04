@@ -6,6 +6,9 @@
 
   <!-- 2) OS1-32 LiDAR 추가 -->
   <xacro:include filename="$(find robot_description)/urdf/OS1-32.urdf.xacro"/>
+  <xacro:OS1-32 parent="top_plate_link">
+    <origin xyz="0.0 0.0 0.0" rpy="0 0 0"/>
+  </xacro:OS1-32>
 
   <!-- 3) GPS 추가 -->
   <xacro:include filename="$(find robot_description)/urdf/gps.urdf.xacro"/>
