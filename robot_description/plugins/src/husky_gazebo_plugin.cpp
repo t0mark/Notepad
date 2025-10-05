@@ -31,7 +31,8 @@ namespace gazebo
       this->wheel_diameter_ = 0.3302;
       this->update_rate_ = 50.0;
       this->publish_odom_ = true;
-      this->publish_odom_tf_ = false;  // robot_localization이 odom TF 발행
+      this->publish_odom_tf_ = true;  // Gazebo ground truth 사용
+      this->publish_map_odom_tf_ = false;  // static transform으로 처리
     }
 
     virtual ~HuskyDiffDrivePlugin()
@@ -68,6 +69,9 @@ namespace gazebo
 
       if (_sdf->HasElement("publishOdomTF"))
         this->publish_odom_tf_ = _sdf->Get<bool>("publishOdomTF");
+
+      if (_sdf->HasElement("publishMapOdomTF"))
+        this->publish_map_odom_tf_ = _sdf->Get<bool>("publishMapOdomTF");
 
       // 조인트 가져오기
       std::string left_front_joint_name = "front_left_wheel_joint";
@@ -120,11 +124,14 @@ namespace gazebo
 
       this->odom_frame_ = "odom";
       this->base_frame_ = "base_link";
+      this->map_frame_ = "map";
 
       if (_sdf->HasElement("odometryFrame"))
         this->odom_frame_ = _sdf->Get<std::string>("odometryFrame");
       if (_sdf->HasElement("robotBaseFrame"))
         this->base_frame_ = _sdf->Get<std::string>("robotBaseFrame");
+      if (_sdf->HasElement("mapFrame"))
+        this->map_frame_ = _sdf->Get<std::string>("mapFrame");
 
       // Subscriber & Publisher
       ros::SubscribeOptions so =
@@ -197,14 +204,12 @@ namespace gazebo
       double actual_linear_vel = (left_actual_vel + right_actual_vel) * wheel_radius / 2.0;
       double actual_angular_vel = (right_actual_vel - left_actual_vel) * wheel_radius / this->wheel_separation_;
 
-      // Odometry 적분
-      double step_x = actual_linear_vel * cos(this->odom_pose_[2]) * dt;
-      double step_y = actual_linear_vel * sin(this->odom_pose_[2]) * dt;
-      double step_theta = actual_angular_vel * dt;
+      // Gazebo ground truth 위치 사용 (시뮬레이션이므로 오차 없음)
+      ignition::math::Pose3d gazebo_pose = this->model_->WorldPose();
 
-      this->odom_pose_[0] += step_x;
-      this->odom_pose_[1] += step_y;
-      this->odom_pose_[2] += step_theta;
+      this->odom_pose_[0] = gazebo_pose.Pos().X();
+      this->odom_pose_[1] = gazebo_pose.Pos().Y();
+      this->odom_pose_[2] = gazebo_pose.Rot().Yaw();
 
       // Odometry 발행
       if (this->publish_odom_)
@@ -246,7 +251,7 @@ namespace gazebo
 
         this->odom_publisher_.publish(odom);
 
-        // TF 발행 (옵션)
+        // TF 발행 (ground truth 사용)
         if (this->publish_odom_tf_)
         {
           tf::Transform transform;
@@ -290,8 +295,10 @@ namespace gazebo
     double update_rate_;
     bool publish_odom_;
     bool publish_odom_tf_;
+    bool publish_map_odom_tf_;
     std::string odom_frame_;
     std::string base_frame_;
+    std::string map_frame_;
 
     // 상태
     geometry_msgs::Twist cmd_vel_;

@@ -31,11 +31,9 @@
   <!-- URDF 모델 로드 및 TF 발행 -->
   <include file="$(find robot_description)/launch/robot_description.launch"/>
 
-  <!-- Static TF: map -> odom (시뮬레이션 환경용, ground truth) -->
-  <!-- 실제 로봇에서는 AMCL 또는 SLAM이 이 TF를 발행 --> 
-  <!-- Gazebo보다 먼저 시작해서 map 프레임을 TF 트리 루트로 설정 -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom_publisher"
-        args="0 0 0 0 0 0 map odom"/>
+  <!-- 시뮬레이션: map = odom (오차 없음) -->
+  <node pkg="tf" type="static_transform_publisher" name="map_to_odom_publisher"
+        args="0 0 0 0 0 0 map odom 100"/>
 
   <!-- Gazebo에 로봇 스폰 -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"

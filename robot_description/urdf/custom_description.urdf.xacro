@@ -38,7 +38,7 @@
       <odometryFrame>odom</odometryFrame>
       <robotBaseFrame>base_link</robotBaseFrame>
 
-      <!-- Publish odom TF: true (Gazebo 플러그인이 odom->base_link 발행) -->
+      <!-- Publish odom TF: Gazebo ground truth -->
       <publishOdomTF>true</publishOdomTF>
     </plugin>
   </gazebo>
