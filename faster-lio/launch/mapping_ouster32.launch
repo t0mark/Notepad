@@ -3,6 +3,8 @@
 
     <arg name="rviz" default="true" />
 
+    <param name="/use_sim_time" value="false"/>
+
     <rosparam command="load" file="$(find faster_lio)/config/ouster32.yaml" />
 
     <param name="feature_extract_enable" type="bool" value="0"/>

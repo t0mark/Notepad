@@ -1,7 +1,7 @@
 common:
     lid_topic:  "/ouster/points"
     imu_topic:  "/ouster/imu"
-    time_sync_en: true          # Enable time synchronization for real sensor data
+    time_sync_en: false         # Disable for simulation with use_sim_time=false
     
 preprocess:
     lidar_type: 3                # 1 for Livox serials LiDAR, 2 for Velodyne LiDAR, 3 for ouster LiDAR, 

@@ -259,11 +259,11 @@ void GazeboRosOusterLaser::OnScan(ConstLaserScanStampedPtr& _msg)
   const double MAX_RANGE = std::min(max_range_, maxRange);
 
   // Populate message fields
-  const uint32_t POINT_STEP = 32;
+  const uint32_t POINT_STEP = 48;
   sensor_msgs::PointCloud2 msg;
   msg.header.frame_id = frame_name_;
-  msg.header.stamp = ros::Time(_msg->time().sec(), _msg->time().nsec());
-  msg.fields.resize(5);
+  msg.header.stamp = ros::Time::now();
+  msg.fields.resize(9);
   msg.fields[0].name = "x";
   msg.fields[0].offset = 0;
   msg.fields[0].datatype = sensor_msgs::PointField::FLOAT32;
@@ -277,13 +277,29 @@ void GazeboRosOusterLaser::OnScan(ConstLaserScanStampedPtr& _msg)
   msg.fields[2].datatype = sensor_msgs::PointField::FLOAT32;
   msg.fields[2].count = 1;
   msg.fields[3].name = "intensity";
-  msg.fields[3].offset = 16;
+  msg.fields[3].offset = 12;
   msg.fields[3].datatype = sensor_msgs::PointField::FLOAT32;
   msg.fields[3].count = 1;
-  msg.fields[4].name = "ring";
-  msg.fields[4].offset = 20;
-  msg.fields[4].datatype = sensor_msgs::PointField::UINT16;
+  msg.fields[4].name = "t";
+  msg.fields[4].offset = 16;
+  msg.fields[4].datatype = sensor_msgs::PointField::UINT32;
   msg.fields[4].count = 1;
+  msg.fields[5].name = "reflectivity";
+  msg.fields[5].offset = 20;
+  msg.fields[5].datatype = sensor_msgs::PointField::UINT16;
+  msg.fields[5].count = 1;
+  msg.fields[6].name = "ring";
+  msg.fields[6].offset = 22;
+  msg.fields[6].datatype = sensor_msgs::PointField::UINT16;
+  msg.fields[6].count = 1;
+  msg.fields[7].name = "ambient";
+  msg.fields[7].offset = 24;
+  msg.fields[7].datatype = sensor_msgs::PointField::UINT16;
+  msg.fields[7].count = 1;
+  msg.fields[8].name = "range";
+  msg.fields[8].offset = 28;
+  msg.fields[8].datatype = sensor_msgs::PointField::UINT32;
+  msg.fields[8].count = 1;
   msg.data.resize(verticalRangeCount * rangeCount * POINT_STEP);
 
   int i, j;
@@ -323,19 +339,23 @@ void GazeboRosOusterLaser::OnScan(ConstLaserScanStampedPtr& _msg)
 
       // pAngle is rotated by yAngle:
       if ((MIN_RANGE < r) && (r < MAX_RANGE)) {
-        *((float*)(ptr + 0)) = r * cos(pAngle) * cos(yAngle);
-        *((float*)(ptr + 4)) = r * cos(pAngle) * sin(yAngle);
+        *((float*)(ptr + 0)) = r * cos(pAngle) * cos(yAngle);  // x
+        *((float*)(ptr + 4)) = r * cos(pAngle) * sin(yAngle);  // y
 #if GAZEBO_MAJOR_VERSION > 2
-        *((float*)(ptr + 8)) = r * sin(pAngle);
+        *((float*)(ptr + 8)) = r * sin(pAngle);  // z
 #else
-        *((float*)(ptr + 8)) = -r * sin(pAngle);
+        *((float*)(ptr + 8)) = -r * sin(pAngle);  // z
 #endif
-        *((float*)(ptr + 16)) = intensity;
+        *((float*)(ptr + 12)) = intensity;  // intensity
+        *((uint32_t*)(ptr + 16)) = (uint32_t)(i * 1000);  // t (timestamp offset in nanoseconds)
+        *((uint16_t*)(ptr + 20)) = (uint16_t)(intensity * 255);  // reflectivity
 #if GAZEBO_MAJOR_VERSION > 2
-        *((uint16_t*)(ptr + 20)) = j; // ring
+        *((uint16_t*)(ptr + 22)) = j;  // ring
 #else
-        *((uint16_t*)(ptr + 20)) = verticalRangeCount - 1 - j; // ring
+        *((uint16_t*)(ptr + 22)) = verticalRangeCount - 1 - j;  // ring
 #endif
+        *((uint16_t*)(ptr + 24)) = 0;  // ambient (not simulated)
+        *((uint32_t*)(ptr + 28)) = (uint32_t)(r * 1000);  // range in mm
         ptr += POINT_STEP;
       }
     }

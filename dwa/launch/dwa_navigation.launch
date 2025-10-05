@@ -5,6 +5,8 @@
   <arg name="enable_rviz" default="true"/>
   <arg name="rviz_config" default="$(find dwa)/rviz/dwa.rviz"/>
 
+  <param name="/use_sim_time" value="false"/>
+
   <!-- ===== 포인트 클라우드 처리 파이프라인 ===== -->
   <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen"/>
 
