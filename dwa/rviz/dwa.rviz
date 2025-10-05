@@ -7,7 +7,6 @@ Panels:
         - /Global Options1
         - /Status1
         - /RobotModel1
-        - /RobotModel1/Status1
         - /Path2
         - /PointCloud21
       Splitter Ratio: 0.5
@@ -47,10 +46,6 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
-        base_footprint:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
         base_link:
           Alpha: 1
           Show Axes: false
@@ -71,32 +66,33 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        imu_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        inertial_link:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        os1_imu:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        os1_lidar:
-          Alpha: 1
-          Show Axes: false
-          Show Trail: false
-        ouster:
+        gps_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        ouster_base_link:
+        inertial_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        ouster_baseplate:
+        os_imu:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        os_lidar:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        os_sensor:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+          Value: true
+        os_sensor_base_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
+        os_sensor_baseplate:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -319,7 +315,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: map
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
@@ -343,7 +339,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 33.723323822021484
+      Distance: 41.028953552246094
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -351,17 +347,17 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 1.2485932111740112
-        Y: -0.9144536852836609
-        Z: 0.5858345031738281
+        X: 1.206225037574768
+        Y: -0.46201130747795105
+        Z: 0.34971994161605835
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.6647968888282776
+      Pitch: 0.7397967576980591
       Target Frame: <Fixed Frame>
-      Yaw: 3.1135988235473633
+      Yaw: 3.068596124649048
     Saved: ~
 Window Geometry:
   Displays:

@@ -1,24 +1,21 @@
 <?xml version="1.0"?>
 <launch>
   <!-- ===================================================== -->
-  <!-- Robot Description Visualization (RViz) -->
-  <!-- URDF 시각화 및 TF tree 확인용 -->
+  <!-- Robot Description Visualization (RViz Only) -->
+  <!-- URDF 시각화 및 TF tree 확인용 (Gazebo 없음) -->
   <!-- ===================================================== -->
 
-  <!-- URDF 로드 -->
-  <include file="$(find robot_description)/launch/robot_description.launch"/>
-
-  <!-- Joint State Publisher with GUI -->
-  <node name="joint_state_publisher_gui"
-        pkg="joint_state_publisher_gui"
-        type="joint_state_publisher_gui"
-        output="screen"/>
+  <!-- Robot Description: URDF 로드 + TF 발행 -->
+  <include file="$(find robot_description)/launch/robot_description.launch">
+    <arg name="use_gui" value="true"/>
+  </include>
 
   <!-- RViz -->
   <node name="rviz"
         pkg="rviz"
         type="rviz"
         args="-d $(find robot_description)/rviz/robot.rviz"
+        required="true"
         output="screen"/>
 
 </launch>

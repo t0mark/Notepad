@@ -1,15 +1,33 @@
 <?xml version="1.0"?>
 <launch>
   <!-- ===================================================== -->
-  <!-- Robot Description - URDF & TF Publisher -->
-  <!-- base_link → os_sensor, wheel_links 등 모든 정적 TF 발행 -->
+  <!-- Robot Description Launch -->
+  <!-- URDF 로드 및 TF 발행만 담당 (Gazebo 스폰 제외) -->
   <!-- ===================================================== -->
 
   <!-- URDF 모델 로드 -->
   <param name="robot_description"
          command="$(find xacro)/xacro '$(find robot_description)/urdf/custom_description.urdf.xacro'"/>
 
+  <!-- Joint State Publisher: joint_states 발행 -->
+  <!-- Gazebo가 없을 때 GUI로 joint를 제어하거나 기본값 발행 -->
+  <arg name="use_gui" default="false"/>
+
+  <node if="$(arg use_gui)" name="joint_state_publisher_gui"
+        pkg="joint_state_publisher_gui"
+        type="joint_state_publisher_gui"
+        output="screen"/>
+
+  <node unless="$(arg use_gui)" name="joint_state_publisher"
+        pkg="joint_state_publisher"
+        type="joint_state_publisher"
+        output="screen">
+    <param name="use_gui" value="false"/>
+    <rosparam param="source_list">[/joint_states]</rosparam>
+  </node>
+
   <!-- Robot State Publisher: URDF 기반 TF 발행 -->
+  <!-- /joint_states 구독 → base_link, os_sensor, gps_link, wheel_links 등 모든 link의 TF 발행 -->
   <node name="robot_state_publisher"
         pkg="robot_state_publisher"
         type="robot_state_publisher"
@@ -17,4 +35,5 @@
     <param name="publish_frequency" value="50.0"/>
     <param name="use_tf_static" value="false"/>
   </node>
+
 </launch>

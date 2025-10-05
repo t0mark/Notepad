@@ -1,26 +1,5 @@
 # 개요
-gazebo환경에 husky와 velodyne 라이다 추가하고 dwa를 통한 장애물 회피 기동
-- faster-lio와 gps를 통해 utm 좌표에 localizaiton 수행
-
-##### 영상 설명
-- Bule : Gps
-- Red : faster-lio + gps
-- Gray : faster-lio
-
-ouster/imu를 활용하다 보니, 초기 heading이 맞지 않는 모습을 보입니다.
-
-<div align="center">
-  <div style="margin-bottom: 10px;">
-    <img src="docs/video/final_goal.gif" alt="drawing" width="100%"/>
-    <p style="text-align: center;">시연영상</p>
-  </div>
-</div>
-<div align="center">
-  <div style="margin-bottom: 10px;">
-    <img src="docs/images/rqt_graph_final.png" width="100%">
-    <p style="text-align: center;">rqt_graph</p>
-  </div>
-</div>
+KaKao Navi를 사용한 
 
 # 주요 적용 사항
 ## main branch 참조 [[Link](https://github.com/kyeonghyeon0314/gazebo_dwa)]
@@ -70,17 +49,9 @@ pip install utm
 cd ..
 catkin_make
 
-# 시뮬레이션 및 로봇 스폰
-roslaunch husky_dwa_navigation husky_gazebo_spawn.launch
+# 테스트
+roslaunch kakao_api debug.launch
 
-# dwa및 localization
-roslaunch husky_dwa_navigation husky_control_nav_localization.launch
-
-# utm 프레임 및 시각화
-cd ~/husky_ws/src/gazebo_dwa/husky_dwa_navigation/scripts
-python3 path_visualizer.py
-
-# waypoints 발행
-cd ~/husky_ws/src/gazebo_dwa/husky_dwa_navigation/scripts
-python3 publish_waypoints_sim.py
+# 실행
+roslaunch kakao_api kakao_api.launch
 ```

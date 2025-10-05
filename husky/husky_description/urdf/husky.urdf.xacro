@@ -192,7 +192,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
   </joint> -->
 
   <!-- Inertial link stores the robot's inertial information -->
-  <!-- <link name="inertial_link">
+  <link name="inertial_link">
     <inertial>
       <mass value="46.034" />
       <origin xyz="-0.00065 -0.085 0.062" />
@@ -204,7 +204,7 @@ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSI
     <origin xyz="0 0 0" rpy="0 0 0" />
     <parent link="base_link" />
     <child link="inertial_link" />
-  </joint> -->
+  </joint>
 
   <!-- Husky wheel macros -->
   <xacro:husky_wheel wheel_prefix="front_left">
