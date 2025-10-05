@@ -5508,6 +5508,7 @@
       <uri>model://fountain</uri>
     </include>
 
+    <!-- Commented out: invalid model reference
     <include>
       <name>gazebo_75</name>
       <pose>
@@ -5520,6 +5521,7 @@
       </pose>
       <uri>model://gazebo</uri>
     </include>
+    -->
 
     <include>
       <name>person_standing_76</name>

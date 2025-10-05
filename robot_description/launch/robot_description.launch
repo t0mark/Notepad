@@ -23,7 +23,7 @@
         type="joint_state_publisher"
         output="screen">
     <param name="use_gui" value="false"/>
-    <rosparam param="source_list">[/joint_states]</rosparam>
+    <!-- source_list 제거: URDF의 모든 non-fixed joint의 기본값(0) 발행 -->
   </node>
 
   <!-- Robot State Publisher: URDF 기반 TF 발행 -->
@@ -33,7 +33,7 @@
         type="robot_state_publisher"
         output="screen">
     <param name="publish_frequency" value="50.0"/>
-    <param name="use_tf_static" value="false"/>
+    <param name="use_tf_static" value="true"/>
   </node>
 
 </launch>
