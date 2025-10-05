@@ -1,7 +1,7 @@
 # Costmap 공통 파라미터 (Global & Local)
 
 # 로봇 footprint (Husky 크기)
-footprint: [[-0.5, -0.33], [-0.5, 0.33], [0.5, 0.33], [0.5, -0.33]]
+footprint: [[-0.495, -0.335], [-0.495, 0.335], [0.495, 0.335], [0.495, -0.335]]
 
 # Obstacle Layer 설정
 obstacle_layer:
@@ -17,12 +17,12 @@ obstacle_layer:
     clearing: true
     min_obstacle_height: -0.5
     max_obstacle_height: 2.0
-    obstacle_range: 10.0
-    raytrace_range: 12.0
+    obstacle_range: 50.0
+    raytrace_range: 55.0
     inf_is_valid: true
 
 # Inflation Layer 설정
 inflation_layer:
   enabled: true
-  inflation_radius: 0.6        # 로봇 주변 inflation 반경
-  cost_scaling_factor: 5.0     # Cost 감쇠 속도
+  inflation_radius: 0.1
+  cost_scaling_factor: 5.0

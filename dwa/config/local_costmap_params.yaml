@@ -4,16 +4,16 @@ local_costmap:
   robot_base_frame: base_link
 
   # 업데이트 주기
-  update_frequency: 5.0
-  publish_frequency: 2.0
+  update_frequency: 10.0
+  publish_frequency: 10.0
 
   # Rolling window (로봇 주변만 추적)
   static_map: false
   rolling_window: true
 
   # Costmap 크기
-  width: 6.0   # 로봇 주변 6m x 6m
-  height: 6.0
+  width: 45.0
+  height: 45.0
   resolution: 0.05
 
   # Transform tolerance

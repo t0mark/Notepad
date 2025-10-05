@@ -5,10 +5,23 @@
   <arg name="enable_rviz" default="true"/>
   <arg name="rviz_config" default="$(find dwa)/rviz/dwa.rviz"/>
 
+  <!-- ===== 포인트 클라우드 처리 파이프라인 ===== -->
+  <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen"/>
+
+  <!-- Ouster 데이터 다운샘플링을 위한 VoxelGrid 필터 -->
+  <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
+    <remap from="~input" to="/ouster/points"/>
+    <remap from="~output" to="/points_filtered"/>
+    <param name="leaf_size" value="0.10"/>
+    <param name="filter_field_name" value="z"/>
+    <param name="filter_limit_min" value="-0.8"/>
+    <param name="filter_limit_max" value="0.5"/>
+  </node>
+
   <!-- ===== PointCloud2 to LaserScan 변환 ===== -->
   <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
-    <!-- 입력 PointCloud2 토픽 -->
-    <remap from="cloud_in" to="/ouster/points"/>
+    <!-- 입력 PointCloud2 토픽 (필터링된 데이터 사용) -->
+    <remap from="cloud_in" to="/points_filtered"/>
     <remap from="scan" to="/scan"/>
 
     <!-- 변환 파라미터 -->

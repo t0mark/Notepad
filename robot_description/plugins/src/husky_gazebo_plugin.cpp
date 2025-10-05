@@ -73,11 +73,11 @@ namespace gazebo
       if (_sdf->HasElement("publishMapOdomTF"))
         this->publish_map_odom_tf_ = _sdf->Get<bool>("publishMapOdomTF");
 
-      // 조인트 가져오기
-      std::string left_front_joint_name = "front_left_wheel_joint";
-      std::string left_rear_joint_name = "rear_left_wheel_joint";
-      std::string right_front_joint_name = "front_right_wheel_joint";
-      std::string right_rear_joint_name = "rear_right_wheel_joint";
+      // 조인트 가져오기 (실제 URDF의 joint 이름)
+      std::string left_front_joint_name = "front_left_wheel";
+      std::string left_rear_joint_name = "rear_left_wheel";
+      std::string right_front_joint_name = "front_right_wheel";
+      std::string right_rear_joint_name = "rear_right_wheel";
 
       if (_sdf->HasElement("leftFrontJoint"))
         left_front_joint_name = _sdf->Get<std::string>("leftFrontJoint");
@@ -110,6 +110,13 @@ namespace gazebo
             ROS_ERROR("  - %s", j->GetName().c_str());
 
           return;
+        }
+        else
+        {
+          ROS_INFO("Successfully found joint %d: %s", i, this->joints_[i]->GetName().c_str());
+
+          // 각 조인트의 최대 힘(토크) 설정 (Gazebo가 속도 제어를 할 수 있도록)
+          this->joints_[i]->SetParam("fmax", 0, 200.0);
         }
       }
 
@@ -191,16 +198,23 @@ namespace gazebo
       double left_wheel_vel = (linear_vel - angular_vel * this->wheel_separation_ / 2.0) / wheel_radius;
       double right_wheel_vel = (linear_vel + angular_vel * this->wheel_separation_ / 2.0) / wheel_radius;
 
-      // 바퀴 속도 직접 설정 (PID 없음!)
-      this->joints_[0]->SetVelocity(0, left_wheel_vel);   // front left
-      this->joints_[1]->SetVelocity(0, left_wheel_vel);   // rear left
-      this->joints_[2]->SetVelocity(0, right_wheel_vel);  // front right
-      this->joints_[3]->SetVelocity(0, right_wheel_vel);  // rear right
+      ROS_INFO_THROTTLE(1.0, "cmd_vel: linear=%.2f, angular=%.2f -> left_wheel=%.2f, right_wheel=%.2f",
+                        linear_vel, angular_vel, left_wheel_vel, right_wheel_vel);
+
+      // Gazebo 표준 방식: SetParam("vel")로 목표 속도 설정
+      // fmax가 설정되어 있으면 Gazebo가 자동으로 토크 제어를 함
+      this->joints_[0]->SetParam("vel", 0, left_wheel_vel);   // front left
+      this->joints_[1]->SetParam("vel", 0, left_wheel_vel);   // rear left
+      this->joints_[2]->SetParam("vel", 0, right_wheel_vel);  // front right
+      this->joints_[3]->SetParam("vel", 0, right_wheel_vel);  // rear right
 
       // Odometry 계산 (encoder 피드백)
+      // GetVelocity()는 rad/s 반환
       double left_actual_vel = (this->joints_[0]->GetVelocity(0) + this->joints_[1]->GetVelocity(0)) / 2.0;
       double right_actual_vel = (this->joints_[2]->GetVelocity(0) + this->joints_[3]->GetVelocity(0)) / 2.0;
 
+      // v = (v_left + v_right) * r / 2
+      // ω = (v_right - v_left) * r / L
       double actual_linear_vel = (left_actual_vel + right_actual_vel) * wheel_radius / 2.0;
       double actual_angular_vel = (right_actual_vel - left_actual_vel) * wheel_radius / this->wheel_separation_;
 

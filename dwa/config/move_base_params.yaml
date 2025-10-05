@@ -3,21 +3,17 @@ shutdown_costmaps: false
 
 # 플래너 주기
 controller_frequency: 10.0  # 로컬 플래너 실행 주기 (Hz)
-planner_frequency: 1.0      # 글로벌 플래너 실행 주기 (Hz)
+planner_frequency: 5.0      # 글로벌 플래너 실행 주기 (Hz)
 
 # 허용 오차
 planner_patience: 5.0       # 글로벌 플래너 타임아웃 (초)
-controller_patience: 3.0    # 로컬 플래너 타임아웃 (초)
+controller_patience: 15.0   # 로컬 플래너 타임아웃 (초)
 
-# 목표 도달 허용 오차
-xy_goal_tolerance: 0.2      # 위치 오차 (m)
-yaw_goal_tolerance: 0.1     # 방향 오차 (rad)
-latch_xy_goal_tolerance: false
+# Recovery 동작 (큰 회전 반경 허용)
+recovery_behavior_enabled: false        # 복구 동작 비활성화 - 제자리 회전 방지
+clearing_rotation_allowed: false        # 코스트맵 클리어링 시 회전 비허용
+conservative_clear_costmap: false       # 비보수적 코스트맵 클리어링
 
-# Recovery 동작
-recovery_behavior_enabled: true
-clearing_rotation_allowed: true
-
-# Oscillation 방지
-oscillation_timeout: 10.0
-oscillation_distance: 0.2
+# Oscillation 방지 (큰 회전 반경 허용)
+oscillation_timeout: 30.0    # 진동 감지 시간 (초)
+oscillation_distance: 2.0    # 진동 감지 거리 (m)
