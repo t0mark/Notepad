@@ -1,0 +1,46 @@
+DWAPlanner:
+  # 로봇 구성
+  # Husky 스펙 기반 설정
+  acc_lim_x: 2.5          # 선속도 가속도 제한 (m/s^2)
+  acc_lim_y: 0.0          # Differential drive는 y 방향 이동 없음
+  acc_lim_theta: 3.2      # 각속도 가속도 제한 (rad/s^2)
+
+  max_vel_x: 1.0          # 최대 선속도 (m/s)
+  min_vel_x: -0.5         # 최소 선속도 (후진)
+
+  max_vel_y: 0.0          # Differential drive
+  min_vel_y: 0.0
+
+  max_vel_trans: 1.0      # 최대 병진 속도
+  min_vel_trans: 0.1      # 최소 병진 속도 (정지 방지)
+
+  max_vel_theta: 1.0      # 최대 회전 속도 (rad/s)
+  min_vel_theta: 0.4      # 최소 회전 속도
+
+  # 목표 허용 오차
+  xy_goal_tolerance: 0.2  # 위치 허용 오차 (m)
+  yaw_goal_tolerance: 0.1 # 방향 허용 오차 (rad)
+  latch_xy_goal_tolerance: false
+
+  # 경로 추종
+  path_distance_bias: 32.0      # 글로벌 경로 따라가기 가중치
+  goal_distance_bias: 24.0      # 목표 지점 도달 가중치
+  occdist_scale: 0.01           # 장애물 회피 가중치
+
+  # Trajectory 샘플링
+  vx_samples: 20          # 선속도 샘플 개수
+  vy_samples: 0           # Differential drive
+  vtheta_samples: 40      # 회전속도 샘플 개수
+
+  # Forward simulation
+  sim_time: 1.7           # 미래 궤적 시뮬레이션 시간 (초)
+  sim_granularity: 0.025  # 시뮬레이션 간격 (초)
+
+  # 기타
+  forward_point_distance: 0.325  # 로봇 중심에서 제어 포인트까지 거리
+  stop_time_buffer: 0.2          # 정지 시 시간 버퍼
+  oscillation_reset_dist: 0.05   # Oscillation 리셋 거리
+
+  # 디버깅
+  publish_traj_pc: true
+  publish_cost_grid_pc: true

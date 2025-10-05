@@ -1,21 +1,27 @@
 global_costmap:
-  global_frame: odom
+  # 좌표 프레임
+  global_frame: map
   robot_base_frame: base_link
-  update_frequency: 2
-  publish_frequency: 2
+
+  # 업데이트 주기
+  update_frequency: 2.0
+  publish_frequency: 1.0
+
+  # 정적 맵 사용 안함 (rolling window 사용)
   static_map: false
   rolling_window: true
-  width: 30.0
-  height: 30.0
-  resolution: 0.1
+
+  # Costmap 크기 (로봇 주변 추적 - 충분히 크게)
+  width: 100.0
+  height: 100.0
+
+  # Costmap 해상도
+  resolution: 0.05
+
+  # Transform tolerance
   transform_tolerance: 0.5
-  reset_distance: 0.5
-  track_unknown_space: false
 
-
+  # 플러그인
   plugins:
-    - {name: obstacles_laser, type: "costmap_2d::ObstacleLayer"}
-    - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
-  # plugins:
-  #   - {name: voxel_layer, type: "costmap_2d::VoxelLayer"}
-  #   - {name: inflation_layer, type: "costmap_2d::InflationLayer"}
+    - {name: obstacle_layer,      type: "costmap_2d::ObstacleLayer"}
+    - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}

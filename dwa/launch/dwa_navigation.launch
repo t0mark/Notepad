@@ -1,66 +1,50 @@
 <?xml version="1.0"?>
 <launch>
-  <!-- DWA Navigation: 센서 처리 + Move Base -->
 
-  <param name="/use_sim_time" value="true"/>
-
-  <!-- 외부에서 프레임 설정 받기 (기본값: odom for DWA) -->
-  <arg name="global_frame" default="odom"/>
+  <!-- Arguments -->
   <arg name="enable_rviz" default="true"/>
   <arg name="rviz_config" default="$(find dwa)/rviz/dwa.rviz"/>
 
-  <!-- ===== 포인트 클라우드 처리 파이프라인 ===== -->
-  <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen"/>
-
-  <!-- Ouster 데이터 다운샘플링을 위한 VoxelGrid 필터 (실제 로봇용 파라미터) -->
-  <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
-    <remap from="~input" to="/ouster/points"/>
-    <remap from="~output" to="/points_filtered"/>
-    <param name="leaf_size" value="0.10"/>
-    <param name="filter_field_name" value="z"/>
-    <param name="filter_limit_min" value="-0.5"/>
-    <param name="filter_limit_max" value="2"/>
-  </node>
-
-  <!-- PointCloud2를 LaserScan으로 변환 (실제 로봇용 파라미터) -->
+  <!-- ===== PointCloud2 to LaserScan 변환 ===== -->
   <node pkg="pointcloud_to_laserscan" type="pointcloud_to_laserscan_node" name="pointcloud_to_laserscan">
-    <remap from="cloud_in" to="/points_filtered"/>
+    <!-- 입력 PointCloud2 토픽 -->
+    <remap from="cloud_in" to="/ouster/points"/>
     <remap from="scan" to="/scan"/>
+
+    <!-- 변환 파라미터 -->
+    <param name="target_frame" value="os_lidar"/>
+    <param name="transform_tolerance" value="0.01"/>
+    <param name="min_height" value="-0.5"/>
+    <param name="max_height" value="2.0"/>
+
     <param name="angle_min" value="-3.14159"/>
     <param name="angle_max" value="3.14159"/>
-    <param name="min_height" value="-2"/>
-    <param name="max_height" value="3"/>
-    <param name="angle_increment" value="0.01"/>
+    <param name="angle_increment" value="0.0087"/>
+    <param name="scan_time" value="0.1"/>
+    <param name="range_min" value="0.3"/>
+    <param name="range_max" value="75.0"/>
+
+    <param name="use_inf" value="true"/>
+    <param name="inf_epsilon" value="1.0"/>
   </node>
 
-  <!-- ===== DWA Navigation (Move Base) ===== -->
+  <!-- ===== move_base 네비게이션 스택 ===== -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
-    <!-- cmd_vel 토픽 리매핑 (ros_control이 husky_velocity_controller/cmd_vel 구독) -->
-    <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
-
-    <!-- Costmap 설정 -->
+    <!-- 파라미터 로드 -->
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
-    <rosparam file="$(find dwa)/config/local_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find dwa)/config/move_base_params.yaml" command="load"/>
     <rosparam file="$(find dwa)/config/global_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find dwa)/config/robot_dynamics_params.yaml" command="load"/>
-    <rosparam file="$(find dwa)/config/path_planning_params.yaml" command="load"/>
+    <rosparam file="$(find dwa)/config/local_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find dwa)/config/dwa_local_planner_params.yaml" command="load"/>
+    <rosparam file="$(find dwa)/config/global_planner_params.yaml" command="load"/>
 
-    <!-- 프레임 override (필요시 외부에서 global_frame 인자로 변경 가능) -->
-    <param name="global_costmap/global_frame" value="$(arg global_frame)"/>
-    <param name="local_costmap/global_frame" value="$(arg global_frame)"/>
-    <param name="DWAPlannerROS/global_frame_id" value="$(arg global_frame)"/>
-  </node>
+    <!-- 플래너 선택 -->
+    <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
 
-  <!-- ===== Navigation Manager ===== -->
-  <node pkg="dwa" type="navigation_manager.py" name="navigation_manager" output="screen">
-    <param name="global_costmap_topic" value="/move_base/global_costmap/costmap"/>
-    <param name="robot_base_frame" value="base_link"/>
-    <param name="switch_service" value="/move_base/set_parameters"/>
-    <param name="planner_type_parameter" value="/move_base/base_global_planner"/>
-    <param name="default_planner" value="global_planner/GlobalPlanner"/>
-    <param name="check_frequency" value="5.0"/>
-    <param name="border_tolerance" value="1.0"/>
+    <!-- cmd_vel 토픽 리매핑 (Husky 컨트롤러로 전달) -->
+    <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
   </node>
 
   <!-- ===== RViz 시각화 ===== -->

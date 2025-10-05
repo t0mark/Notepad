@@ -1,0 +1,18 @@
+# Global Planner (NavfnROS - Dijkstra 기반)
+GlobalPlanner:
+  allow_unknown: true              # 미지 영역 통과 허용
+  default_tolerance: 0.0           # 목표 지점 근처 대안 경로 허용 범위
+  visualize_potential: false       # Potential field 시각화
+  use_dijkstra: true               # Dijkstra 알고리즘 사용 (false면 A*)
+  use_quadratic: true              # 부드러운 경로 생성
+  use_grid_path: false             # Grid 기반 경로 (false면 gradient descent)
+  old_navfn_behavior: false        # 구버전 호환성
+
+# 또는 NavfnROS 사용 시
+NavfnROS:
+  allow_unknown: true
+  default_tolerance: 0.0
+  visualize_potential: false
+  use_dijkstra: true
+  use_quadratic: true
+  use_grid_path: false

@@ -38,8 +38,8 @@
       <odometryFrame>odom</odometryFrame>
       <robotBaseFrame>base_link</robotBaseFrame>
 
-      <!-- Publish odom TF: false (robot_localization이 발행) -->
-      <publishOdomTF>false</publishOdomTF>
+      <!-- Publish odom TF: true (Gazebo 플러그인이 odom->base_link 발행) -->
+      <publishOdomTF>true</publishOdomTF>
     </plugin>
   </gazebo>
 </robot>
