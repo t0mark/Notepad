@@ -38,7 +38,8 @@
     <material>Gazebo/Red</material>
   </gazebo>
 
-  <!-- Gazebo GPS Plugin -->
+  <!-- Gazebo GPS Plugin - DISABLED (debug_gps_publisher 사용) -->
+  <!--
   <gazebo>
     <plugin name="gazebo_ros_gps" filename="libhector_gazebo_ros_gps.so">
       <updateRate>10.0</updateRate>
@@ -56,5 +57,6 @@
       <velocityGaussianNoise>0.05 0.05 0.05</velocityGaussianNoise>
     </plugin>
   </gazebo>
+  -->
 
 </robot>

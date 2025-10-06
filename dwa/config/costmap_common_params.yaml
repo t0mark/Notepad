@@ -1,28 +1,25 @@
-# Costmap 공통 파라미터 (Global & Local)
-
-# 로봇 footprint (Husky 크기)
+# Husky A200 매뉴얼 기준 로봇 크기 설정
 footprint: [[-0.495, -0.335], [-0.495, 0.335], [0.495, 0.335], [0.495, -0.335]]
+footprint_padding: 0.01
 
-# Obstacle Layer 설정
-obstacle_layer:
-  enabled: true
 
-  # LaserScan 관찰 소스
-  observation_sources: scan
+robot_base_frame: base_link
+update_frequency: 4.0
+publish_frequency: 3.0
+transform_tolerance: 0.5
 
-  scan:
-    data_type: LaserScan
-    topic: /scan
-    marking: true
-    clearing: true
-    min_obstacle_height: -0.5
-    max_obstacle_height: 2.0
-    obstacle_range: 50.0
-    raytrace_range: 55.0
-    inf_is_valid: true
+resolution: 0.05
 
-# Inflation Layer 설정
+obstacles_laser:
+    observation_sources: laser
+    laser: {data_type: LaserScan, clearing: true, marking: true, topic: /scan, inf_is_valid: true,
+            obstacle_range: 50,     # 전역 설정과 일치
+            raytrace_range: 55.0,    # 전역 설정과 일치
+            observation_persistence: 0}
+    
+# 인플레이션 레이어 설정  [장애물 주변에 추가적인 안전 영역(비용)을 부여하는 레이어입니다.]
 inflation_layer:
-  enabled: true
-  inflation_radius: 0.1
-  cost_scaling_factor: 5.0
+  enabled: true              # 인플레이션 레이어 활성화
+  cost_scaling_factor: 5.0   # 비용 감소 비율 - 낮춘으로 더 넓은 영역에 높은 비용 유지
+  inflation_radius: 4.0    # 장애물 주변 인플레이션 반경 (m) - 현실적 범위로 설정
+

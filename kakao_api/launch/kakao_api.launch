@@ -2,13 +2,13 @@
 <launch>
   <!-- Kakao API Package Launch File -->
 
-  <!-- 시뮬레이션 시간 설정 -->
-  <param name="use_sim_time" value="true"/>
-
   <!-- 웹 인터페이스 서버 (HTTP + WebSocket) -->
   <node pkg="kakao_api" type="web_server.py" name="web_server" output="screen"/>
 
   <!-- 카카오 경로 계획 노드 (GPS → map 프레임 변환) -->
   <node pkg="kakao_api" type="kakao_route_planner.py" name="kakao_route_planner" output="screen"/>
+
+  <!-- 웨이포인트를 move_base goal로 순차 전송 -->
+  <node pkg="kakao_api" type="waypoint_to_globalGoal.py" name="waypoint_to_globalGoal" output="screen"/>
 
 </launch>

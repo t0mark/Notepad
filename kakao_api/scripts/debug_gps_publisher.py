@@ -22,10 +22,13 @@ def publish_gps():
     lon = 127.134468
     alt = 100.0
 
+    rospy.loginfo("=" * 60)
     rospy.loginfo("🛰️  Debug GPS Publisher 시작")
+    rospy.loginfo(f"   토픽: /ublox/fix")
     rospy.loginfo(f"   위치: ({lat}, {lon})")
     rospy.loginfo(f"   고도: {alt}m")
     rospy.loginfo("   1Hz로 GPS 데이터 발행 중...")
+    rospy.loginfo("=" * 60)
 
     while not rospy.is_shutdown():
         msg = NavSatFix()
@@ -45,6 +48,10 @@ def publish_gps():
         msg.position_covariance_type = 1
 
         gps_pub.publish(msg)
+
+        # 5초마다 로그 출력
+        if int(rospy.Time.now().to_sec()) % 5 == 0:
+            rospy.loginfo(f"📡 GPS 발행: ({lat}, {lon})")
 
         rate.sleep()
 

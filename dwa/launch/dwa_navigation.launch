@@ -49,9 +49,9 @@
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
     <rosparam file="$(find dwa)/config/move_base_params.yaml" command="load"/>
-    <rosparam file="$(find dwa)/config/global_costmap_params.yaml" command="load"/>
     <rosparam file="$(find dwa)/config/local_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find dwa)/config/dwa_local_planner_params.yaml" command="load"/>
+    <rosparam file="$(find dwa)/config/global_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find dwa)/config/local_planner_params.yaml" command="load"/>
     <rosparam file="$(find dwa)/config/global_planner_params.yaml" command="load"/>
 
     <!-- 플래너 선택 -->

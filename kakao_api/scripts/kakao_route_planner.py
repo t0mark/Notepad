@@ -21,6 +21,7 @@ from std_msgs.msg import String
 from geometry_msgs.msg import PoseArray, Pose
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import NavSatFix
+from visualization_msgs.msg import Marker, MarkerArray
 
 
 class KakaoRoutePlanner:
@@ -37,8 +38,9 @@ class KakaoRoutePlanner:
         self.current_gps = None
         self.gps_available = False
 
-        # Publishers
-        self.waypoints_pub = rospy.Publisher('/global_waypoints', PoseArray, queue_size=1)
+        # Publishers (latch=True로 마지막 메시지 유지)
+        self.waypoints_pub = rospy.Publisher('/global_waypoints', PoseArray, queue_size=1, latch=True)
+        self.waypoint_markers_pub = rospy.Publisher('/waypoint_markers', MarkerArray, queue_size=1, latch=True)
         self.status_pub = rospy.Publisher('/kakao_route/status', String, queue_size=1, latch=True)
 
         # Subscribers
@@ -151,7 +153,10 @@ class KakaoRoutePlanner:
                 pose.position.x = map_x
                 pose.position.y = map_y
                 pose.position.z = 0.0
-                pose.orientation.w = 1.0  # 방향은 기본값
+                pose.orientation.x = 0.0
+                pose.orientation.y = 0.0
+                pose.orientation.z = 0.0
+                pose.orientation.w = 1.0
 
                 pose_array.poses.append(pose)
                 converted_count += 1
@@ -165,6 +170,51 @@ class KakaoRoutePlanner:
             # PoseArray 발행
             if converted_count > 0:
                 self.waypoints_pub.publish(pose_array)
+
+                # MarkerArray 발행 (큐브 + 연결선)
+                marker_array = MarkerArray()
+
+                # 1. 큐브 마커 (엄청 크게)
+                for i, pose in enumerate(pose_array.poses):
+                    marker = Marker()
+                    marker.header.stamp = rospy.Time.now()
+                    marker.header.frame_id = "map"
+                    marker.ns = "waypoints"
+                    marker.id = i
+                    marker.type = Marker.CUBE
+                    marker.action = Marker.ADD
+                    marker.pose = pose
+                    marker.scale.x = 2.0
+                    marker.scale.y = 2.0
+                    marker.scale.z = 3.0
+                    marker.color.r = 1.0
+                    marker.color.g = 0.0
+                    marker.color.b = 1.0
+                    marker.color.a = 0.8
+                    marker.lifetime = rospy.Duration(0)
+                    marker_array.markers.append(marker)
+
+                # 2. 연결선 마커 (엄청 두껍게)
+                if len(pose_array.poses) > 1:
+                    line_marker = Marker()
+                    line_marker.header.stamp = rospy.Time.now()
+                    line_marker.header.frame_id = "map"
+                    line_marker.ns = "waypoint_path"
+                    line_marker.id = 1000
+                    line_marker.type = Marker.LINE_STRIP
+                    line_marker.action = Marker.ADD
+                    line_marker.scale.x = 0.5
+                    line_marker.color.r = 1.0
+                    line_marker.color.g = 1.0
+                    line_marker.color.b = 0.0
+                    line_marker.color.a = 1.0
+                    line_marker.lifetime = rospy.Duration(0)
+                    for pose in pose_array.poses:
+                        line_marker.points.append(pose.position)
+                    marker_array.markers.append(line_marker)
+
+                self.waypoint_markers_pub.publish(marker_array)
+
                 rospy.loginfo(f"✅ map 프레임 웨이포인트 발행: {converted_count}개")
             else:
                 rospy.logwarn("❌ 변환된 웨이포인트 없음")

@@ -1,18 +1,30 @@
-# Global Planner (NavfnROS - Dijkstra 기반)
 GlobalPlanner:
-  allow_unknown: true              # 미지 영역 통과 허용
-  default_tolerance: 0.0           # 목표 지점 근처 대안 경로 허용 범위
-  visualize_potential: false       # Potential field 시각화
-  use_dijkstra: true               # Dijkstra 알고리즘 사용 (false면 A*)
-  use_quadratic: true              # 부드러운 경로 생성
-  use_grid_path: false             # Grid 기반 경로 (false면 gradient descent)
-  old_navfn_behavior: false        # 구버전 호환성
+  # ==========================================================================
+  # 경로 계획 알고리즘 설정
+  # ==========================================================================
+  allow_unknown: true           # 미지의 영역 통과 허용 - 맵에 없는 구역도 지나갈 수 있음
+  use_dijkstra: true            # 다익스트라 알고리즘 사용 - 최단 경로 보장
+  use_quadratic: true           # 2차 근사 사용 - 더 부드러운 경로 생성
+  use_grid_path: false          # 그리드 경로 사용 안함 - 대각선 이동 허용
+  old_navfn_behavior: false     # 구형 navfn 동작 사용 안함 - 개선된 알고리즘 사용
 
-# 또는 NavfnROS 사용 시
-NavfnROS:
-  allow_unknown: true
-  default_tolerance: 0.0
-  visualize_potential: false
-  use_dijkstra: true
-  use_quadratic: true
-  use_grid_path: false
+  # ==========================================================================
+  # 플래너 윈도우 설정 (경로 계획 영역 제한)
+  # ==========================================================================
+  planner_window_x: 0.0         # 플래너 윈도우 X축 크기 (0=전체 맵 사용)
+  planner_window_y: 0.0         # 플래너 윈도우 Y축 크기 (0=전체 맵 사용)
+  default_tolerance: 0.0        # 기본 허용 오차 (더 정확한 경로 계획)
+
+  # ==========================================================================
+  # 발행 및 디버깅 설정
+  # ==========================================================================
+  publish_scale: 100            # 발행 스케일 (경로 세밀도 향상)
+  planner_costmap_publish_frequency: 0.0  # 비용맵 발행 주기
+  publish_potential: false      # 포텐셜 필드 발행 비활성화 (성능 향상)
+
+  # ==========================================================================
+  # 비용 함수 설정 
+  # ==========================================================================
+  cost_factor: 10.0              # 기본값: 3 장애물 비용 가중치 - 적절한 장애물 회피
+  neutral_cost: 20              # 기본값: 50 자유 공간 기본 비용
+  lethal_cost: 253              # 기본값: 253 치명적 장애물 비용
