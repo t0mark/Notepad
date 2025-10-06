@@ -1,7 +1,7 @@
 #!/bin/bash
 # ===================================================
 # Integrated Navigation Debug Launch Script
-# Gazebo + Faster-LIO + DWA Navigation + Kakao API
+# Gazebo + Faster-LIO + INS + DWA Navigation + Kakao API
 # ===================================================
 
 echo "Starting Integrated Navigation System..."
@@ -29,25 +29,31 @@ GAZEBO_PID=$!
 sleep 10
 
 # 3. Faster-LIO Mapping
-echo "[3/5] Launching Faster-LIO..."
+echo "[3/6] Launching Faster-LIO..."
 roslaunch faster_lio mapping_ouster32.launch rviz:=false &
 FASTLIO_PID=$!
 sleep 5
 
-# 4. DWA Navigation
-echo "[4/5] Launching DWA Navigation..."
+# 4. INS Fusion (GPS + IMU)
+echo "[4/6] Launching INS Fusion..."
+roslaunch ins ins_fusion.launch &
+INS_PID=$!
+sleep 3
+
+# 5. DWA Navigation
+echo "[5/6] Launching DWA Navigation..."
 roslaunch dwa dwa_navigation.launch enable_rviz:=false &
 DWA_PID=$!
 sleep 5
 
-# 5. RViz 시각화
-echo "[5/5] Launching RViz..."
+# 6. RViz 시각화
+echo "[6/6] Launching RViz..."
 rosrun rviz rviz -d $(rospack find integrated_navigation)/rviz/integrated_navigation.rviz &
 RVIZ_PID=$!
 
 echo "All systems launched!"
 
 # Cleanup on exit
-trap "echo 'Shutting down...'; kill $KAKAO_PID $GAZEBO_PID $FASTLIO_PID $DWA_PID $RVIZ_PID 2>/dev/null; exit" SIGINT SIGTERM
+trap "echo 'Shutting down...'; kill $KAKAO_PID $GAZEBO_PID $FASTLIO_PID $INS_PID $DWA_PID $RVIZ_PID 2>/dev/null; exit" SIGINT SIGTERM
 
 wait

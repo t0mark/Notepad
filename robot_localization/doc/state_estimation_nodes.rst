@@ -43,7 +43,7 @@ Specific parameters:
 * ``~map_frame``
 * ``~odom_frame``
 * ``~base_link_frame``
-* ``~base_link_output_frame``
+* ``~base_link_frame_output``
 * ``~world_frame``
 
 These parameters define the operating "mode" for ``robot_localization``. `REP-105 <http://www.ros.org/reps/rep-0105.html>`_ specifies three principal coordinate frames: *map*, *odom*, and *base_link*. *base_link* is the coordinate frame that is affixed to the robot. The robot's position in the *odom* frame will drift over time, but is accurate in the short term and should be continuous. The *map* frame, like the *odom* frame, is a world-fixed coordinate frame, and while it contains the most globally accurate position estimate for your robot, it is subject to discrete jumps, e.g., due to the fusion of GPS data. Here is how to use these parameters:
@@ -51,7 +51,7 @@ These parameters define the operating "mode" for ``robot_localization``. `REP-10
 1. Set the ``map_frame``, ``odom_frame``, and ``base_link_frame`` parameters to the appropriate frame names for your system.
 
  .. note:: If your system does not have a ``map_frame``, just remove it, and make sure ``world_frame`` is set to the value of ``odom_frame``.
- .. note:: If you are running multiple EKF instances and would like to "override" the output transform and message to have this frame for its ``child_frame_id``, you may set this.  The ``base_link_output_frame`` is optional and will default to the ``base_link_frame``. This helps to enable disconnected TF trees when multiple EKF instances are being run. When the final state is computed, we "override" the output transform and message to have this frame for its ``child_frame_id``.
+ .. note:: If you are running multiple EKF instances and would like to "override" the output transform and message to have this frame for its ``child_frame_id``, you may set this.  The ``base_link_frame_output`` is optional and will default to the ``base_link_frame``. This helps to enable disconnected TF trees when multiple EKF instances are being run. When the final state is computed, we "override" the output transform and message to have this frame for its ``child_frame_id``.
 
 2. If you are only fusing continuous position data such as wheel encoder odometry, visual odometry, or IMU data, set ``world_frame`` to your ``odom_frame`` value. This is the default behavior for the state estimation nodes in ``robot_localization``, and the most common use for it.
 3. If you are fusing global absolute position data that is subject to discrete jumps (e.g., GPS or position updates from landmark observations) then:
@@ -59,7 +59,7 @@ These parameters define the operating "mode" for ``robot_localization``. `REP-10
  i. Set your ``world_frame`` to your ``map_frame`` value
  ii. **Make sure** something else is generating the *odom->base_link* transform. This can even be another instance of a ``robot_localization`` state estimation node. However, that instance should *not* fuse the global data.
 
-The default values for ``map_frame``, ``odom_frame``, and ``base_link_frame`` are *map*, *odom,* and *base_link,* respectively. The ``base_link_output_frame`` parameter defaults to the value of ``base_link_frame``. The ``world_frame`` parameter defaults to the value of ``odom_frame``.
+The default values for ``map_frame``, ``odom_frame``, and ``base_link_frame`` are *map*, *odom,* and *base_link,* respectively. The ``base_link_frame_output`` parameter defaults to the value of ``base_link_frame``. The ``world_frame`` parameter defaults to the value of ``odom_frame``.
 
 ~transform_time_offset
 ^^^^^^^^^^^^^^^^^^^^^^
@@ -166,14 +166,6 @@ Starts the filter with the specified state. The state is given as a 15-D vector 
                                   0.0,  0.0,  0.0,
                                   0.0,  0.0,  0.0]</rosparam>
 
-~permit_corrected_publication
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-When the state estimation nodes publish the state at time `t`, but then receive a measurement with a timestamp < `t`, they re-publish the corrected state, with the same time stamp as the previous publication. Setting this parameter to *false* disables that behavior. Defaults to *false*.
-
-~print_diagnostics
-^^^^^^^^^^^^^^^^^^
-If true, the state estimation node will publish diagnostic messages to the ``/diagnostics`` topic. This is useful for debugging your configuration and sensor data.
-
 ~publish_tf
 ^^^^^^^^^^^
 If *true*, the state estimation node will publish the transform from the frame specified by the ``world_frame`` parameter to the frame specified by the ``base_link_frame`` parameter. Defaults to *true*.
@@ -181,6 +173,14 @@ If *true*, the state estimation node will publish the transform from the frame s
 ~publish_acceleration
 ^^^^^^^^^^^^^^^^^^^^^
 If *true*, the state estimation node will publish the linear acceleration state. Defaults to *false*.
+
+~permit_corrected_publication
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+When the state estimation nodes publish the state at time `t`, but then receive a measurement with a timestamp < `t`, they re-publish the corrected state, with the same time stamp as the previous publication. Setting this parameter to *false* disables that behavior. Defaults to *false*.
+
+~print_diagnostics
+^^^^^^^^^^^^^^^^^^
+If true, the state estimation node will publish diagnostic messages to the ``/diagnostics`` topic. This is useful for debugging your configuration and sensor data.
 
 Advanced Parameters
 -------------------
@@ -245,7 +245,7 @@ If ``smooth_lagged_data`` is set to *true*, this parameter specifies the number 
 ~[sensor]_nodelay
 ^^^^^^^^^^^^^^^^^
 
-ROS 1 specific parameters:
+Specific parameters:
 
 * ``~odomN_nodelay``
 * ``~twistN_nodelay``
@@ -280,8 +280,6 @@ If ``debug`` is *true*, the file to which debug output is written.
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 The process noise covariance, commonly denoted *Q*, is used to model uncertainty in the prediction stage of the filtering algorithms. It can be difficult to tune, and has been exposed as a parameter for easier customization. This parameter can be left alone, but you will achieve superior results by tuning it. In general, the larger the value for *Q* relative to the variance for a given variable in an input message, the faster the filter will converge to the value in the measurement.
 
-Specifying the full covariance matrix is supported, but can be cumbersome. For that reason, this parameter can also be used to simply specify the diagonal values. In that event, all off-diagonal values will be set to 0.
-
 ~dynamic_process_noise_covariance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 If *true*, will dynamically scale the ``process_noise_covariance`` based on the robot's velocity. This is useful, e.g., when you want your robot's estimate error covariance to stop growing when the robot is stationary. Defaults to *false*.
@@ -289,8 +287,6 @@ If *true*, will dynamically scale the ``process_noise_covariance`` based on the 
 ~initial_estimate_covariance
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 The estimate covariance, commonly denoted *P*, defines the error in the current state estimate. The parameter allows users to set the initial value for the matrix, which will affect how quickly the filter converges. For example, if users set the value at position :math:`[0, 0]` to a very small value, e.g., `1e-12`, and then attempt to fuse measurements of X position with a high variance value for :math:`X`, then the filter will be very slow to "trust" those measurements, and the time required for convergence will increase. Again, users should take care with this parameter. When only fusing velocity data (e.g., no absolute pose information), users will likely *not* want to set the initial covariance values for the absolute pose variables to large numbers. This is because those errors are going to grow without bound (owing to the lack of absolute pose measurements to reduce the error), and starting them with large values will not benefit the state estimate.
-
-Specifying the full covariance matrix is supported, but can be cumbersome. For that reason, this parameter can also be used to simply specify the diagonal values. In that event, all off-diagonal values will be set to 0.
 
 ~reset_on_time_jump
 ^^^^^^^^^^^^^^^^^^^

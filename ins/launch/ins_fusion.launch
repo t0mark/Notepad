@@ -1,0 +1,26 @@
+<launch>
+  <!-- GPS + IMU fusion using robot_localization -->
+  <!-- Provides map->odom transform -->
+
+  <!-- Navsat transform node: Converts GPS to odometry -->
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" output="screen">
+    <rosparam command="load" file="$(find ins)/config/navsat_transform.yaml" />
+
+    <!-- Input topics -->
+    <remap from="/imu/data" to="/ouster/imu"/>
+    <remap from="/gps/fix" to="/ublox/fix"/>
+    <remap from="/odometry/filtered" to="/odometry/local"/>
+
+    <!-- Output topic -->
+    <remap from="/odometry/gps" to="/odometry/gps"/>
+  </node>
+
+  <!-- EKF for map frame: Fuses GPS + IMU -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_map" output="screen">
+    <rosparam command="load" file="$(find ins)/config/ekf_map.yaml" />
+
+    <!-- Output topic -->
+    <remap from="/odometry/filtered" to="/odometry/global"/>
+  </node>
+
+</launch>
