@@ -8,7 +8,6 @@ Panels:
         - /Path1
         - /Path2
         - /Path3
-        - /Waypoints1/Status1
       Splitter Ratio: 0.5
     Tree Height: 1085
   - Class: rviz/Selection
@@ -433,8 +432,7 @@ Visualization Manager:
       Marker Topic: /waypoint_markers
       Name: Waypoints
       Namespaces:
-        waypoint_path: true
-        waypoints: true
+        {}
       Queue Size: 100
       Value: true
   Enabled: true
@@ -465,7 +463,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 5.655028343200684
+      Distance: 21.011674880981445
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
