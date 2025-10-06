@@ -41,6 +41,6 @@
         args="-urdf -model husky -param robot_description -z $(arg z_position)"/>
 
   <!-- IMU timestamp fix (sim time -> real time) -->
-  <node pkg="dwa" type="imu_timestamp_fix.py" name="imu_timestamp_fix" output="screen"/>
+  <node pkg="dwa" type="timestamp_fix.py" name="timestamp_fix" output="screen"/>
 
 </launch>

@@ -25,20 +25,20 @@ sleep 2
 # 2. Gazebo Spawn
 echo "[2/5] Launching Gazebo..."
 roslaunch dwa "gazebo_spawn(empty_world).launch" z_position:=0.2 &
+# roslaunch dwa "gazebo_spawn.launch" z_position:=0.2 &
 GAZEBO_PID=$!
 sleep 10
 
-# 3. Faster-LIO Mapping
-echo "[3/6] Launching Faster-LIO..."
-roslaunch faster_lio mapping_ouster32.launch rviz:=false &
-FASTLIO_PID=$!
-sleep 5
-
-# 4. INS Fusion (GPS + IMU)
-echo "[4/6] Launching INS Fusion..."
+# 3. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
+echo "[3/6] Launching INS Fusion..."
 roslaunch ins ins_fusion.launch &
 INS_PID=$!
-sleep 3
+sleep 5
+
+# 4. Faster-LIO Mapping - Launch AFTER INS is ready
+echo "[4/6] Launching Faster-LIO..."
+roslaunch faster_lio mapping_ouster32.launch rviz:=false &
+FASTLIO_PID=$!
 
 # 5. DWA Navigation
 echo "[5/6] Launching DWA Navigation..."
@@ -54,6 +54,6 @@ RVIZ_PID=$!
 echo "All systems launched!"
 
 # Cleanup on exit
-trap "echo 'Shutting down...'; kill $KAKAO_PID $GAZEBO_PID $FASTLIO_PID $INS_PID $DWA_PID $RVIZ_PID 2>/dev/null; exit" SIGINT SIGTERM
+trap "echo 'Shutting down...'; kill $KAKAO_PID $GAZEBO_PID $FASTLIO_PID $TF_PID $INS_PID $DWA_PID $RVIZ_PID 2>/dev/null; exit" SIGINT SIGTERM
 
 wait

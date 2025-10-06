@@ -281,11 +281,11 @@ void LaserMapping::SubAndPubToROS(ros::NodeHandle &nh) {
     path_.header.frame_id = tf_world_frame_;
 
     // ROS 발행자들 초기화
-    pub_laser_cloud_world_ = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered", 100000);
-    pub_laser_cloud_body_ = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered_body", 100000);
-    pub_laser_cloud_effect_world_ = nh.advertise<sensor_msgs::PointCloud2>("/cloud_registered_effect_world", 100000);
-    pub_odom_aft_mapped_ = nh.advertise<nav_msgs::Odometry>("/Odometry", 100000);
-    pub_path_ = nh.advertise<nav_msgs::Path>("/path", 100000);
+    pub_laser_cloud_world_ = nh.advertise<sensor_msgs::PointCloud2>("/faster_lio/cloud_registered", 100000);
+    pub_laser_cloud_body_ = nh.advertise<sensor_msgs::PointCloud2>("/faster_lio/cloud_registered_body", 100000);
+    pub_laser_cloud_effect_world_ = nh.advertise<sensor_msgs::PointCloud2>("/faster_lio/cloud_registered_effect_world", 100000);
+    pub_odom_aft_mapped_ = nh.advertise<nav_msgs::Odometry>("/faster_lio/odom", 100000);
+    pub_path_ = nh.advertise<nav_msgs::Path>("/faster_lio/path", 100000);
 }
 
 // LaserMapping 생성자

@@ -258,11 +258,11 @@ void GazeboRosOusterLaser::OnScan(ConstLaserScanStampedPtr& _msg)
   const double MIN_RANGE = std::max(min_range_, minRange);
   const double MAX_RANGE = std::min(max_range_, maxRange);
 
-  // Populate message fields
+  // Populate message fields (OS1-32 format)
   const uint32_t POINT_STEP = 48;
   sensor_msgs::PointCloud2 msg;
   msg.header.frame_id = frame_name_;
-  msg.header.stamp = ros::Time::now();
+  msg.header.stamp = ros::Time(_msg->time().sec(), _msg->time().nsec());
   msg.fields.resize(9);
   msg.fields[0].name = "x";
   msg.fields[0].offset = 0;
@@ -304,6 +304,11 @@ void GazeboRosOusterLaser::OnScan(ConstLaserScanStampedPtr& _msg)
 
   int i, j;
   uint8_t *ptr = msg.data.data();
+
+  // OS1-32: horizontal scan rate is 10-20Hz, typically 10Hz = 100ms per rotation
+  // Column time spacing: 100ms / 1024 columns = ~97.7 microseconds per column
+  const double COLUMN_TIME_NS = 97656.25; // nanoseconds per column (100ms / 1024)
+
   for (i = 0; i < rangeCount; i++) {
     for (j = 0; j < verticalRangeCount; j++) {
 
@@ -339,23 +344,46 @@ void GazeboRosOusterLaser::OnScan(ConstLaserScanStampedPtr& _msg)
 
       // pAngle is rotated by yAngle:
       if ((MIN_RANGE < r) && (r < MAX_RANGE)) {
-        *((float*)(ptr + 0)) = r * cos(pAngle) * cos(yAngle);  // x
-        *((float*)(ptr + 4)) = r * cos(pAngle) * sin(yAngle);  // y
+        // x, y, z (offset 0, 4, 8)
+        *((float*)(ptr + 0)) = r * cos(pAngle) * cos(yAngle);
+        *((float*)(ptr + 4)) = r * cos(pAngle) * sin(yAngle);
 #if GAZEBO_MAJOR_VERSION > 2
-        *((float*)(ptr + 8)) = r * sin(pAngle);  // z
+        *((float*)(ptr + 8)) = r * sin(pAngle);
 #else
-        *((float*)(ptr + 8)) = -r * sin(pAngle);  // z
+        *((float*)(ptr + 8)) = -r * sin(pAngle);
 #endif
-        *((float*)(ptr + 12)) = intensity;  // intensity
-        *((uint32_t*)(ptr + 16)) = (uint32_t)(i * 1000);  // t (timestamp offset in nanoseconds)
-        *((uint16_t*)(ptr + 20)) = (uint16_t)(intensity * 255);  // reflectivity
+
+        // intensity (offset 12) - normalize to 0-1 range like real OS1
+        *((float*)(ptr + 12)) = std::min(1.0, std::max(0.0, intensity));
+
+        // t (offset 16) - timestamp offset in nanoseconds from scan start
+        // OS1 reports per-column timestamp relative to frame start
+        uint32_t timestamp_ns = static_cast<uint32_t>(i * COLUMN_TIME_NS);
+        *((uint32_t*)(ptr + 16)) = timestamp_ns;
+
+        // reflectivity (offset 20) - convert intensity to 0-255 range
+        // OS1 reflectivity is calibrated intensity measurement
+        uint16_t reflectivity = static_cast<uint16_t>(intensity * 255.0);
+        *((uint16_t*)(ptr + 20)) = std::min((uint16_t)255, reflectivity);
+
+        // ring (offset 22)
 #if GAZEBO_MAJOR_VERSION > 2
-        *((uint16_t*)(ptr + 22)) = j;  // ring
+        *((uint16_t*)(ptr + 22)) = j;
 #else
-        *((uint16_t*)(ptr + 22)) = verticalRangeCount - 1 - j;  // ring
+        *((uint16_t*)(ptr + 22)) = verticalRangeCount - 1 - j;
 #endif
-        *((uint16_t*)(ptr + 24)) = 0;  // ambient (not simulated)
-        *((uint32_t*)(ptr + 28)) = (uint32_t)(r * 1000);  // range in mm
+
+        // ambient (offset 24) - simulated ambient light
+        // OS1 ambient is near-infrared ambient light measurement (0-255 range)
+        // Simulate with low value + small random variation
+        uint16_t ambient = static_cast<uint16_t>(10 + (rand() % 5));
+        *((uint16_t*)(ptr + 24)) = ambient;
+
+        // range (offset 28) - range in millimeters
+        // OS1 reports range in mm as uint32
+        uint32_t range_mm = static_cast<uint32_t>(r * 1000.0);
+        *((uint32_t*)(ptr + 28)) = range_mm;
+
         ptr += POINT_STEP;
       }
     }

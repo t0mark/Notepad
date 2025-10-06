@@ -33,16 +33,12 @@
     <arg name="publish_odom_tf" value="false"/>
   </include>
 
-  <!-- 시뮬레이션: map = odom (오차 없음) -->
-  <node pkg="tf" type="static_transform_publisher" name="map_to_odom_publisher"
-        args="0 0 0 0 0 0 map odom 100"/>
-
   <!-- Gazebo에 로봇 스폰 -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
         output="screen"
         args="-urdf -model husky -param robot_description -z $(arg z_position)"/>
 
   <!-- IMU timestamp fix (sim time -> real time) -->
-  <node pkg="dwa" type="imu_timestamp_fix.py" name="imu_timestamp_fix" output="screen"/>
+  <node pkg="dwa" type="timestamp_fix.py" name="timestamp_fix" output="screen"/>
 
 </launch>

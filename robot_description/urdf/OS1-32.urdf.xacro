@@ -108,7 +108,7 @@
             </range>
           </ray>
           <plugin name="gazebo_ros_laser_controller" filename="libgazebo_ros_ouster_laser.so">
-            <topicName>${topic_points}</topicName>
+            <topicName>/gazebo_time/points</topicName>
             <frameName>${lidar_link}</frameName>
             <min_range>${min_range}</min_range>
             <max_range>${max_range}</max_range>
@@ -124,9 +124,8 @@
         <always_on>true</always_on>
         <update_rate>100</update_rate>
         <visualize>true</visualize>
-        <topic>/gazebo_time_imu</topic>
         <plugin filename="libgazebo_ros_imu_sensor.so" name="imu_plugin">
-          <topicName>/gazebo_time_imu</topicName>
+          <topicName>/gazebo_time/imu</topicName>
           <bodyName>${imu_link}</bodyName>
           <updateRateHZ>100.0</updateRateHZ>
           <gaussianNoise>0.0</gaussianNoise>
