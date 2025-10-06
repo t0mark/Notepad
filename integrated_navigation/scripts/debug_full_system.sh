@@ -30,10 +30,10 @@ GAZEBO_PID=$!
 sleep 2
 
 # 3. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
-# echo "[3/6] Launching INS Fusion..."
-# roslaunch ins ins_fusion.launch &
-# INS_PID=$!
-# sleep 2
+echo "[3/6] Launching INS Fusion..."
+roslaunch ins ins_fusion.launch &
+INS_PID=$!
+sleep 2
 
 # 4. Faster-LIO Mapping - Launch AFTER Gazebo is ready
 echo "[4/6] Launching Faster-LIO..."
