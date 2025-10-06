@@ -75,7 +75,7 @@ bool LaserMapping::LoadParams(ros::NodeHandle &nh) {
     nh.param<bool>("publish/scan_bodyframe_pub_en", scan_body_pub_en_, true);
     nh.param<bool>("publish/scan_effect_pub_en", scan_effect_pub_en_, false);
     nh.param<std::string>("publish/tf_imu_frame", tf_imu_frame_, "base_link");
-    nh.param<std::string>("publish/tf_world_frame", tf_world_frame_, "map");
+    nh.param<std::string>("publish/tf_world_frame", tf_world_frame_, "odom");
 
     nh.param<int>("max_iteration", options::NUM_MAX_ITERATIONS, 4);
     nh.param<float>("esti_plane_threshold", options::ESTI_PLANE_THRESHOLD, 0.1);
@@ -174,7 +174,7 @@ bool LaserMapping::LoadParamsFromYAML(const std::string &yaml_file) {
         scan_body_pub_en_ = yaml["publish"]["scan_bodyframe_pub_en"].as<bool>();
         scan_effect_pub_en_ = yaml["publish"]["scan_effect_pub_en"].as<bool>();
         tf_imu_frame_ = yaml["publish"]["tf_imu_frame"].as<std::string>("base_link");
-        tf_world_frame_ = yaml["publish"]["tf_world_frame"].as<std::string>("map");
+        tf_world_frame_ = yaml["publish"]["tf_world_frame"].as<std::string>("odom");
         path_save_en_ = yaml["path_save_en"].as<bool>();
 
         options::NUM_MAX_ITERATIONS = yaml["max_iteration"].as<int>();
@@ -771,7 +771,7 @@ void LaserMapping::PublishOdometry(const ros::Publisher &pub_odom_aft_mapped) {
     q.setY(odom_aft_mapped_.pose.pose.orientation.y);
     q.setZ(odom_aft_mapped_.pose.pose.orientation.z);
     transform.setRotation(q);
-    // br.sendTransform(tf::StampedTransform(transform, odom_aft_mapped_.header.stamp, tf_world_frame_, tf_imu_frame_));
+    br.sendTransform(tf::StampedTransform(transform, odom_aft_mapped_.header.stamp, tf_world_frame_, tf_imu_frame_));
 }
 
 // 월드 좌표계 포인트클라우드 발행 및 PCD 파일 저장

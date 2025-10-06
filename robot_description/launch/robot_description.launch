@@ -5,9 +5,12 @@
   <!-- URDF 로드 및 TF 발행만 담당 (Gazebo 스폰 제외) -->
   <!-- ===================================================== -->
 
+  <!-- Argument for controlling odom TF publishing -->
+  <arg name="publish_odom_tf" default="true"/>
+
   <!-- URDF 모델 로드 -->
   <param name="robot_description"
-         command="$(find xacro)/xacro '$(find robot_description)/urdf/custom_description.urdf.xacro'"/>
+         command="$(find xacro)/xacro '$(find robot_description)/urdf/custom_description.urdf.xacro' publish_odom_tf:=$(arg publish_odom_tf)"/>
 
   <!-- Joint State Publisher: joint_states 발행 -->
   <!-- Gazebo가 없을 때 GUI로 joint를 제어하거나 기본값 발행 -->

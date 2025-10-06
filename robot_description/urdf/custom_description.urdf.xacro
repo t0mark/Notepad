@@ -1,6 +1,9 @@
 <?xml version="1.0"?>
 <robot name="husky" xmlns:xacro="http://ros.org/wiki/xacro">
 
+  <!-- Argument for controlling odom TF publishing -->
+  <xacro:arg name="publish_odom_tf" default="true"/>
+
   <!-- 1) Husky 추가 -->
   <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro" />
 
@@ -39,7 +42,7 @@
       <robotBaseFrame>base_link</robotBaseFrame>
 
       <!-- Publish odom TF -->
-      <publishOdomTF>true</publishOdomTF>
+      <publishOdomTF>$(arg publish_odom_tf)</publishOdomTF>
       <publishWheelTF>false</publishWheelTF>
       <publishWheelJointState>false</publishWheelJointState>
     </plugin>

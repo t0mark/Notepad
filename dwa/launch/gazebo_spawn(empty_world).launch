@@ -28,8 +28,10 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <!-- URDF 모델 로드 및 TF 발행 -->
-  <include file="$(find robot_description)/launch/robot_description.launch"/>
+  <!-- URDF 모델 로드 및 TF 발행 (odom->base_link TF 비활성화) -->
+  <include file="$(find robot_description)/launch/robot_description.launch">
+    <arg name="publish_odom_tf" value="false"/>
+  </include>
 
   <!-- 시뮬레이션: map = odom (오차 없음) -->
   <node pkg="tf" type="static_transform_publisher" name="map_to_odom_publisher"
