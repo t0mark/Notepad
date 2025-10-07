@@ -31,7 +31,7 @@ sleep 2
 
 # 3. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
 echo "[3/6] Launching INS Fusion..."
-roslaunch ins ins_fusion.launch &
+roslaunch ins ins.launch &
 INS_PID=$!
 sleep 2
 

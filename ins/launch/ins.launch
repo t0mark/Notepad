@@ -1,0 +1,21 @@
+<launch>
+
+  <!-- Load parameters -->
+  <rosparam command="load" file="$(find ins)/params/ins_params.yaml" />
+
+  <!-- navsat_transform_node -->
+  <!-- Transforms GPS lat/lon to map frame coordinates -->
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" respawn="true">
+    <remap from="imu" to="/ouster/imu" />
+    <remap from="gps/fix" to="/ublox/fix" />
+    <remap from="odometry/filtered" to="/faster_lio/odom" />
+    <remap from="odometry/gps" to="/map_frame/gps" />
+  </node>
+
+  <!-- EKF for map frame -->
+  <!-- Fuses faster-lio odometry, IMU, and transformed GPS to provide a global estimate (map->odom) -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_map" clear_params="true">
+    <remap from="odometry/filtered" to="/ins/odom" />
+  </node>
+
+</launch>
