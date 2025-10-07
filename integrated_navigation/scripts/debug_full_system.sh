@@ -8,7 +8,7 @@ echo "Starting Integrated Navigation System..."
 
 # 1. Kakao API Debug (Map 초기화)
 echo "[1/6] Launching Kakao API Debug..."
-roslaunch kakao_api debug_kakao_api.launch rviz:=false &
+roslaunch kakao_api debug_kakao_api.launch rviz:=false isIntegrated:=true &
 KAKAO_PID=$!
 
 # WebSocket 연결 대기
