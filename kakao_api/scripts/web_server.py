@@ -84,34 +84,6 @@ def gps_callback(msg):
             'timestamp': time.time()
         }
 
-    # 첫 유효한 GPS로 map 원점 설정 (INS가 map 프레임을 정의하므로 주석 처리)
-    # if not origin_set:
-    #     try:
-    #         easting, northing, zone_num, zone_letter = utm.from_latlon(msg.latitude, msg.longitude)
-    #         map_origin = {'easting': easting, 'northing': northing}
-    #         utm_zone = (zone_num, zone_letter)
-    #         origin_set = True
-    #         rospy.loginfo(f"map 원점: ({msg.latitude:.6f}, {msg.longitude:.6f})")
-    #     except Exception as e:
-    #         rospy.logwarn(f"map 원점 설정 실패: {e}")
-    #         return
-
-    # GPS → map 좌표 변환 (INS가 map 프레임을 정의하므로 주석 처리)
-    # try:
-    #     easting, northing, _, _ = utm.from_latlon(msg.latitude, msg.longitude)
-    #     pose_msg = PoseStamped()
-    #     pose_msg.header.stamp = rospy.Time.now()
-    #     pose_msg.header.frame_id = "map"
-    #     pose_msg.pose.position.x = easting - map_origin['easting']
-    #     pose_msg.pose.position.y = northing - map_origin['northing']
-    #     pose_msg.pose.position.z = msg.altitude
-    #     pose_msg.pose.orientation.w = 1.0
-    #
-    #     gps_map_pub.publish(pose_msg)
-    # except Exception as e:
-    #     rospy.logwarn(f"GPS 변환 실패: {e}")
-
-
 async def gps_ws_handler(websocket, path):
     try:
         while True:

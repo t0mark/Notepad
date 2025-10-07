@@ -32,8 +32,8 @@
   <include file="$(find robot_description)/launch/robot_description.launch"/>
 
   <!-- 시뮬레이션: map = odom (오차 없음) -->
-  <node pkg="tf" type="static_transform_publisher" name="map_to_odom_publisher"
-        args="0 0 0 0 0 0 map odom 100"/>
+  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom_publisher"
+        args="0 0 0 0 0 0 map odom"/>
 
   <!-- Gazebo에 로봇 스폰 -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
