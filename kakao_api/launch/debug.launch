@@ -11,6 +11,6 @@
 
   <!-- RViz 실행 -->
   <arg name="rviz" default="true"/>
-  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="rviz" args="-d $(find kakao_api)/rviz/kakao.rviz" required="false"/>
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="rviz" args="-d $(find kakao_api)/rviz/kakao.rviz"/>
 
 </launch>

@@ -4,9 +4,8 @@
 """
 Web Interface Server Node
 - HTTP 서버: index.html 제공
-- GPS 처리: /ublox/fix → UTM 변환 → /map_frame_gps
 - GPS WebSocket: GPS 데이터를 웹으로 전송
-- Waypoint WebSocket: 웹 → /waypoints_gps 발행
+- Waypoint WebSocket: 웹 → /kakao/goal 발행
 """
 
 import rospy
@@ -19,10 +18,8 @@ import json
 import asyncio
 import websockets
 import time
-import utm
 from std_msgs.msg import String
 from sensor_msgs.msg import NavSatFix
-from geometry_msgs.msg import PoseStamped
 
 # 포트 설정
 HTTP_PORT = 8000
@@ -35,11 +32,6 @@ WEB_DIR = os.path.join(os.path.dirname(__file__), "../web")
 # GPS 데이터
 latest_gps = None
 gps_lock = threading.Lock()
-
-# map 원점
-map_origin = None
-utm_zone = None
-origin_set = False
 
 
 class HTTPHandler(http.server.SimpleHTTPRequestHandler):
@@ -69,7 +61,7 @@ def open_browser():
 
 
 def gps_callback(msg):
-    global latest_gps, map_origin, utm_zone, origin_set
+    global latest_gps
 
     if msg.status.status < 0:
         return
@@ -102,7 +94,7 @@ async def start_gps_ws():
 
 
 async def waypoint_ws_handler(websocket, path):
-    pub = rospy.Publisher('/waypoints_gps', String, queue_size=10)
+    pub = rospy.Publisher('/kakao/goal', String, queue_size=10)
 
     try:
         async for message in websocket:
@@ -140,24 +132,28 @@ async def start_waypoint_ws():
         await asyncio.Future()
 
 
+def shutdown_hook():
+    """종료 시 정리 작업"""
+    rospy.loginfo("Web Server 종료 중...")
+    # daemon=True로 설정했으므로 자동으로 스레드 종료됨
+
+
 if __name__ == '__main__':
     rospy.init_node('web_server', anonymous=True)
-
-    # Publisher
-    gps_map_pub = rospy.Publisher('/map_frame_gps', PoseStamped, queue_size=10)
+    rospy.on_shutdown(shutdown_hook)
 
     # Subscriber
     rospy.Subscriber('/ublox/fix', NavSatFix, gps_callback)
 
     # HTTP 서버
-    http_thread = threading.Thread(target=start_http, daemon=False)
+    http_thread = threading.Thread(target=start_http, daemon=True)
     http_thread.start()
 
     threading.Thread(target=open_browser, daemon=True).start()
 
-    # WebSocket 서버 (daemon=False로 프로세스 유지)
-    gps_ws_thread = threading.Thread(target=lambda: asyncio.run(start_gps_ws()), daemon=False)
-    waypoint_ws_thread = threading.Thread(target=lambda: asyncio.run(start_waypoint_ws()), daemon=False)
+    # WebSocket 서버
+    gps_ws_thread = threading.Thread(target=lambda: asyncio.run(start_gps_ws()), daemon=True)
+    waypoint_ws_thread = threading.Thread(target=lambda: asyncio.run(start_waypoint_ws()), daemon=True)
 
     gps_ws_thread.start()
     waypoint_ws_thread.start()
@@ -168,4 +164,7 @@ if __name__ == '__main__':
     time.sleep(2)
     rospy.loginfo("WebSocket 서버 준비 완료")
 
-    rospy.spin()
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        rospy.loginfo("Ctrl+C 감지, 종료합니다.")

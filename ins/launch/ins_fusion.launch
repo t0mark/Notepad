@@ -12,7 +12,7 @@
     <remap from="/odometry/filtered" to="/odometry/local"/>
 
     <!-- Output topic -->
-    <remap from="/odometry/gps" to="/odometry/gps"/>
+    <remap from="/odometry/gps" to="/map_frame/gps"/>
   </node>
 
   <!-- EKF for map frame: Fuses GPS + IMU -->
@@ -20,7 +20,8 @@
     <rosparam command="load" file="$(find ins)/config/ekf_map.yaml" />
 
     <!-- Output topic -->
-    <remap from="/odometry/filtered" to="/odometry/global"/>
+    <remap from="/odometry/filtered" to="/ins/odom"/>
   </node>
 
 </launch>
+

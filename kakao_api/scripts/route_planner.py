@@ -7,11 +7,11 @@ Kakao Route Planner Node
 카카오 API에서 받은 GPS 웨이포인트를 그대로 발행하는 노드
 
 입력:
-  - /waypoints_gps (String): 웹에서 받은 GPS 웨이포인트 (JSON)
+  - /kakao/goal (String): 웹에서 받은 GPS 웨이포인트 (JSON)
 
 출력:
-  - /waypoints_gps_array (GeoPath): GPS 웨이포인트 배열
-  - /kakao_route/status (String): 경로 상태 정보
+  - /kakao/waypoints (GeoPath): GPS 웨이포인트 배열
+  - /kakao/status (String): 경로 상태 정보
 """
 
 import rospy
@@ -31,11 +31,11 @@ class KakaoRoutePlanner:
         self.waypoint_count = 0
 
         # Publishers (latch=True로 마지막 메시지 유지)
-        self.waypoints_gps_pub = rospy.Publisher('/waypoints_gps_array', GeoPath, queue_size=1, latch=True)
-        self.status_pub = rospy.Publisher('/kakao_route/status', String, queue_size=1, latch=True)
+        self.waypoints_gps_pub = rospy.Publisher('/kakao/waypoints', GeoPath, queue_size=1, latch=True)
+        self.status_pub = rospy.Publisher('/kakao/status', String, queue_size=1, latch=True)
 
         # Subscribers
-        rospy.Subscriber('/waypoints_gps', String, self.waypoints_gps_callback)
+        rospy.Subscriber('/kakao/goal', String, self.waypoints_gps_callback)
         rospy.Subscriber('/ublox/fix', NavSatFix, self.gps_callback)
 
         # Timer for status publishing
