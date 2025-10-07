@@ -47,9 +47,13 @@ class HTTPHandler(http.server.SimpleHTTPRequestHandler):
 
 
 def start_http():
-    os.chdir(WEB_DIR)
-    with socketserver.TCPServer(("", HTTP_PORT), HTTPHandler) as httpd:
-        httpd.serve_forever()
+    try:
+        os.chdir(WEB_DIR)
+        with socketserver.TCPServer(("", HTTP_PORT), HTTPHandler) as httpd:
+            httpd.serve_forever()
+    except OSError:
+        # 포트 사용 중 - 조용히 무시
+        pass
 
 
 def open_browser():

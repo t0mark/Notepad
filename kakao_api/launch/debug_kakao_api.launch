@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Kakao API Debug Launch File -->
+  <!-- 초기 위치: 35.846171, 127.134468 -->
+
+  <!-- Integrated 모드 (INS 사용 여부) -->
+  <arg name="isIntegrated" default="false"/>
+
+  <!-- 시뮬레이터: GPS 발행 노드 -->
+  <node pkg="kakao_api" type="gps_publisher.py" name="gps_publisher" output="screen"/>
+
+  <!-- 시뮬레이터: Map 프레임 정의 & 웨이포인트 변환 (INS 없을 때만) -->
+  <node unless="$(arg isIntegrated)" pkg="kakao_api" type="map_frame.py" name="map_frame" output="screen"/>
+
+  <!-- Kakao API 메인 노드들 실행 -->
+  <include file="$(find kakao_api)/launch/kakao_api.launch"/>
+
+  <!-- RViz 실행 -->
+  <arg name="rviz" default="true"/>
+  <node if="$(arg rviz)" pkg="rviz" type="rviz" name="rviz" args="-d $(find kakao_api)/rviz/kakao.rviz"/>
+
+</launch>

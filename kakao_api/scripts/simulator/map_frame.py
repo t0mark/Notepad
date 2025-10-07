@@ -2,47 +2,39 @@
 # -*- coding: utf-8 -*-
 
 """
-Debug GPS and Map Publisher
+Map Frame Definition & Waypoint Converter
 
-INS 없이 독립적으로 사용할 때 필요한 디버깅 노드
-- GPS 데이터를 /ublox/fix로 발행
-- /kakao/waypoints (GeoPath) → /waypoints (MarkerArray) 변환 (디버깅용 map 프레임)
+Map 프레임 정의 및 웨이포인트 변환 노드 (INS 없이 사용 시)
+- /kakao/waypoints (GeoPath) → /waypoints (MarkerArray) 변환
 - 첫 GPS 위치를 map 원점으로 설정
-- 다른 노드가 GPS를 발행하면 자동으로 멈춤
+- RViz 시각화용 MarkerArray 발행
 """
 
 import rospy
 import utm
-from sensor_msgs.msg import NavSatFix
 from geographic_msgs.msg import GeoPath
 from visualization_msgs.msg import Marker, MarkerArray
 
 
-class DebugGPSMapPublisher:
+class MapFrameConverter:
     def __init__(self):
-        # Publishers
-        self.gps_pub = rospy.Publisher('/ublox/fix', NavSatFix, queue_size=10)
+        # Publisher
         self.waypoints_pub = rospy.Publisher('/waypoints', MarkerArray, queue_size=10, latch=True)
 
-        self.is_publishing = True
-        self.my_seq = 0
-
-        # 다른 발행자 감지를 위한 구독자
-        self.gps_sub = rospy.Subscriber('/ublox/fix', NavSatFix, self.gps_callback, queue_size=10)
-
-        # GeoPath를 MarkerArray로 변환
+        # Subscriber
         rospy.Subscriber('/kakao/waypoints', GeoPath, self.waypoints_callback)
-
-        # 초기 위치: 35.846171, 127.134468 (INS datum과 동일)
-        self.lat = 35.84617083648474
-        self.lon = 127.13446738445664
-        self.alt = 100.0
 
         # Map 원점 설정
         self.map_origin_utm = None
         self.utm_zone_number = None
         self.utm_zone_letter = None
         self.origin_set = False
+
+        rospy.loginfo("=" * 60)
+        rospy.loginfo("🗺️  Map Frame Converter 시작")
+        rospy.loginfo("   /kakao/waypoints → /waypoints 변환")
+        rospy.loginfo("   첫 웨이포인트로 map 원점 자동 설정")
+        rospy.loginfo("=" * 60)
 
     def set_map_origin(self, lat, lon):
         """첫 GPS 위치를 map 원점으로 설정"""
@@ -179,80 +171,17 @@ class DebugGPSMapPublisher:
 
         # MarkerArray 발행
         self.waypoints_pub.publish(marker_array)
-        rospy.loginfo(f"✅ Map 프레임 변환 완료: {len(msg.poses)}개 → /waypoints (MarkerArray)")
-
-    def gps_callback(self, msg):
-        """자신이 발행한 메시지가 아닌 경우 감지"""
-        if msg.header.frame_id != "gps_link_debug":
-            if self.is_publishing:
-                rospy.logwarn("=" * 60)
-                rospy.logwarn("⚠️  외부 GPS 발행자 감지!")
-                rospy.logwarn(f"   Frame ID: {msg.header.frame_id}")
-                rospy.logwarn("   Debug GPS Publisher를 중지합니다.")
-                rospy.logwarn("=" * 60)
-                self.is_publishing = False
-
-    def publish_gps(self):
-        rate = rospy.Rate(1)  # 1 Hz
-
-        rospy.loginfo("=" * 60)
-        rospy.loginfo("🛰️  Debug GPS & Map Publisher 시작")
-        rospy.loginfo(f"   GPS 토픽: /ublox/fix")
-        rospy.loginfo(f"   위치: ({self.lat}, {self.lon})")
-        rospy.loginfo(f"   고도: {self.alt}m")
-        rospy.loginfo("")
-        rospy.loginfo("   기능:")
-        rospy.loginfo("   1. 고정 GPS 발행 (1Hz)")
-        rospy.loginfo("   2. /kakao/waypoints → /waypoints 변환 (MarkerArray)")
-        rospy.loginfo("   3. 첫 GPS를 map 원점으로 설정")
-        rospy.loginfo("")
-        rospy.loginfo("   (외부 GPS 발행자 감지 시 자동 중지)")
-        rospy.loginfo("=" * 60)
-
-        # 초기 대기 (Gazebo GPS 플러그인이 먼저 시작될 수 있도록)
-        rospy.sleep(2.0)
-
-        while not rospy.is_shutdown():
-            if self.is_publishing:
-                # GPS 메시지 발행
-                gps_msg = NavSatFix()
-                gps_msg.header.stamp = rospy.Time.now()
-                gps_msg.header.frame_id = "gps_link_debug"
-                gps_msg.header.seq = self.my_seq
-                self.my_seq += 1
-
-                gps_msg.status.status = 0  # GPS fix
-                gps_msg.status.service = 1
-
-                gps_msg.latitude = self.lat
-                gps_msg.longitude = self.lon
-                gps_msg.altitude = self.alt
-
-                gps_msg.position_covariance = [1.0, 0.0, 0.0,
-                                               0.0, 1.0, 0.0,
-                                               0.0, 0.0, 1.0]
-                gps_msg.position_covariance_type = 1
-
-                self.gps_pub.publish(gps_msg)
-
-                # 10초마다 로그 출력
-                if int(rospy.Time.now().to_sec()) % 10 == 0:
-                    if self.origin_set:
-                        rospy.loginfo(f"📡 GPS 발행 중 | Map 원점: ({self.map_origin_utm['lat']:.6f}, {self.map_origin_utm['lon']:.6f})")
-                    else:
-                        rospy.loginfo(f"📡 GPS 발행 중 | Map 원점: 미설정 (웨이포인트 대기 중)")
-
-            rate.sleep()
+        rospy.loginfo(f"✅ Map 프레임 변환 완료: {len(msg.poses)}개 → /waypoints")
 
 
 def main():
-    rospy.init_node('gps_debug', anonymous=True)
-    publisher = DebugGPSMapPublisher()
-    publisher.publish_gps()
+    rospy.init_node('map_frame_converter', anonymous=True)
+    converter = MapFrameConverter()
+    rospy.spin()
 
 
 if __name__ == '__main__':
     try:
         main()
     except rospy.ROSInterruptException:
-        rospy.loginfo("Debug GPS & Map Publisher 종료")
+        rospy.loginfo("Map Frame Converter 종료")
