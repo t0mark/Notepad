@@ -733,6 +733,7 @@ void LaserMapping::PublishPath(const ros::Publisher pub_path) {
     msg_body_pose_.header.frame_id = tf_world_frame_;
 
     // 경로가 너무 길어지면 RViz가 크래시할 수 있음
+    path_.header.stamp = ros::Time().fromSec(lidar_end_time_);
     path_.poses.push_back(msg_body_pose_);
     if (run_in_offline_ == false) {
         pub_path.publish(path_);
