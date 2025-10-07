@@ -2,8 +2,20 @@
   <!-- GPS + IMU fusion using robot_localization -->
   <!-- Provides map->odom transform -->
 
+  <!-- EKF for map frame: Fuses GPS + IMU - START FIRST -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_map" output="screen" respawn="true">
+    <rosparam command="load" file="$(find ins)/config/ekf_map.yaml" />
+
+    <!-- TF2 compatibility parameters -->
+    <param name="tf_prefix" value="" />
+    <param name="predict_to_current_time" value="true" />
+
+    <!-- Output topic -->
+    <remap from="/odometry/filtered" to="/ins/odom"/>
+  </node>
+
   <!-- Navsat transform node: Converts GPS to odometry -->
-  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" output="screen">
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" output="screen" respawn="true">
     <rosparam command="load" file="$(find ins)/config/navsat_transform.yaml" />
 
     <!-- Input topics -->
@@ -13,14 +25,6 @@
 
     <!-- Output topic -->
     <remap from="/odometry/gps" to="/map_frame/gps"/>
-  </node>
-
-  <!-- EKF for map frame: Fuses GPS + IMU -->
-  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_map" output="screen">
-    <rosparam command="load" file="$(find ins)/config/ekf_map.yaml" />
-
-    <!-- Output topic -->
-    <remap from="/odometry/filtered" to="/ins/odom"/>
   </node>
 
 </launch>

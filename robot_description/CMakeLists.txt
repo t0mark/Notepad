@@ -20,6 +20,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Find Gazebo
 find_package(gazebo REQUIRED)
+include_directories(${GAZEBO_INCLUDE_DIRS})
+link_directories(${GAZEBO_LIBRARY_DIRS})
 
 ###################################
 ## catkin specific configuration ##
@@ -28,7 +30,6 @@ catkin_package(
   INCLUDE_DIRS plugins/include
   LIBRARIES husky_gazebo_plugin gazebo_ros_ouster_laser
   CATKIN_DEPENDS geometry_msgs nav_msgs roscpp rospy sensor_msgs std_msgs tf urdf xacro gazebo_ros
-  DEPENDS gazebo
 )
 
 ###########

@@ -30,6 +30,8 @@ find_package(catkin REQUIRED COMPONENTS
 
 ## Find Gazebo
 find_package(gazebo REQUIRED)
+include_directories(${GAZEBO_INCLUDE_DIRS})
+link_directories(${GAZEBO_LIBRARY_DIRS})
 
 ## Catkin package configuration
 catkin_package(
@@ -55,8 +57,6 @@ catkin_package(
     gazebo_ros
     gazebo_ros_control
     hardware_interface
-  DEPENDS
-    gazebo
 )
 
 ## Include directories
