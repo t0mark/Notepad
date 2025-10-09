@@ -24,9 +24,9 @@ class GPSPublisher:
         # 다른 발행자 감지를 위한 구독자
         self.gps_sub = rospy.Subscriber('/ublox/fix', NavSatFix, self.gps_callback, queue_size=10)
 
-        # 초기 위치
-        self.lat = 35.846171
-        self.lon = 127.134468
+        # 초기 위치: 35.846171, 127.134468
+        self.lat = 35.84617083648474
+        self.lon = 127.13446738445664
         self.alt = 100.0
 
     def gps_callback(self, msg):

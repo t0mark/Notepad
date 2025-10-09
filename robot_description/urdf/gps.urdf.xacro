@@ -46,8 +46,8 @@
       <frameId>gps_link</frameId>
       <topicName>/gazebo_time/gps</topicName>
       <velocityTopicName>/ublox/fix_velocity</velocityTopicName>
-      <referenceLatitude>35.846171</referenceLatitude>
-      <referenceLongitude>127.134468</referenceLongitude>
+      <referenceLatitude>35.84617083648474</referenceLatitude>
+      <referenceLongitude>127.13446738445664</referenceLongitude>
       <referenceHeading>0.0</referenceHeading>
       <referenceAltitude>100.0</referenceAltitude>
       <drift>0.001 0.001 0.001</drift>
