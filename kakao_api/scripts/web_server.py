@@ -19,7 +19,7 @@ import json
 import asyncio
 import websockets
 import time
-import pyproj
+from pyproj import CRS, Transformer
 from sensor_msgs.msg import NavSatFix
 from nav_msgs.msg import Path
 from geometry_msgs.msg import PoseStamped
@@ -39,8 +39,9 @@ gps_lock = threading.Lock()
 map_origin_utm = None
 map_origin_lock = threading.Lock()
 
-# UTM 변환기
-utm_projector = None
+# UTM Transformer (WGS84 → UTM)
+utm_transformer = None
+utm_zone = None
 
 
 class HTTPHandler(http.server.SimpleHTTPRequestHandler):
@@ -87,49 +88,59 @@ def open_browser():
         pass
 
 
-def initialize_utm_projector(lon):
-    """UTM projector 초기화"""
-    global utm_projector
-
-    if utm_projector is None:
-        # UTM zone 자동 결정
-        zone = int((lon + 180) / 6) + 1
-        utm_projector = pyproj.Proj(proj='utm', zone=zone, ellps='WGS84')
-
-
 def gps_to_utm(lat, lon):
-    """GPS → UTM 변환"""
-    global utm_projector
+    """
+    GPS → UTM 변환 (pyproj 사용, robot_localization과 호환)
+    첫 GPS 기준으로 UTM zone 고정
+    """
+    global utm_transformer
 
-    if utm_projector is None:
-        initialize_utm_projector(lon)
+    if utm_transformer is None:
+        rospy.logerr("❌ UTM transformer가 초기화되지 않음")
+        return None, None
 
-    easting, northing = utm_projector(lon, lat)
-    return easting, northing
+    try:
+        # pyproj Transformer with always_xy=True: (lon, lat) → (easting, northing)
+        easting, northing = utm_transformer.transform(lon, lat)
+        return easting, northing
+    except Exception as e:
+        rospy.logerr(f"❌ UTM 변환 실패: {e}")
+        return None, None
 
 
 def initialize_origin_from_gps(lat, lon):
-    """첫 GPS를 map 원점으로 설정"""
-    global map_origin_utm
+    """첫 GPS를 map 원점으로 설정 (pyproj 사용, robot_localization과 호환)"""
+    global map_origin_utm, utm_zone, utm_transformer
 
     with map_origin_lock:
         if map_origin_utm is None:
-            initialize_utm_projector(lon)
+            try:
+                # UTM zone 자동 결정 (robot_localization과 동일한 방식)
+                utm_zone = int((lon + 180.0) / 6) + 1
+                hemisphere = 'north' if lat >= 0 else 'south'
 
-            # GPS → UTM 변환
-            easting, northing = utm_projector(lon, lat)
+                # WGS84 → UTM Transformer 생성
+                wgs84 = CRS('EPSG:4326')  # WGS84
+                utm_crs = CRS(f'+proj=utm +zone={utm_zone} +{hemisphere} +ellps=WGS84 +datum=WGS84 +units=m +no_defs')
+                utm_transformer = Transformer.from_crs(wgs84, utm_crs, always_xy=True)
 
-            map_origin_utm = {
-                'easting': easting,
-                'northing': northing
-            }
+                # GPS → UTM 변환 (lon, lat 순서 주의)
+                easting, northing = utm_transformer.transform(lon, lat)
 
-            rospy.loginfo("=" * 60)
-            rospy.loginfo("🎯 Map 원점 설정 (첫 GPS 사용)")
-            rospy.loginfo(f"   GPS: ({lat:.6f}, {lon:.6f})")
-            rospy.loginfo(f"   UTM: ({easting:.2f}, {northing:.2f})")
-            rospy.loginfo(f"   Map 원점: (0.0, 0.0)")
-            rospy.loginfo("=" * 60)
+                map_origin_utm = {
+                    'easting': easting,
+                    'northing': northing
+                }
+
+                rospy.loginfo("=" * 60)
+                rospy.loginfo("🎯 Map 원점 설정 (첫 GPS 사용)")
+                rospy.loginfo(f"   GPS: ({lat:.6f}, {lon:.6f})")
+                rospy.loginfo(f"   UTM Zone: {utm_zone}{hemisphere[0].upper()}")
+                rospy.loginfo(f"   UTM: ({easting:.2f}, {northing:.2f})")
+                rospy.loginfo(f"   Map 원점: (0.0, 0.0)")
+                rospy.loginfo("=" * 60)
+            except Exception as e:
+                rospy.logerr(f"❌ Map 원점 설정 실패: {e}")
 
 
 def gps_callback(msg):
