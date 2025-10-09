@@ -4,7 +4,5 @@
 
   <!-- 웹 인터페이스 서버 (HTTP + WebSocket) -->
   <node pkg="kakao_api" type="web_server.py" name="web_server" output="screen"/>
-
-  <!-- 카카오 경로 계획 노드 (GPS → map 프레임 변환) -->
-  <node pkg="kakao_api" type="route_planner.py" name="route_planner" output="screen"/>
+  
 </launch>

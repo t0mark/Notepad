@@ -12,8 +12,7 @@ catkin_package(
 )
 
 catkin_install_python(PROGRAMS
-  scripts/route_planner.py
-  scripts/waypoint_to_globalGoal.py
+  scripts/simulator/gps_publisher.py
   scripts/web_server.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

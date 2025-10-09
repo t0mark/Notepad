@@ -3,6 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <title>카카오 지도와 내비 연동</title>
+
+    <!-- 캐시 방지 -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <style>
         #map {
             position: absolute;
@@ -95,7 +101,6 @@
         var currentWaypointIndex = 0;
         var geocoder = new kakao.maps.services.Geocoder();
         var ws = null;
-        var waypointsWs = null;
 
         // ✅ GPS 고정 제어 변수
         var firstGpsReceived = false;
@@ -344,21 +349,17 @@
                 return;
             }
 
-            var destinationData = destinationLatLng
-                ? { lat: destinationLatLng.getLat(), lon: destinationLatLng.getLng() }
-                : null;
-
-            var waypointsData = {
-                waypoints: waypoints.map(wp => ({ lat: wp.getLat(), lon: wp.getLng() })),
-                destination: destinationData
+            var pathData = {
+                type: 'path',
+                waypoints: waypoints.map(wp => ({ lat: wp.getLat(), lon: wp.getLng() }))
             };
 
-            if (waypointsWs && waypointsWs.readyState === WebSocket.OPEN) {
-                waypointsWs.send(JSON.stringify(waypointsData));
-                console.log("📡 Waypoints & 목적지 데이터 전송됨:", waypointsData);
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(pathData));
+                console.log("📡 Path 데이터 전송됨:", pathData);
             } else {
-                console.error("❌ Waypoints WebSocket이 닫혀 있습니다.");
-                document.getElementById("status").innerText = "연결 오류: Waypoints 전송 실패";
+                console.error("❌ WebSocket이 닫혀 있습니다.");
+                document.getElementById("status").innerText = "연결 오류: Path 전송 실패";
             }
         }
 
@@ -550,21 +551,40 @@
             ws = new WebSocket("ws://localhost:8765");
 
             ws.onopen = function () {
-                console.log("✅ GPS WebSocket 연결 성공!");
+                console.log("✅ WebSocket 연결 성공!");
                 document.getElementById("status").innerText = "📡 GPS 연결됨. 목적지를 클릭해주세요.";
-                connectWaypointsWebSocket();
             };
 
             ws.onmessage = function (event) {
                 try {
-                    var data = JSON.parse(event.data);
-                    if (data.latitude && data.longitude) {
-                        updateLocation(data.latitude, data.longitude);
-                    } else {
-                        console.warn("⚠️ GPS 데이터가 올바르지 않습니다:", data);
+                    var msg = JSON.parse(event.data);
+                    console.log("📥 수신 데이터:", JSON.stringify(msg));
+
+                    // GPS 데이터 수신
+                    if (msg.type === 'gps' && msg.data) {
+                        console.log("GPS 데이터:", msg.data);
+                        if (msg.data.latitude && msg.data.longitude) {
+                            console.log("✅ GPS 업데이트:", msg.data.latitude, msg.data.longitude);
+                            updateLocation(msg.data.latitude, msg.data.longitude);
+                        } else if (!msg.data.error) {
+                            console.warn("⚠️ GPS 데이터가 올바르지 않습니다:", msg.data);
+                        }
+                    }
+                    // Path 전송 성공
+                    else if (msg.type === 'success') {
+                        console.log("✅ Path 전송 성공:", msg);
+                        document.getElementById("status").innerText = `✅ 경로 전송 완료! (${msg.valid_waypoints}개)`;
+                    }
+                    // 에러 메시지
+                    else if (msg.type === 'error') {
+                        console.error("❌ 서버 오류:", msg.message);
+                        document.getElementById("status").innerText = `❌ 오류: ${msg.message}`;
+                    }
+                    else {
+                        console.warn("⚠️ 알 수 없는 메시지 타입:", msg);
                     }
                 } catch (error) {
-                    console.error("❌ GPS 데이터 파싱 오류:", error);
+                    console.error("❌ 데이터 파싱 오류:", error);
                 }
             };
 
@@ -580,27 +600,6 @@
             };
         }
 
-        function connectWaypointsWebSocket() {
-            if (waypointsWs && (waypointsWs.readyState === WebSocket.OPEN || waypointsWs.readyState === WebSocket.CONNECTING)) {
-                console.log("⚠️ Waypoints WebSocket 이미 연결됨.");
-                return;
-            }
-
-            waypointsWs = new WebSocket("ws://localhost:8766");
-
-            waypointsWs.onopen = function () {
-                console.log("✅ Waypoints WebSocket 연결 성공!");
-            };
-
-            waypointsWs.onerror = function (error) {
-                console.error("❌ Waypoints WebSocket 오류:", error);
-            };
-
-            waypointsWs.onclose = function () {
-                console.warn("⚠️ Waypoints WebSocket 연결 종료됨. 5초 후 재연결 시도...");
-                setTimeout(connectWaypointsWebSocket, 5000);
-            };
-        }
 
         // ✅ 초기 WebSocket 연결 시작
         connectWebSocket();
