@@ -5,7 +5,6 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Global Options1
-        - /MarkerArray1
       Splitter Ratio: 0.5
     Tree Height: 725
   - Class: rviz/Selection
@@ -482,8 +481,26 @@ Visualization Manager:
       Marker Topic: /kakao/markers
       Name: MarkerArray
       Namespaces:
-        {}
+        waypoint_numbers: true
+        waypoint_path: true
+        waypoints: true
       Queue Size: 100
+      Value: true
+    - Alpha: 1
+      Axes Length: 1
+      Axes Radius: 0.10000000149011612
+      Class: rviz/Pose
+      Color: 255; 25; 0
+      Enabled: true
+      Head Length: 0.30000001192092896
+      Head Radius: 0.10000000149011612
+      Name: Pose
+      Queue Size: 10
+      Shaft Length: 1
+      Shaft Radius: 0.05000000074505806
+      Shape: Arrow
+      Topic: /move_base/current_goal
+      Unreliable: false
       Value: true
   Enabled: true
   Global Options:
@@ -529,9 +546,9 @@ Visualization Manager:
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.929796576499939
+      Pitch: 0.5947965383529663
       Target Frame: <Fixed Frame>
-      Yaw: 4.568602085113525
+      Yaw: 0.0004162788391113281
     Saved: ~
 Window Geometry:
   Displays:

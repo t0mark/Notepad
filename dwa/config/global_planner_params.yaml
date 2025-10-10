@@ -15,7 +15,7 @@ GlobalPlanner:
   # 목표 위치에 대한 허용 오차 (미터)
   # 계획이 정확한 목표에 도달할 수 없으면 이 거리 내로 계획
   # 0.0 = 정확한 목표 위치에 도달해야 함
-  default_tolerance: 0.0
+  default_tolerance: 0.5
 
   # ===== 시각화 파라미터 =====
 

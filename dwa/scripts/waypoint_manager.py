@@ -55,6 +55,7 @@ class WaypointManager:
         self.retry_count = 0
         self.is_active = False
         self.latest_path = None
+        self.goal_requested = False
 
         # TF
         self.tf_buffer = tf2_ros.Buffer()
@@ -142,8 +143,10 @@ class WaypointManager:
             if (dist >= self.min_waypoint_distance or
                 angle_change >= self.angle_threshold or
                 dist >= self.max_waypoint_distance):
-                filtered.append(current)
-                last_added = current
+                # 중복점 추가 방지
+                if self.calculate_distance(filtered[-1], current) > 0.1:
+                    filtered.append(current)
+                    last_added = current
 
         # 마지막 지점 (목적지)
         if len(path.poses) > 0:
@@ -291,9 +294,24 @@ class WaypointManager:
             rospy.sleep(0.5)
 
         # 웨이포인트 필터링
-        self.waypoints = self.filter_waypoints(path_msg)
+        waypoints = self.filter_waypoints(path_msg)
 
-        # 쿼터니언 초기화: 경로에 방향 정보가 없는 경우를 대비
+        # 각 웨이포인트의 방향을 다음 웨이포인트를 향하도록 수정
+        for i in range(len(waypoints) - 1):
+            current_wp_pos = waypoints[i].pose.position
+            next_wp_pos = waypoints[i+1].pose.position
+
+            angle = math.atan2(next_wp_pos.y - current_wp_pos.y, next_wp_pos.x - current_wp_pos.x)
+            q = Quaternion(x=0, y=0, z=math.sin(angle / 2.0), w=math.cos(angle / 2.0))
+            waypoints[i].pose.orientation = q
+
+        # 마지막 웨이포인트는 이전 웨이포인트의 방향을 따름
+        if len(waypoints) > 1:
+            waypoints[-1].pose.orientation = waypoints[-2].pose.orientation
+
+        self.waypoints = waypoints
+
+        # 쿼터니언 초기화: 경로에 방향 정보가 없는 경우를 대비 (위에서 이미 설정했으므로 보험용)
         for wp in self.waypoints:
             q = wp.pose.orientation
             if q.x == 0 and q.y == 0 and q.z == 0 and q.w == 0:
@@ -315,8 +333,8 @@ class WaypointManager:
         rospy.loginfo(f"🎯 웨이포인트 {self.current_waypoint_idx + 1}/{len(self.waypoints)}부터 시작")
         rospy.loginfo("=" * 60)
 
-        # 첫 번째 웨이포인트 전송
-        self.send_next_waypoint()
+        # 메인 루프에서 첫 웨이포인트를 전송하도록 요청
+        self.goal_requested = True
 
     def send_next_waypoint(self):
         """다음 웨이포인트를 move_base로 전송"""
@@ -381,26 +399,26 @@ class WaypointManager:
             # 마커 업데이트
             self.publish_waypoint_markers()
 
-            # 다음 웨이포인트 전송
             if self.is_active:
-                rospy.sleep(0.5)  # 짧은 대기
-                self.send_next_waypoint()
+                rospy.loginfo("잠시 대기 후 다음 웨이포인트로 진행합니다...")
+                rospy.sleep(3.0)  # Costmap 업데이트 시간 확보 (1.5s -> 3.0s)
+                self.goal_requested = True  # 메인 루프에 다음 목표 요청
 
-        elif status == GoalStatus.PREEMPTED:
-            # 취소됨 (새 경로 수신 시)
-            rospy.loginfo("⚠️  목표 취소됨 (새 경로 수신)")
+        elif status in [GoalStatus.PREEMPTED, GoalStatus.ABORTED, GoalStatus.REJECTED]:
+            # 실패 또는 취소됨: 재시도 또는 스킵
+            if status == GoalStatus.PREEMPTED:
+                rospy.logwarn("⚠️  목표가 취소되었습니다 (타임아웃 또는 새 경로 수신).")
+            else:
+                rospy.logwarn(f"⚠️  목표 도달에 실패했습니다: {status_text}")
 
-        elif status in [GoalStatus.ABORTED, GoalStatus.REJECTED]:
-            # 실패: 재시도 또는 스킵
             self.retry_count += 1
 
             if self.retry_count < self.max_retries:
-                rospy.logwarn(f"⚠️  목표 실패, 재시도 중... ({self.retry_count}/{self.max_retries})")
-                rospy.sleep(1.0)
-                self.send_next_waypoint()
+                rospy.logwarn(f"   재시도를 수행합니다... ({self.retry_count}/{self.max_retries})")
+                self.goal_requested = True  # 메인 루프에 재시도 요청
             else:
                 if self.skip_unreachable:
-                    rospy.logwarn(f"⚠️  도달 불가능한 웨이포인트 {self.current_waypoint_idx + 1} 건너뛰기")
+                    rospy.logwarn(f"⚠️  도달 불가능한 웨이포인트 {self.current_waypoint_idx + 1}를 건너뜁니다.")
                     self.current_waypoint_idx += 1
                     self.retry_count = 0
 
@@ -408,32 +426,24 @@ class WaypointManager:
                     self.publish_waypoint_markers()
 
                     if self.is_active:
-                        rospy.sleep(0.5)
-                        self.send_next_waypoint()
+                        self.goal_requested = True  # 메인 루프에 다음 목표 요청
                 else:
-                    rospy.logerr(f"❌ {self.max_retries}회 재시도 후 목표 실패. 중지.")
+                    rospy.logerr(f"❌ {self.max_retries}회 재시도 후에도 목표에 실패하여 주행을 중지합니다.")
                     self.is_active = False
         else:
             rospy.logwarn(f"⚠️  예상치 못한 목표 상태: {status_text}")
 
     def run(self):
         """메인 루프"""
-        rate = rospy.Rate(1)  # 1Hz
+        rate = rospy.Rate(10)  # 10Hz
 
         while not rospy.is_shutdown():
-            # 주기적으로 로봇 상태 확인 (필요시)
-            if self.is_active and self.waypoints:
-                robot_pose = self.get_robot_pose()
-                if robot_pose and self.current_waypoint_idx < len(self.waypoints):
-                    # 현재 웨이포인트와의 거리 체크
-                    dist = self.calculate_distance(
-                        robot_pose,
-                        self.waypoints[self.current_waypoint_idx]
-                    )
-
-                    # 디버그 정보 (10초마다)
-                    if rospy.Time.now().to_sec() % 10 < 1:
-                        rospy.logdebug(f"웨이포인트까지 거리: {dist:.2f}m")
+            if self.goal_requested and self.is_active:
+                # 현재 action client가 활동 중이 아닐 때만 새 목표 전송
+                client_state = self.move_base_client.get_state()
+                if client_state not in [GoalStatus.ACTIVE, GoalStatus.PENDING]:
+                    self.goal_requested = False
+                    self.send_next_waypoint()
 
             rate.sleep()
 

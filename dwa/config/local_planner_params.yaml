@@ -58,14 +58,16 @@ DWAPlannerROS:
   # ===== 목표 도달 허용 오차 파라미터 =====
 
   # 목표까지 x & y 거리 허용 오차 (미터)
-  xy_goal_tolerance: 0.2
+  xy_goal_tolerance: 0.5
 
   # 목표까지 yaw 각도 허용 오차 (라디안)
-  yaw_goal_tolerance: 0.17
+  # 3.15 (약 180도)로 설정하여 사실상 방향 제약 무시
+  yaw_goal_tolerance: 3.15
 
   # true인 경우, 목표 위치에 도달했더라도 목표 방향을 맞추기 위해
   # 로봇이 계속 제자리 회전
-  latch_xy_goal_tolerance: false
+  # yaw_goal_tolerance가 매우 크므로, XY 도달 후 바로 성공 처리됨
+  latch_xy_goal_tolerance: true
 
   # ===== 전방 시뮬레이션 파라미터 =====
 
@@ -106,7 +108,7 @@ DWAPlannerROS:
 
   # 궤적 점수화를 위한 로봇으로부터의 점 거리 (미터)
   # 헤딩 오류를 계산할 지점
-  forward_point_distance: 0.325
+  forward_point_distance: 1.0
 
   # 충돌 전 로봇이 정지해야 하는 시간 (초)
   # 비상 정지를 위한 안전 여유

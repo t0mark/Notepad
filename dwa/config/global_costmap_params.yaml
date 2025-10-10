@@ -18,11 +18,11 @@ global_costmap:
 
   # Costmap 업데이트 주파수 (Hz)
   # Global planning은 느리므로 local costmap보다 낮은 주파수 사용
-  update_frequency: 1.0
+  update_frequency: 5.0
 
   # 시각화 정보 발행 주파수 (Hz)
   # 0.0으로 설정하면 발행 비활성화 (대역폭 절약)
-  publish_frequency: 0.5
+  publish_frequency: 2.0
 
   # ===== 맵 설정 =====
 
@@ -73,10 +73,10 @@ global_costmap:
   #   - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
   #   - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
 
-  # 동적 매핑 (SLAM):
-  # plugins:
-  #   - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
-  #   - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
+  # 동적 매핑 (SLAM + Rolling Window):
+  plugins:
+    - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
+    - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
 
   # ===== 추가 파라미터 =====
 

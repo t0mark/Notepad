@@ -9,11 +9,11 @@ waypoint_manager:
 
   # 웨이포인트 간 최소 거리 (m)
   # 이 거리보다 가까운 지점은 스킵
-  min_waypoint_distance: 3.0
+  min_waypoint_distance: 1.5
 
   # 웨이포인트 간 최대 거리 (m)
   # 이 거리를 초과하면 강제로 웨이포인트 추가
-  max_waypoint_distance: 10.0
+  max_waypoint_distance: 4.0
 
   # 각도 변화 임계값 (rad)
   # 이 각도 이상 꺾이는 지점은 거리와 무관하게 웨이포인트로 추가

@@ -37,14 +37,14 @@ transform_tolerance: 0.5  # 안정성을 위해 0.3에서 증가
 
 # 장애물을 마킹하는 최대 거리 (미터)
 # 이 거리를 넘는 장애물은 costmap에 추가되지 않음
-obstacle_range: 5.0  # Ouster LiDAR에 맞게 커스터마이징
+obstacle_range: 30.0  # Ouster LiDAR 범위에 맞게 증가 (5.0 -> 30.0)
 
 # Costmap에 추가될 장애물의 최대 높이 (미터)
 max_obstacle_height: 2.0
 
 # 공간을 clear하기 위한 레이트레이싱 최대 거리 (미터)
 # obstacle_range 이상이어야 제대로 작동
-raytrace_range: 6.0  # obstacle_range보다 약간 크게 설정
+raytrace_range: 35.0  # obstacle_range보다 약간 크게 설정 (6.0 -> 35.0)
 
 # ===== 로봇 풋프린트 =====
 # base_link 프레임에서의 로봇 풋프린트
@@ -62,7 +62,7 @@ footprint_padding: 0.01
 
 # 장애물 주변 inflation 반경 (미터)
 # 장애물로부터 cost 값이 전파되는 반경
-inflation_radius: 0.8  # 안전한 주행을 위해 커스터마이징
+inflation_radius: 0.4  # 안전한 주행을 위해 커스터마이징
 
 # Cost scaling factor
 # Cost가 감소하는 비율 (높을수록 공격적)
