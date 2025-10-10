@@ -44,7 +44,7 @@ sleep 2
 
 # 5. DWA Navigation (with Waypoint Manager for Kakao API)
 echo "[5/6] Launching DWA Navigation..."
-roslaunch dwa dwa_navigation.launch enable_rviz:=false odom_topic:=/ins/odom enable_waypoint_manager:=true &
+roslaunch dwa dwa_navigation.launch enable_rviz:=false odom_topic:=/faster_lio/odom enable_waypoint_manager:=true &
 DWA_PID=$!
 
 # 6. RViz 시각화

@@ -1,3 +1,5 @@
 CLAUDE.md
 .vscode
 .claude
+
+*.pyc

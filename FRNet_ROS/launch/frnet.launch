@@ -1,4 +1,6 @@
 <launch>
+  <arg name="enable_rviz" default="true"/>
+  
   <!-- FRNet 세그먼테이션 노드 -->
   <node name="frnet_segmentation" pkg="frnet_ros" type="frnet_segmentation_node.py" output="screen">
     <param name="config" value="$(find frnet_ros)/configs/frnet/frnet-semantickitti_seg.py"/>
@@ -6,5 +8,7 @@
   </node>
   
   <!-- Rviz 시각화 -->
-  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find frnet_ros)/launch/frnet_seg.rviz" required="false"/>
+  <node if="$(arg enable_rviz)" name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find frnet_ros)/rviz/frnet.rviz"
+        output="screen"/>
 </launch>
