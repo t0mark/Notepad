@@ -31,6 +31,10 @@ class FRNetSegmentation:
         # 필터링할 클래스 인덱스 리스트 (SemanticKITTI 클래스 기준)
         self.filtered_indices = rospy.get_param('~filtered_indices', [0])
 
+        # 스캔 주사율 제어: N번에 한 번씩만 처리
+        self.process_every_n_scans = rospy.get_param('~process_every_n_scans', 5)
+        self.scan_counter = 0
+
         # 모델 초기화
         rospy.loginfo("모델 초기화 중...")
         try:
@@ -45,7 +49,9 @@ class FRNetSegmentation:
         self.sub = rospy.Subscriber('pointcloud_in', PointCloud2, self.pointcloud_callback, queue_size=1)
         self.pub = rospy.Publisher('/FRNet/points', PointCloud2, queue_size=1)
 
-        rospy.loginfo(f"FRNet 세그먼테이션 노드가 준비되었습니다. 필터링 인덱스: {self.filtered_indices}")
+        rospy.loginfo(f"FRNet 세그먼테이션 노드가 준비되었습니다.")
+        rospy.loginfo(f"필터링 인덱스: {self.filtered_indices}")
+        rospy.loginfo(f"처리 주기: {self.process_every_n_scans}번 스캔마다 1회 처리")
 
     def convert_to_semantickitti_format(self, points):
         """Ouster LiDAR 포인트 클라우드를 SemanticKITTI 형식으로 변환"""
@@ -62,7 +68,14 @@ class FRNetSegmentation:
         return points
 
     def pointcloud_callback(self, msg):
-        rospy.loginfo("포인트 클라우드 데이터 수신")
+        # 스캔 카운터 증가
+        self.scan_counter += 1
+
+        # N번에 한 번씩만 처리
+        if self.scan_counter % self.process_every_n_scans != 0:
+            return
+
+        rospy.loginfo(f"포인트 클라우드 데이터 처리 중 (스캔 #{self.scan_counter})")
 
         try:
             # PointCloud2 메시지에서 직접 포인트 데이터 추출

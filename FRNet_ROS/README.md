@@ -13,7 +13,7 @@ pip install nuscenes-devkit
 pip install argparse pyyaml
 
 # MIM 패키지 설치
-pip3 install -U openmim
+pip install -U openmim
 
 mim install mmengine==0.9.0
 mim install mmcv==2.1.0

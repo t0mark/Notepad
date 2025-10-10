@@ -10,40 +10,40 @@ class_names = [
     'fence', 'vegetation', 'trunck', 'terrian', 'pole', 'traffic-sign'
 ]
 labels_map = {
-    0: 19,  # "unlabeled"                                       -> "unlabeled"
-    1: 19,  # "outlier" -> "unlabeled"                          -> "unlabeled"
-    10: 0,  # "car"                                             -> "car"
-    11: 1,  # "bicycle"                                         -> "other-vehicle"
-    13: 4,  # "bus"                                             -> "other-vehicle"
-    15: 2,  # "motorcycle"                                      -> "other-vehicle"
-    16: 4,  # "on-rails" -> "bus"                               -> "other-vehicle"
-    18: 3,  # "truck"                                           -> "car"
-    20: 4,  # "other-vehicle" -> "bus"                          -> "other-vehicle"
-    30: 5,  # "person"                                          -> "other-vehicle"
-    31: 6,  # "bicyclist"                                       -> "other-vehicle"
-    32: 7,  # "motorcyclist"                                    -> "other-vehicle"
-    40: 8,  # "road"                                            -> "road"
-    44: 9,  # "parking"                                         -> "road"
-    48: 10,  # "sidewalk"                                       -> "sidewalk"
-    49: 11,  # "other-ground"                                   -> "unlabeled"
-    50: 12,  # "building"                                       -> "unlabeled"
-    51: 13,  # "fence"                                          -> "unlabeled"
-    52: 19,  # "other-structure" -> "unlabeled"                 -> "unlabeled"
-    60: 8,  # "lane-marking" -> "road"                          -> "road"
-    70: 14,  # "vegetation"                                     -> "unlabeled"
-    71: 15,  # "trunk"                                          -> "unlabeled"
-    72: 16,  # "terrain"                                        -> "unlabeled"
-    80: 17,  # "pole"                                           -> "unlabeled"
-    81: 18,  # "traffic-sign"                                   -> "unlabeled"
-    99: 19,  # "other-object" -> "unlabeled"                    -> "unlabeled"
-    252: 0,  # "moving-car" -> "car"                            -> "car"
-    253: 6,  # "moving-bicyclist" -> "bicyclist"                -> "other-vehicle"
-    254: 5,  # "moving-person" -> "person"                      -> "other-vehicle"
-    255: 7,  # "moving-motorcyclist" -> "motorcyclist"          -> "other-vehicle"
-    256: 4,  # "moving-on-rails" -> "other-vehic"               -> "other-vehicle"
-    257: 4,  # "moving-bus" -> "other-vehicle"                  -> "other-vehicle"
-    258: 3,  # "moving-truck" -> "truck"                        -> "car"
-    259: 4  # "moving-other" -> "bus"                           -> "other-vehicle"
+    0: 19,  # "unlabeled"
+    1: 19,  # "outlier" mapped to "unlabeled" --------------mapped
+    10: 0,  # "car"
+    11: 1,  # "bicycle"
+    13: 4,  # "bus" mapped to "other-vehicle" --------------mapped
+    15: 2,  # "motorcycle"
+    16: 4,  # "on-rails" mapped to "other-vehicle" ---------mapped
+    18: 3,  # "truck"
+    20: 4,  # "other-vehicle"
+    30: 5,  # "person"
+    31: 6,  # "bicyclist"
+    32: 7,  # "motorcyclist"
+    40: 8,  # "road"
+    44: 9,  # "parking"
+    48: 10,  # "sidewalk"
+    49: 11,  # "other-ground"
+    50: 12,  # "building"
+    51: 13,  # "fence"
+    52: 19,  # "other-structure" mapped to "unlabeled" ------mapped
+    60: 8,  # "lane-marking" to "road" ---------------------mapped
+    70: 14,  # "vegetation"
+    71: 15,  # "trunk"
+    72: 16,  # "terrain"
+    80: 17,  # "pole"
+    81: 18,  # "traffic-sign"
+    99: 19,  # "other-object" to "unlabeled" ----------------mapped
+    252: 0,  # "moving-car" to "car" ------------------------mapped
+    253: 6,  # "moving-bicyclist" to "bicyclist" ------------mapped
+    254: 5,  # "moving-person" to "person" ------------------mapped
+    255: 7,  # "moving-motorcyclist" to "motorcyclist" ------mapped
+    256: 4,  # "moving-on-rails" mapped to "other-vehic------mapped
+    257: 4,  # "moving-bus" mapped to "other-vehicle" -------mapped
+    258: 3,  # "moving-truck" to "truck" --------------------mapped
+    259: 4  # "moving-other"-vehicle to "other-vehicle"-----mapped
 }
 metainfo = dict(
     classes=class_names, seg_label_mapping=labels_map, max_label=259)
