@@ -1,19 +1,138 @@
-obstacle_range: 5.0
-raytrace_range: 6.0
+# ============================================================
+# Costmap Common Parameters
+# This file contains common configuration options for the two costmaps
+# used in the navigation stack.
+# For more details: http://www.ros.org/wiki/costmap_2d
+# ============================================================
 
+# Costmap type configuration
+# Options: voxel, costmap
+# voxel: Uses 3D voxel grid for better handling of obstacles at different heights
+# costmap: Uses 2D grid
+map_type: voxel
+
+# ===== Voxel Grid Specific Parameters =====
+# (Only used when map_type: voxel)
+
+# Origin z-coordinate of the voxel grid (meters)
+origin_z: 0.0
+
+# Resolution of each voxel in the z-dimension (meters)
+z_resolution: 0.2
+
+# Number of voxels in the z-dimension
+z_voxels: 10
+
+# Number of unknown cells before a column is considered unknown
+unknown_threshold: 9
+
+# Number of marked cells before a column is considered occupied
+mark_threshold: 0
+
+# ===== Transform Tolerance =====
+# Maximum time delay allowed between transforms (seconds)
+# Set higher if you have slower computers or TF tree delays
+transform_tolerance: 0.5  # Increased from 0.3 for stability
+
+# ===== Obstacle Marking Parameters =====
+
+# Maximum range for marking obstacles (meters)
+# Obstacles beyond this range won't be added to the costmap
+obstacle_range: 5.0  # Customized for Ouster LiDAR
+
+# Maximum height of obstacles to be added to the costmap (meters)
+max_obstacle_height: 2.0
+
+# Maximum range for ray-tracing to clear space (meters)
+# Should be >= obstacle_range for proper clearing
+raytrace_range: 6.0  # Slightly larger than obstacle_range
+
+# ===== Robot Footprint =====
+# The footprint of the robot in the base_link frame
+# Format: [[x1, y1], [x2, y2], ...]
+# Counterclockwise from the front-right corner
 footprint: [[-0.5, -0.4], [-0.5, 0.4], [0.5, 0.4], [0.5, -0.4]]
-robot_radius: 0.64
 
-inflation_radius: 0.8
+# Alternative: Use robot_radius for circular robots
+# robot_radius: 0.64
+
+# Padding added to the footprint (meters)
+footprint_padding: 0.01
+
+# ===== Cost Function Parameters =====
+
+# Inflation radius around obstacles (meters)
+# The radius to which the cost values will be propagated from obstacles
+inflation_radius: 0.8  # Customized for safe navigation
+
+# Cost scaling factor
+# The factor by which costs are scaled down (higher = more aggressive)
+# Formula: cost = 252 * exp(-k * distance / inflation_radius)
+# where k = cost_scaling_factor
 cost_scaling_factor: 10.0
+
+# The cost at which a cell is considered an obstacle when a map is read from map_server
+# Range: 0-255, where 0=free, 255=lethal obstacle
+lethal_cost_threshold: 100
+
+# ===== Observation Sources =====
+# Configuration for the sensors that the costmap will use to update the map
 
 observation_sources: laser_scan_sensor
 
 laser_scan_sensor:
+  # Sensor frame ID
   sensor_frame: os_lidar
+
+  # Type of sensor data
+  # Options: LaserScan, PointCloud, PointCloud2
   data_type: LaserScan
+
+  # Topic name
   topic: /scan
+
+  # Whether this source should mark (add) obstacles
   marking: true
+
+  # Whether this source should clear (remove) obstacles
   clearing: true
+
+  # Minimum obstacle height to consider (meters)
   min_obstacle_height: -0.5
+
+  # Maximum obstacle height to consider (meters)
   max_obstacle_height: 2.0
+
+  # Expected update rate (Hz)
+  # Set to 0.0 to disable timeout checking
+  expected_update_rate: 0.0
+
+  # How long to keep observations in the buffer (seconds)
+  # 0.0 = don't persist observations
+  observation_persistence: 0.0
+
+  # Minimum range to use from sensor (meters)
+  # inf_is_valid: true  # Treat infinite range readings as valid max range
+
+# ===== Additional Sensor Configuration (Examples) =====
+# Uncomment and configure additional sensors as needed
+
+# point_cloud_sensor:
+#   sensor_frame: camera_depth_frame
+#   data_type: PointCloud2
+#   topic: /camera/depth/points
+#   marking: true
+#   clearing: true
+#   min_obstacle_height: 0.0
+#   max_obstacle_height: 2.0
+#   expected_update_rate: 0.0
+#   observation_persistence: 0.0
+
+# ===== Layer Configuration =====
+# The costmap uses plugins/layers to build the final map
+# Common layers: static_layer, obstacle_layer, inflation_layer
+
+# plugins:
+#   - {name: static_layer,        type: "costmap_2d::StaticLayer"}
+#   - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
+#   - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}

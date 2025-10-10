@@ -1,7 +1,144 @@
+# ============================================================
+# Move Base Node Parameters
+# For full documentation: http://wiki.ros.org/move_base#Parameters
+# ============================================================
+
+# ===== Costmap Management =====
+
+# Determines whether or not to shutdown the costmaps when move_base is inactive
+# true: saves CPU when not navigating
+# false: keeps costmaps running (faster startup when new goal received)
 shutdown_costmaps: false
+
+# ===== Control Loop Frequencies =====
+
+# The rate in Hz at which to run the control loop and send velocity commands
+# Higher = more responsive, but more CPU usage
 controller_frequency: 10.0
+
+# How long the controller will wait in seconds without receiving a valid control
+# before space-clearing operations are performed
+# Increase if your local planner is slow
 controller_patience: 3.0
+
+# ===== Planning Loop Frequencies =====
+
+# The rate in Hz at which to run the global planning loop
+# If set to 0.0, the global planner will only run when:
+#   - A new goal is received
+#   - The local planner reports that its path is blocked
 planner_frequency: 1.0
+
+# How long the planner will wait in seconds to find a valid plan
+# before space-clearing operations are performed
+# Increase if your global planner is slow or map is large
 planner_patience: 5.0
+
+# ===== Oscillation Detection =====
+
+# How long in seconds to allow for oscillation before executing recovery behaviors
+# A value of 0.0 corresponds to an infinite timeout
 oscillation_timeout: 10.0
+
+# How far in meters the robot must move to be considered not oscillating
+# Moving this far resets the timer counting up to oscillation_timeout
 oscillation_distance: 0.2
+
+# ===== Planner Selection =====
+
+# The name of the plugin for the global planner to use with move_base
+# Must adhere to nav_core::BaseGlobalPlanner interface
+# Common options:
+#   - "navfn/NavfnROS" (Dijkstra-based)
+#   - "global_planner/GlobalPlanner" (A* based, more configurable)
+#   - "carrot_planner/CarrotPlanner" (simple planner that moves toward goal)
+# base_global_planner: "global_planner/GlobalPlanner"
+# Note: Set in launch file
+
+# The name of the plugin for the local planner to use with move_base
+# Must adhere to nav_core::BaseLocalPlanner interface
+# Common options:
+#   - "base_local_planner/TrajectoryPlannerROS" (original)
+#   - "dwa_local_planner/DWAPlannerROS" (Dynamic Window Approach)
+#   - "teb_local_planner/TebLocalPlannerROS" (Timed Elastic Band)
+# base_local_planner: "dwa_local_planner/DWAPlannerROS"
+# Note: Set in launch file
+
+# ===== Recovery Behaviors =====
+
+# List of recovery behavior plugins to use when the robot gets stuck
+# Each behavior will be executed in order until one succeeds or all fail
+# Default behaviors: conservative_reset, rotate_recovery, aggressive_reset
+recovery_behaviors:
+  # Conservative reset: clears obstacles within a small radius
+  - name: conservative_reset
+    type: clear_costmap_recovery/ClearCostmapRecovery
+
+  # Rotate recovery: rotates in place to clear space
+  - name: rotate_recovery
+    type: rotate_recovery/RotateRecovery
+
+  # Aggressive reset: clears obstacles within a larger radius
+  - name: aggressive_reset
+    type: clear_costmap_recovery/ClearCostmapRecovery
+
+# Whether recovery behaviors are enabled
+# Set to false to disable all recovery behaviors
+recovery_behavior_enabled: true
+
+# ===== Recovery Behavior Parameters =====
+
+# Conservative reset parameters
+conservative_reset:
+  # Reset distance for conservative clear (meters)
+  reset_distance: 3.0
+
+  # Layer names to clear
+  # layer_names: ["obstacle_layer"]
+
+# Aggressive reset parameters
+aggressive_reset:
+  # Reset distance for aggressive clear (meters)
+  reset_distance: 5.0
+
+  # Layer names to clear
+  # layer_names: ["obstacle_layer"]
+
+# Rotate recovery parameters
+rotate_recovery:
+  # Simulation granularity (radians)
+  sim_granularity: 0.017
+
+  # Frequency of commanding rotation (Hz)
+  frequency: 20.0
+
+# ===== Goal Tolerance =====
+
+# Conservative reset distance (meters)
+# How far from obstacles to clear when performing conservative reset
+# conservative_reset_dist: 3.0
+
+# ===== Clearing Parameters =====
+
+# Whether to clear the costmap when starting to navigate
+# clearing_rotation_allowed: true
+
+# Radius within which to clear costmap (meters)
+# clearing_radius: 0.5
+
+# ===== Planning Retries =====
+
+# Maximum number of times to retry planning before giving up
+# -1 = unlimited retries
+# max_planning_retries: -1
+
+# ===== Additional Parameters =====
+
+# Whether to make a plan before clearing costmap during recovery
+# make_plan_clear_costmap: true
+
+# Whether to add unreachable goal to the plan
+# make_plan_add_unreachable_goal: true
+
+# Restore defaults for unspecified parameters
+# restore_defaults: false

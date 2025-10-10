@@ -12,7 +12,7 @@
 
 
   <!-- ===== Gazebo 시뮬레이션 실행 ===== -->
-  <include file="$(find gazebo_simulation)/launch/gazebo_spawn.launch">
+  <include file="$(find gazebo_simulation)/launch/gazebo_spawn_TF.launch">
     <arg name="world_name" value="$(arg world_name)"/>
     <arg name="z_position" value="$(arg z_position)"/>
   </include>

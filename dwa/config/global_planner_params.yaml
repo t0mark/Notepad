@@ -1,14 +1,115 @@
+# ============================================================
+# Global Planner Parameters
+# For GlobalPlanner (global_planner/GlobalPlanner)
+# For full documentation: http://wiki.ros.org/global_planner
+# ============================================================
+
 GlobalPlanner:
+  # ===== General Parameters =====
+
+  # Whether to allow planning through unknown space
+  # true: can plan through unknown areas (useful for exploration)
+  # false: treats unknown space as obstacles
   allow_unknown: true
+
+  # Tolerance in meters for the goal position
+  # If a plan cannot reach exactly to the goal, it will plan to within this distance
+  # 0.0 = must reach exact goal position
   default_tolerance: 0.0
+
+  # ===== Visualization Parameters =====
+
+  # Whether to publish the potential (cost) field for visualization
+  # Useful for debugging in RViz
   visualize_potential: false
-  use_dijkstra: true
-  use_quadratic: true
-  use_grid_path: false
-  old_navfn_behavior: false
-  lethal_cost: 253
-  neutral_cost: 50
-  cost_factor: 3.0
+
+  # Whether to publish the potential array
+  # Can be used for advanced visualization
   publish_potential: true
+
+  # Publish the global plan for visualization
+  # publish_plan: true
+
+  # ===== Algorithm Selection =====
+
+  # Whether to use Dijkstra's algorithm
+  # true: Dijkstra (slower but optimal)
+  # false: A* (faster but requires heuristic)
+  use_dijkstra: true
+
+  # Whether to use a quadratic approximation
+  # Smooths the potential field
+  use_quadratic: true
+
+  # Whether to use grid path
+  # false: follows gradient descent
+  # true: follows grid path (more direct but less smooth)
+  use_grid_path: false
+
+  # Whether to use old NavFn behavior
+  # For backwards compatibility
+  old_navfn_behavior: false
+
+  # ===== Cost Parameters =====
+
+  # Cost value for lethal obstacles (0-255)
+  # Cells with cost >= this value are considered impassable
+  lethal_cost: 253
+
+  # Cost value for neutral space (0-255)
+  # Cost assigned to cells with no obstacles
+  neutral_cost: 50
+
+  # Factor to multiply cost values
+  # Higher values make the planner prefer staying further from obstacles
+  cost_factor: 3.0
+
+  # ===== Path Orientation Parameters =====
+
+  # How to set the orientation of each point in the path
+  # 0 = No orientations (all quaternions set to 0)
+  # 1 = Forward (point towards next waypoint)
+  # 2 = Interpolate (smooth orientation changes)
+  # 3 = Forward, then interpolate
+  # 4 = Backward (point towards previous waypoint)
+  # 5 = Leftward
+  # 6 = Rightward
   orientation_mode: 0
+
+  # Window size for orientation interpolation
+  # Number of poses to use when computing orientation
   orientation_window_size: 1
+
+  # ===== Performance Parameters =====
+
+  # Whether to outline the map
+  # Adds cells around the boundary of the map
+  # outline_map: true
+
+  # Whether to override the global costmap's inscribed radius
+  # Set a custom robot radius for planning
+  # override_inscribed_radius: false
+  # inscribed_radius: 0.0
+
+  # Whether to override the global costmap's circumscribed radius
+  # override_circumscribed_radius: false
+  # circumscribed_radius: 0.0
+
+  # ===== Planner Limits =====
+
+  # Maximum number of planning cycles
+  # Limits computation time for very difficult planning problems
+  # planner_window_x: 0.0
+  # planner_window_y: 0.0
+
+  # Potential threshold for considering cells
+  # Lower values = more cells considered (slower but more thorough)
+  # default_tolerance: 0.0
+
+  # ===== Additional NavFn Compatibility Parameters =====
+
+  # Whether to allow planning in unknown space (alias)
+  # allow_unknown: true
+
+  # Whether to use simple planner in certain conditions
+  # use_simple_planner: false

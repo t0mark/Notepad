@@ -1,11 +1,80 @@
+# ============================================================
+# Local Costmap Parameters
+# Independent settings for the local planner's costmap
+# For more details: http://www.ros.org/wiki/costmap_2d
+# ============================================================
+
 local_costmap:
+  # ===== Frame Configuration =====
+
+  # The global frame for the costmap to operate in
+  # For local costmap, typically 'odom' frame
   global_frame: odom
+
+  # The name of the frame for the base link of the robot
   robot_base_frame: base_link
+
+  # ===== Update and Publish Frequency =====
+
+  # How often to update the costmap (Hz)
   update_frequency: 5.0
+
+  # How often to publish visualization info (Hz)
+  # Set to 0.0 to disable publishing
   publish_frequency: 2.0
+
+  # ===== Map Configuration =====
+
+  # Whether to use a static map (from map_server)
+  # For local costmap, typically false (builds map from sensor data)
   static_map: false
+
+  # Whether the costmap should roll with the robot
+  # true: costmap is always centered on the robot
+  # false: costmap is fixed in place
   rolling_window: true
+
+  # Width of the costmap (meters)
   width: 10.0
+
+  # Height of the costmap (meters)
   height: 10.0
+
+  # Resolution of the costmap (meters/cell)
+  # Smaller = more accurate but more computational cost
   resolution: 0.05
+
+  # Origin of the costmap in the global frame
+  # For rolling window, these are typically 0.0
+  origin_x: 0.0
+  origin_y: 0.0
+
+  # ===== Transform Tolerance =====
+
+  # Maximum allowable transform age (seconds)
+  # Overrides the common parameter if specified
   transform_tolerance: 0.5
+
+  # ===== Visualization =====
+
+  # Whether to publish the voxel grid for visualization
+  # Only relevant when using voxel layer
+  publish_voxel_map: false
+
+  # ===== Layer Plugins =====
+  # Uncomment to explicitly define costmap layers
+
+  # plugins:
+  #   - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
+  #   - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
+
+  # ===== Additional Parameters =====
+
+  # Whether to always send full costmap updates
+  # always_send_full_costmap: false
+
+  # Track unknown space
+  # track_unknown_space: true
+
+  # Use maximum value for unknown space when combining layers
+  # unknown_cost_value: 255

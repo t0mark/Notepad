@@ -12,8 +12,8 @@
   <!-- Arguments -->
   <arg name="enable_rviz" default="true"/>
   <arg name="rviz_config" default="$(find dwa)/rviz/dwa.rviz"/>
-
-  <param name="/use_sim_time" value="false"/>
+  <arg name="odom_topic" default="odom"/>
+  <arg name="enable_waypoint_manager" default="false"/>
 
   <!-- ===== 포인트 클라우드 처리 파이프라인 ===== -->
   <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen"/>
@@ -53,6 +53,10 @@
 
   <!-- ===== move_base 네비게이션 스택 ===== -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+    <!-- 토픽 리매핑 -->
+    <remap from="odom" to="$(arg odom_topic)"/>
+    <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
+
     <!-- 파라미터 로드 -->
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
@@ -65,9 +69,12 @@
     <!-- 플래너 선택 -->
     <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
     <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
+  </node>
 
-    <!-- cmd_vel 토픽 리매핑 (Husky 컨트롤러로 전달) -->
-    <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
+  <!-- ===== Waypoint Manager ===== -->
+  <!-- Kakao API 경로를 사용할 때만 활성화 -->
+  <node if="$(arg enable_waypoint_manager)" pkg="dwa" type="waypoint_manager.py" name="waypoint_manager" output="screen">
+    <rosparam file="$(find dwa)/config/waypoint_manager_params.yaml" command="load"/>
   </node>
 
   <!-- ===== RViz 시각화 ===== -->

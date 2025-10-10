@@ -1,44 +1,167 @@
+# ============================================================
+# DWA Local Planner Parameters
+# For full documentation: http://www.ros.org/wiki/dwa_local_planner
+# ============================================================
+
 DWAPlannerROS:
-  # Robot Configuration Parameters
+  # ===== Robot Configuration Parameters =====
+
+  # Maximum velocity in the x direction (m/s)
   max_vel_x: 1.0
+
+  # Minimum velocity in the x direction (m/s)
+  # Can be negative for reverse motion
   min_vel_x: -0.5
+
+  # Maximum velocity in the y direction (m/s)
+  # Set to 0.0 for differential drive robots
   max_vel_y: 0.0
+
+  # Minimum velocity in the y direction (m/s)
+  # Set to 0.0 for differential drive robots
   min_vel_y: 0.0
 
+  # Maximum translational velocity (m/s)
+  # Choose slightly less than the robot's capability
   max_vel_trans: 1.0
+
+  # Minimum translational velocity (m/s)
+  # This is the min trans velocity when there is negligible rotational velocity
+  # WARNING: Do not set to 0.0 otherwise dwa will always think translational
+  # velocities are non-negligible and small in-place rotational velocities will be created
   min_vel_trans: 0.1
 
+  # Velocity below which the robot is considered stopped in translation (m/s)
+  trans_stopped_vel: 0.1
+
+  # Maximum rotational velocity (rad/s)
+  # Choose slightly less than the robot's capability
   max_vel_theta: 1.5
+
+  # Minimum rotational velocity (rad/s)
+  # This is the min angular velocity when there is negligible translational velocity
   min_vel_theta: 0.4
 
+  # Velocity below which the robot is considered stopped in rotation (rad/s)
+  rot_stopped_vel: 0.4
+
+  # Maximum acceleration in the x direction (m/s^2)
   acc_lim_x: 2.5
+
+  # Maximum acceleration in the y direction (m/s^2)
+  # Set to 0.0 for differential drive robots
   acc_lim_y: 0.0
+
+  # Maximum rotational acceleration (rad/s^2)
   acc_lim_theta: 3.2
 
-  # Goal Tolerance Parameters
+  # ===== Goal Tolerance Parameters =====
+
+  # Tolerance in the x & y distance to the goal (meters)
   xy_goal_tolerance: 0.2
+
+  # Tolerance in the yaw to the goal (radians)
   yaw_goal_tolerance: 0.17
+
+  # If true, the robot will continue to rotate in place to achieve the goal orientation
+  # even if it has reached the goal position
   latch_xy_goal_tolerance: false
 
-  # Forward Simulation Parameters
+  # ===== Forward Simulation Parameters =====
+
+  # Amount of time to forward-simulate trajectories (seconds)
+  # Higher values look further ahead but increase computation
   sim_time: 1.5
+
+  # Step size for the trajectory simulation (meters)
+  # Smaller values = more accurate but slower
   sim_granularity: 0.025
+
+  # Angular granularity with which to sample angular velocities (radians)
+  # angular_sim_granularity: 0.025
+
+  # Number of samples to use when exploring the x velocity space
   vx_samples: 20
+
+  # Number of samples to use when exploring the y velocity space
+  # Set to 0 for differential drive robots
   vy_samples: 0
+
+  # Number of samples to use when exploring the theta velocity space
   vtheta_samples: 40
 
-  # Trajectory Scoring Parameters
+  # ===== Trajectory Scoring Parameters =====
+
+  # Weighting for staying close to the global path
+  # Higher values make the robot stick closer to the path
   path_distance_bias: 32.0
+
+  # Weighting for progressing towards the goal
+  # Higher values make the robot drive more directly to the goal
   goal_distance_bias: 24.0
+
+  # Weighting for staying away from obstacles
+  # Higher values make the robot avoid obstacles more aggressively
   occdist_scale: 0.01
+
+  # Distance from the robot to place a scoring point (meters)
+  # The point at which to compute heading error for trajectory scoring
   forward_point_distance: 0.325
+
+  # Amount of time the robot must stop before a collision (seconds)
+  # Provides a safety margin for emergency stops
   stop_time_buffer: 0.2
+
+  # The absolute value of the velocity at which to start scaling the robot's footprint (m/s)
+  # Allows dynamic footprint adjustment based on speed
   scaling_speed: 0.25
+
+  # Maximum factor to scale the robot's footprint by
   max_scaling_factor: 0.2
 
-  # Oscillation Prevention Parameters
+  # ===== Oscillation Prevention Parameters =====
+
+  # Distance the robot must travel before oscillation flags are reset (meters)
+  # Prevents the robot from getting stuck in place
   oscillation_reset_dist: 0.05
 
-  # Debugging
-  publish_traj_pc: true
+  # How far the robot must move to reset oscillation flags (meters)
+  # oscillation_reset_angle: 0.2
+
+  # ===== Debugging / Visualization =====
+
+  # Whether to publish the cost grid that the planner uses for trajectory evaluation
+  # Useful for debugging but increases CPU/network load
   publish_cost_grid_pc: true
+
+  # Whether to publish the evaluated trajectories as a point cloud
+  # Useful for visualization in RViz
+  publish_traj_pc: true
+
+  # Global frame ID for cost cloud visualization
+  # global_frame_id: odom
+
+  # ===== Additional Parameters =====
+
+  # Whether to use the Dynamic Window Approach for velocity sampling
+  # If false, uses the full velocity space
+  # use_dwa: true
+
+  # Whether to restore defaults for parameters not explicitly set
+  # restore_defaults: false
+
+  # Tolerance for the controller's execution time (seconds)
+  # If the controller takes longer than this, it will abort
+  # controller_frequency: 20.0
+
+  # Penalize turns that change the direction of robot motion
+  # twirling_scale: 0.0
+
+  # ===== Holonomic Robot Settings =====
+  # (Only for omnidirectional robots, not differential drive)
+
+  # Set to true for holonomic robots (can move in any direction)
+  # holonomic_robot: false
+
+  # Set of y velocities to sample for holonomic robots
+  # y_vels: [-0.3, -0.1, 0.1, 0.3]
