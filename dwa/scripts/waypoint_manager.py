@@ -264,6 +264,9 @@ class WaypointManager:
             line_marker.type = Marker.LINE_STRIP
             line_marker.action = Marker.ADD
 
+            # 포즈 초기화
+            line_marker.pose.orientation.w = 1.0
+
             line_marker.scale.x = 0.1  # 선 두께
             line_marker.color = ColorRGBA(1.0, 1.0, 0.0, 0.6)  # 노란색
 
@@ -289,6 +292,12 @@ class WaypointManager:
 
         # 웨이포인트 필터링
         self.waypoints = self.filter_waypoints(path_msg)
+
+        # 쿼터니언 초기화: 경로에 방향 정보가 없는 경우를 대비
+        for wp in self.waypoints:
+            q = wp.pose.orientation
+            if q.x == 0 and q.y == 0 and q.z == 0 and q.w == 0:
+                q.w = 1.0
 
         if not self.waypoints:
             rospy.logwarn("❌ 필터링 후 유효한 웨이포인트 없음")
