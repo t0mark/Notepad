@@ -10,8 +10,8 @@ DWAPlannerROS:
   max_vel_x: 1.0
 
   # x 방향 최소 속도 (m/s)
-  # 후진을 위해 음수 가능
-  min_vel_x: -0.5
+  # 0.0으로 설정하여 후진 방지
+  min_vel_x: 0.0
 
   # y 방향 최대 속도 (m/s)
   # 차동구동 로봇의 경우 0.0으로 설정
@@ -94,15 +94,15 @@ DWAPlannerROS:
 
   # 전역 경로를 따라가는 것에 대한 가중치
   # 높은 값은 로봇이 경로에 더 가깝게 유지
-  path_distance_bias: 32.0
+  path_distance_bias: 64.0
 
   # 목표를 향해 진행하는 것에 대한 가중치
   # 높은 값은 로봇이 목표로 더 직접적으로 이동
-  goal_distance_bias: 24.0
+  goal_distance_bias: 48.0
 
   # 장애물로부터 멀리 유지하는 것에 대한 가중치
   # 높은 값은 로봇이 장애물을 더 공격적으로 회피
-  occdist_scale: 0.01
+  occdist_scale: 0.005
 
   # 궤적 점수화를 위한 로봇으로부터의 점 거리 (미터)
   # 헤딩 오류를 계산할 지점

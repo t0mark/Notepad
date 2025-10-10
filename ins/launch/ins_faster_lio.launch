@@ -1,7 +1,7 @@
 <launch>
 
   <!-- Load parameters -->
-  <rosparam command="load" file="$(find ins)/params/ins_params.yaml" />
+  <rosparam command="load" file="$(find ins)/params/ins_faster_lio.yaml" />
 
   <!-- navsat_transform_node -->
   <!-- Transforms GPS lat/lon to map frame coordinates -->

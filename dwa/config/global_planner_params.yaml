@@ -74,7 +74,7 @@ GlobalPlanner:
   # 4 = Backward (이전 웨이포인트를 향함)
   # 5 = Leftward (왼쪽)
   # 6 = Rightward (오른쪽)
-  orientation_mode: 0
+  orientation_mode: 1
 
   # 방향 보간을 위한 윈도우 크기
   # 방향을 계산할 때 사용할 pose 개수

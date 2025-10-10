@@ -13,15 +13,29 @@ roslaunch gazebo_simulation gazebo_spawn.launch world_name:="empty" &
 GAZEBO_PID=$!
 sleep 3
 
-# 2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
+# # 2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
+# echo "[2/7] Launching INS Fusion..."
+# roslaunch ins ins_faster_lio.launch &
+# INS_PID=$!
+# echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
+# sleep 5
+
+# # 3. Faster-LIO Mapping - Launch AFTER Gazebo is ready
+# echo "[3/7] Launching Faster-LIO..."
+# roslaunch faster_lio mapping_ouster32.launch rviz:=false &
+# FASTLIO_PID=$!
+# sleep 2
+
+# 2-2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
 echo "[2/7] Launching INS Fusion..."
-roslaunch ins ins.launch &
+roslaunch ins ins_wheel.launch &
 INS_PID=$!
 echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
 sleep 5
 
-# 3. Kakao API Debug (INS TF 감지 후 실행)
-echo "[3/7] Launching Kakao API..."
+
+# 4. Kakao API Debug (INS TF 감지 후 실행)
+echo "[4/7] Launching Kakao API..."
 roslaunch kakao_api kakao_api.launch &
 KAKAO_PID=$!
 
@@ -34,12 +48,6 @@ for i in {1..20}; do
     fi
     sleep 0.5
 done
-sleep 2
-
-# 4. Faster-LIO Mapping - Launch AFTER Gazebo is ready
-echo "[4/7] Launching Faster-LIO..."
-roslaunch faster_lio mapping_ouster32.launch rviz:=false &
-FASTLIO_PID=$!
 sleep 2
 
 # 5. FRNet Segmentation

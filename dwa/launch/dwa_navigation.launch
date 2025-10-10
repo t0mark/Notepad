@@ -21,7 +21,7 @@
 
   <!-- Ouster 데이터 다운샘플링을 위한 VoxelGrid 필터 -->
   <node pkg="nodelet" type="nodelet" name="voxel_grid" args="load pcl/VoxelGrid pcl_manager" output="screen">
-    <remap from="~input" to="$(arg lidar_topic)"/>
+    <remap from="~input" to="/ouster/points"/>
     <remap from="~output" to="/points_filtered"/>
     <param name="leaf_size" value="0.10"/>
     <param name="filter_field_name" value="z"/>
@@ -59,13 +59,13 @@
     <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
 
     <!-- 파라미터 로드 -->
+    <rosparam file="$(find dwa)/config/move_base_params.yaml" command="load"/>
+    <rosparam file="$(find dwa)/config/global_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find dwa)/config/local_costmap_params.yaml" command="load"/>
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find dwa)/config/costmap_common_params.yaml" command="load" ns="local_costmap"/>
-    <rosparam file="$(find dwa)/config/move_base_params.yaml" command="load"/>
-    <rosparam file="$(find dwa)/config/local_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find dwa)/config/global_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find dwa)/config/local_planner_params.yaml" command="load"/>
     <rosparam file="$(find dwa)/config/global_planner_params.yaml" command="load"/>
+    <rosparam file="$(find dwa)/config/local_planner_params.yaml" command="load"/>
 
     <!-- 플래너 선택 -->
     <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
