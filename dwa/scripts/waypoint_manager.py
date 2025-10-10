@@ -19,6 +19,8 @@ from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
 from actionlib_msgs.msg import GoalStatus
 from nav_msgs.srv import GetPlan
 from std_srvs.srv import Empty
+from visualization_msgs.msg import Marker, MarkerArray
+from std_msgs.msg import ColorRGBA
 
 
 class WaypointManager:
@@ -36,15 +38,15 @@ class WaypointManager:
         self.skip_unreachable = rospy.get_param('~skip_unreachable', True)
 
         rospy.loginfo("=" * 60)
-        rospy.loginfo("Waypoint Manager Parameters:")
-        rospy.loginfo(f"  Min waypoint distance: {self.min_waypoint_distance}m")
-        rospy.loginfo(f"  Max waypoint distance: {self.max_waypoint_distance}m")
-        rospy.loginfo(f"  Angle threshold: {self.angle_threshold} rad")
-        rospy.loginfo(f"  Goal timeout: {self.goal_timeout}s")
-        rospy.loginfo(f"  Max retries: {self.max_retries}")
-        rospy.loginfo(f"  Goal tolerance: {self.goal_tolerance}m")
-        rospy.loginfo(f"  Max deviation: {self.max_deviation}m")
-        rospy.loginfo(f"  Skip unreachable: {self.skip_unreachable}")
+        rospy.loginfo("웨이포인트 관리자 파라미터:")
+        rospy.loginfo(f"  최소 웨이포인트 거리: {self.min_waypoint_distance}m")
+        rospy.loginfo(f"  최대 웨이포인트 거리: {self.max_waypoint_distance}m")
+        rospy.loginfo(f"  각도 임계값: {self.angle_threshold} rad")
+        rospy.loginfo(f"  목표 타임아웃: {self.goal_timeout}s")
+        rospy.loginfo(f"  최대 재시도 횟수: {self.max_retries}")
+        rospy.loginfo(f"  목표 허용 오차: {self.goal_tolerance}m")
+        rospy.loginfo(f"  최대 편차: {self.max_deviation}m")
+        rospy.loginfo(f"  도달 불가능 지점 건너뛰기: {self.skip_unreachable}")
         rospy.loginfo("=" * 60)
 
         # State
@@ -60,18 +62,18 @@ class WaypointManager:
 
         # Action Client
         self.move_base_client = actionlib.SimpleActionClient('move_base', MoveBaseAction)
-        rospy.loginfo("Waiting for move_base action server...")
+        rospy.loginfo("move_base 액션 서버 대기 중...")
         self.move_base_client.wait_for_server()
-        rospy.loginfo("✅ Connected to move_base action server")
+        rospy.loginfo("✅ move_base 액션 서버 연결됨")
 
         # Subscribers
         rospy.Subscriber('/kakao/path', Path, self.path_callback, queue_size=1)
 
         # Publishers (for visualization)
-        self.waypoint_pub = rospy.Publisher('/waypoint_manager/waypoints', Path, queue_size=1, latch=True)
+        self.marker_pub = rospy.Publisher('/kakao_api/markers', MarkerArray, queue_size=1, latch=True)
 
-        rospy.loginfo("✅ Waypoint Manager initialized")
-        rospy.loginfo("📡 Waiting for /kakao/path...")
+        rospy.loginfo("✅ 웨이포인트 관리자 초기화 완료")
+        rospy.loginfo("📡 /kakao/path 대기 중...")
 
     def calculate_distance(self, pose1, pose2):
         """두 pose 간의 유클리드 거리 계산"""
@@ -113,7 +115,7 @@ class WaypointManager:
         - 마지막 지점은 항상 포함
         """
         if not path.poses or len(path.poses) < 2:
-            rospy.logwarn("Empty or too short path received")
+            rospy.logwarn("빈 경로 또는 너무 짧은 경로가 수신됨")
             return []
 
         filtered = []
@@ -149,7 +151,7 @@ class WaypointManager:
             if last_dist > 0.1:  # 중복 방지
                 filtered.append(path.poses[-1])
 
-        rospy.loginfo(f"📊 Waypoint filtering: {len(path.poses)} -> {len(filtered)} points")
+        rospy.loginfo(f"📊 웨이포인트 필터링: {len(path.poses)} -> {len(filtered)} 개")
 
         return filtered
 
@@ -170,7 +172,7 @@ class WaypointManager:
             return pose
         except (tf2_ros.LookupException, tf2_ros.ConnectivityException,
                 tf2_ros.ExtrapolationException) as e:
-            rospy.logwarn(f"Failed to get robot pose: {e}")
+            rospy.logwarn(f"로봇 위치 가져오기 실패: {e}")
             return None
 
     def find_closest_forward_waypoint(self):
@@ -194,14 +196,94 @@ class WaypointManager:
 
         return closest_idx
 
+    def publish_waypoint_markers(self):
+        """웨이포인트를 MarkerArray로 발행하여 시각화"""
+        marker_array = MarkerArray()
+
+        # 기존 마커 삭제
+        delete_marker = Marker()
+        delete_marker.action = Marker.DELETEALL
+        marker_array.markers.append(delete_marker)
+        self.marker_pub.publish(marker_array)
+
+        marker_array = MarkerArray()
+
+        for i, waypoint in enumerate(self.waypoints):
+            # 구 마커 (웨이포인트 위치)
+            marker = Marker()
+            marker.header.frame_id = waypoint.header.frame_id
+            marker.header.stamp = rospy.Time.now()
+            marker.ns = "waypoints"
+            marker.id = i
+            marker.type = Marker.SPHERE
+            marker.action = Marker.ADD
+
+            marker.pose = waypoint.pose
+            marker.scale.x = 0.5
+            marker.scale.y = 0.5
+            marker.scale.z = 0.5
+
+            # 색상 (현재 목표는 초록색, 나머지는 파란색, 완료된 것은 회색)
+            if i < self.current_waypoint_idx:
+                # 완료된 웨이포인트 - 회색
+                marker.color = ColorRGBA(0.5, 0.5, 0.5, 0.8)
+            elif i == self.current_waypoint_idx:
+                # 현재 목표 - 초록색
+                marker.color = ColorRGBA(0.0, 1.0, 0.0, 1.0)
+            else:
+                # 대기 중인 웨이포인트 - 파란색
+                marker.color = ColorRGBA(0.0, 0.5, 1.0, 0.8)
+
+            marker.lifetime = rospy.Duration(0)  # 영구 표시
+            marker_array.markers.append(marker)
+
+            # 텍스트 마커 (번호 표시)
+            text_marker = Marker()
+            text_marker.header = marker.header
+            text_marker.ns = "waypoint_numbers"
+            text_marker.id = i + 1000  # ID 충돌 방지
+            text_marker.type = Marker.TEXT_VIEW_FACING
+            text_marker.action = Marker.ADD
+
+            text_marker.pose = waypoint.pose
+            text_marker.pose.position.z += 1.0  # 텍스트를 구 위에 표시
+
+            text_marker.scale.z = 0.5  # 텍스트 크기
+            text_marker.color = ColorRGBA(1.0, 1.0, 1.0, 1.0)  # 흰색
+            text_marker.text = f"{i + 1}"
+            text_marker.lifetime = rospy.Duration(0)
+            marker_array.markers.append(text_marker)
+
+        # 웨이포인트 간 연결선
+        if len(self.waypoints) > 1:
+            line_marker = Marker()
+            line_marker.header.frame_id = self.waypoints[0].header.frame_id
+            line_marker.header.stamp = rospy.Time.now()
+            line_marker.ns = "waypoint_path"
+            line_marker.id = 10000
+            line_marker.type = Marker.LINE_STRIP
+            line_marker.action = Marker.ADD
+
+            line_marker.scale.x = 0.1  # 선 두께
+            line_marker.color = ColorRGBA(1.0, 1.0, 0.0, 0.6)  # 노란색
+
+            for waypoint in self.waypoints:
+                line_marker.points.append(waypoint.pose.position)
+
+            line_marker.lifetime = rospy.Duration(0)
+            marker_array.markers.append(line_marker)
+
+        self.marker_pub.publish(marker_array)
+        rospy.loginfo(f"🎨 웨이포인트 마커 발행 완료: {len(self.waypoints)}개")
+
     def path_callback(self, path_msg):
         """새로운 경로 수신"""
         rospy.loginfo("=" * 60)
-        rospy.loginfo(f"📨 New path received: {len(path_msg.poses)} poses")
+        rospy.loginfo(f"📨 새로운 경로 수신: {len(path_msg.poses)}개 포즈")
 
         # 현재 진행 중인 goal 취소
         if self.is_active:
-            rospy.loginfo("⚠️  Canceling current goal...")
+            rospy.loginfo("⚠️  현재 목표 취소 중...")
             self.move_base_client.cancel_all_goals()
             rospy.sleep(0.5)
 
@@ -209,14 +291,8 @@ class WaypointManager:
         self.waypoints = self.filter_waypoints(path_msg)
 
         if not self.waypoints:
-            rospy.logwarn("❌ No valid waypoints after filtering")
+            rospy.logwarn("❌ 필터링 후 유효한 웨이포인트 없음")
             return
-
-        # 시각화용 발행
-        waypoint_path = Path()
-        waypoint_path.header = path_msg.header
-        waypoint_path.poses = self.waypoints
-        self.waypoint_pub.publish(waypoint_path)
 
         # 가장 가까운 웨이포인트부터 시작
         self.current_waypoint_idx = self.find_closest_forward_waypoint()
@@ -224,7 +300,10 @@ class WaypointManager:
         self.is_active = True
         self.latest_path = path_msg
 
-        rospy.loginfo(f"🎯 Starting from waypoint {self.current_waypoint_idx + 1}/{len(self.waypoints)}")
+        # 마커 발행
+        self.publish_waypoint_markers()
+
+        rospy.loginfo(f"🎯 웨이포인트 {self.current_waypoint_idx + 1}/{len(self.waypoints)}부터 시작")
         rospy.loginfo("=" * 60)
 
         # 첫 번째 웨이포인트 전송
@@ -234,7 +313,7 @@ class WaypointManager:
         """다음 웨이포인트를 move_base로 전송"""
         if self.current_waypoint_idx >= len(self.waypoints):
             rospy.loginfo("=" * 60)
-            rospy.loginfo("🎉 All waypoints reached!")
+            rospy.loginfo("🎉 모든 웨이포인트 도달 완료!")
             rospy.loginfo("=" * 60)
             self.is_active = False
             return
@@ -245,9 +324,9 @@ class WaypointManager:
 
         wp = self.waypoints[self.current_waypoint_idx]
         rospy.loginfo("─" * 60)
-        rospy.loginfo(f"🚀 Sending waypoint {self.current_waypoint_idx + 1}/{len(self.waypoints)}")
-        rospy.loginfo(f"   Position: ({wp.pose.position.x:.2f}, {wp.pose.position.y:.2f})")
-        rospy.loginfo(f"   Retry: {self.retry_count}/{self.max_retries}")
+        rospy.loginfo(f"🚀 웨이포인트 전송 중 {self.current_waypoint_idx + 1}/{len(self.waypoints)}")
+        rospy.loginfo(f"   위치: ({wp.pose.position.x:.2f}, {wp.pose.position.y:.2f})")
+        rospy.loginfo(f"   재시도: {self.retry_count}/{self.max_retries}")
 
         # Goal 전송 (콜백과 타임아웃 설정)
         self.move_base_client.send_goal(
@@ -264,7 +343,7 @@ class WaypointManager:
         # 타임아웃 체크
         elapsed = (rospy.Time.now() - self.goal_start_time).to_sec()
         if elapsed > self.goal_timeout:
-            rospy.logwarn(f"⏰ Goal timeout ({elapsed:.1f}s > {self.goal_timeout}s)")
+            rospy.logwarn(f"⏰ 목표 타임아웃 ({elapsed:.1f}초 > {self.goal_timeout}초)")
             self.move_base_client.cancel_goal()
 
     def goal_done_callback(self, status, result):
@@ -282,13 +361,16 @@ class WaypointManager:
             GoalStatus.LOST: 'LOST'
         }.get(status, 'UNKNOWN')
 
-        rospy.loginfo(f"📍 Goal status: {status_text}")
+        rospy.loginfo(f"📍 목표 상태: {status_text}")
 
         if status == GoalStatus.SUCCEEDED:
             # 성공: 다음 웨이포인트로
-            rospy.loginfo(f"✅ Waypoint {self.current_waypoint_idx + 1} reached!")
+            rospy.loginfo(f"✅ 웨이포인트 {self.current_waypoint_idx + 1} 도달!")
             self.current_waypoint_idx += 1
             self.retry_count = 0
+
+            # 마커 업데이트
+            self.publish_waypoint_markers()
 
             # 다음 웨이포인트 전송
             if self.is_active:
@@ -297,30 +379,33 @@ class WaypointManager:
 
         elif status == GoalStatus.PREEMPTED:
             # 취소됨 (새 경로 수신 시)
-            rospy.loginfo("⚠️  Goal preempted (new path received)")
+            rospy.loginfo("⚠️  목표 취소됨 (새 경로 수신)")
 
         elif status in [GoalStatus.ABORTED, GoalStatus.REJECTED]:
             # 실패: 재시도 또는 스킵
             self.retry_count += 1
 
             if self.retry_count < self.max_retries:
-                rospy.logwarn(f"⚠️  Goal failed, retrying... ({self.retry_count}/{self.max_retries})")
+                rospy.logwarn(f"⚠️  목표 실패, 재시도 중... ({self.retry_count}/{self.max_retries})")
                 rospy.sleep(1.0)
                 self.send_next_waypoint()
             else:
                 if self.skip_unreachable:
-                    rospy.logwarn(f"⚠️  Skipping unreachable waypoint {self.current_waypoint_idx + 1}")
+                    rospy.logwarn(f"⚠️  도달 불가능한 웨이포인트 {self.current_waypoint_idx + 1} 건너뛰기")
                     self.current_waypoint_idx += 1
                     self.retry_count = 0
+
+                    # 마커 업데이트
+                    self.publish_waypoint_markers()
 
                     if self.is_active:
                         rospy.sleep(0.5)
                         self.send_next_waypoint()
                 else:
-                    rospy.logerr(f"❌ Goal failed after {self.max_retries} retries. Stopping.")
+                    rospy.logerr(f"❌ {self.max_retries}회 재시도 후 목표 실패. 중지.")
                     self.is_active = False
         else:
-            rospy.logwarn(f"⚠️  Unexpected goal status: {status_text}")
+            rospy.logwarn(f"⚠️  예상치 못한 목표 상태: {status_text}")
 
     def run(self):
         """메인 루프"""
@@ -339,7 +424,7 @@ class WaypointManager:
 
                     # 디버그 정보 (10초마다)
                     if rospy.Time.now().to_sec() % 10 < 1:
-                        rospy.logdebug(f"Distance to waypoint: {dist:.2f}m")
+                        rospy.logdebug(f"웨이포인트까지 거리: {dist:.2f}m")
 
             rate.sleep()
 
@@ -349,4 +434,4 @@ if __name__ == '__main__':
         manager = WaypointManager()
         manager.run()
     except rospy.ROSInterruptException:
-        rospy.loginfo("Waypoint Manager terminated")
+        rospy.loginfo("웨이포인트 관리자 종료됨")

@@ -50,10 +50,10 @@
       <referenceLongitude>127.13446738445664</referenceLongitude>
       <referenceHeading>0.0</referenceHeading>
       <referenceAltitude>100.0</referenceAltitude>
-      <drift>0.001 0.001 0.001</drift>
-      <gaussianNoise>0.01 0.01 0.01</gaussianNoise>
-      <velocityDrift>0.001 0.001 0.001</velocityDrift>
-      <velocityGaussianNoise>0.05 0.05 0.05</velocityGaussianNoise>
+      <drift>0.0001 0.0001 0.0001</drift>
+      <gaussianNoise>0.001 0.001 0.001</gaussianNoise>
+      <velocityDrift>0.0001 0.0001 0.0001</velocityDrift>
+      <velocityGaussianNoise>0.01 0.01 0.01</velocityGaussianNoise>
       <verbose>false</verbose>
     </plugin>
   </gazebo>

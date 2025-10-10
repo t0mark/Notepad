@@ -54,7 +54,7 @@ include_directories(
 ## Python scripts installation (only existing scripts)
 catkin_install_python(
   PROGRAMS
-    scripts/navigation_manager.py
+    scripts/waypoint_manager.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
