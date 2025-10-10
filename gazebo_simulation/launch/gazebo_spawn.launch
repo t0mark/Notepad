@@ -6,6 +6,7 @@
   <!-- ===================================================== -->
 
   <!-- Arguments -->
+  <arg name="world_name" default="example" doc="World name: empty, example, city"/>
   <arg name="z_position" default="0.2" doc="Initial height of the robot"/>
 
   <!-- GPU 가속화 -->
@@ -16,11 +17,11 @@
   <!-- 환경 변수 설정 -->
   <env name="HUSKY_LMS1XX_ENABLED" value="false"/>
   <env name="HUSKY_UR5_ENABLED" value="false"/>
-  <env name="GAZEBO_MODEL_PATH" value="$(find dwa)/models:$(optenv GAZEBO_MODEL_PATH)"/>
-  
+  <env name="GAZEBO_MODEL_PATH" value="$(find gazebo_simulation)/models:$(optenv GAZEBO_MODEL_PATH)"/>
+
   <!-- Gazebo 월드 실행 -->
   <include file="$(find gazebo_ros)/launch/empty_world.launch">
-    <arg name="world_name" default="$(find dwa)/worlds/example.world"/>
+    <arg name="world_name" value="$(find gazebo_simulation)/worlds/$(arg world_name).world"/>
     <arg name="paused" value="false"/>
     <arg name="use_sim_time" value="false"/>
     <arg name="gui" value="true"/>
@@ -28,12 +29,10 @@
     <arg name="debug" value="false"/>
   </include>
 
-  <!-- URDF 모델 로드 및 TF 발행 -->
-  <include file="$(find robot_description)/launch/robot_description.launch"/>
-
-  <!-- 시뮬레이션: map = odom (오차 없음) -->
-  <node pkg="tf2_ros" type="static_transform_publisher" name="map_to_odom_publisher"
-        args="0 0 0 0 0 0 map odom"/>
+  <!-- URDF 모델 로드 -->
+  <include file="$(find robot_description)/launch/robot_description.launch">
+    <arg name="publish_odom_tf" value="false"/>
+  </include>
 
   <!-- Gazebo에 로봇 스폰 -->
   <node name="urdf_spawner" pkg="gazebo_ros" type="spawn_model"
@@ -41,6 +40,6 @@
         args="-urdf -model husky -param robot_description -z $(arg z_position)"/>
 
   <!-- IMU timestamp fix (sim time -> real time) -->
-  <node pkg="dwa" type="timestamp_fix.py" name="timestamp_fix" output="screen"/>
+  <node pkg="gazebo_simulation" type="timestamp_fix.py" name="timestamp_fix" output="screen"/>
 
 </launch>

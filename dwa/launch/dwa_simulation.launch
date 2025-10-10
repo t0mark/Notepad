@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- ===================================================== -->
+  <!-- DWA Simulation Launch -->
+  <!-- Gazebo 시뮬레이션 + DWA 네비게이션 통합 실행 -->
+  <!-- ===================================================== -->
+
+  <!-- Arguments -->
+  <arg name="world_name" default="example" doc="World name: empty, example, city"/>
+  <arg name="z_position" default="0.2" doc="Initial height of the robot"/>
+  <arg name="enable_rviz" default="true" doc="Launch RViz"/>
+
+
+  <!-- ===== Gazebo 시뮬레이션 실행 ===== -->
+  <include file="$(find gazebo_simulation)/launch/gazebo_spawn.launch">
+    <arg name="world_name" value="$(arg world_name)"/>
+    <arg name="z_position" value="$(arg z_position)"/>
+  </include>
+
+  <!-- ===== DWA 네비게이션 실행 ===== -->
+  <include file="$(find dwa)/launch/dwa_navigation.launch"/>
+
+</launch>

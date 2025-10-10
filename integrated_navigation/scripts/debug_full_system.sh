@@ -8,8 +8,8 @@ echo "Starting Integrated Navigation System..."
 
 # 1. Gazebo Spawn
 echo "[1/6] Launching Gazebo..."
-roslaunch dwa "gazebo_spawn(empty_world).launch" z_position:=0.2 &
-# roslaunch dwa "gazebo_spawn.launch" z_position:=0.2 &
+roslaunch gazebo_simulation gazebo_spawn.launch world_name:="empty" &
+# roslaunch gazebo_simulation gazebo_spawn_TF.launch world_name:="empty" &
 GAZEBO_PID=$!
 sleep 3
 

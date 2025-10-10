@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(dwa)
+project(gazebo_simulation)
 
 ## Find catkin and required packages
 find_package(catkin REQUIRED COMPONENTS
@@ -7,21 +7,20 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   tf
   tf2_ros
-  tf2_geometry_msgs
   std_msgs
   geometry_msgs
   sensor_msgs
-  nav_msgs
-  move_base
-  dwa_local_planner
-  pcl_ros
-  nodelet
-  pointcloud_to_laserscan
-  costmap_2d
-  dynamic_reconfigure
-  geographic_msgs
-  geodesy
+  gazebo_ros
+  gazebo_ros_control
+  hardware_interface
+  urdf
+  xacro
 )
+
+## Find Gazebo
+find_package(gazebo REQUIRED)
+include_directories(${GAZEBO_INCLUDE_DIRS})
+link_directories(${GAZEBO_LIBRARY_DIRS})
 
 ## Catkin package configuration
 catkin_package(
@@ -30,31 +29,28 @@ catkin_package(
     rospy
     tf
     tf2_ros
-    tf2_geometry_msgs
     std_msgs
     geometry_msgs
     sensor_msgs
-    nav_msgs
-    move_base
-    dwa_local_planner
-    pcl_ros
-    nodelet
-    pointcloud_to_laserscan
-    costmap_2d
-    dynamic_reconfigure
-    geographic_msgs
-    geodesy
+    gazebo_ros
+    gazebo_ros_control
+    hardware_interface
 )
 
 ## Include directories
 include_directories(
   ${catkin_INCLUDE_DIRS}
+  ${GAZEBO_INCLUDE_DIRS}
 )
 
-## Python scripts installation (only existing scripts)
+link_directories(
+  ${GAZEBO_LIBRARY_DIRS}
+)
+
+## Python scripts installation
 catkin_install_python(
   PROGRAMS
-    scripts/navigation_manager.py
+    scripts/timestamp_fix.py
   DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )
 
@@ -62,7 +58,7 @@ catkin_install_python(
 install(
   DIRECTORY
     launch
-    config
-    rviz
+    worlds
+    models
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}
 )

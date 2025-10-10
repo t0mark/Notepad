@@ -1,5 +1,13 @@
 <?xml version="1.0"?>
 <launch>
+  <!-- ===================================================== -->
+  <!-- DWA Navigation Launch -->
+  <!-- DWA 기반 자율 주행 네비게이션 -->
+  <!-- -->
+  <!-- NOTE: 시뮬레이션 환경에서 사용하려면 먼저 -->
+  <!-- gazebo_simulation 패키지를 실행하세요: -->
+  <!-- roslaunch gazebo_simulation gazebo_spawn.launch -->
+  <!-- ===================================================== -->
 
   <!-- Arguments -->
   <arg name="enable_rviz" default="true"/>
