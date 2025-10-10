@@ -70,7 +70,7 @@ class WaypointManager:
         rospy.Subscriber('/kakao/path', Path, self.path_callback, queue_size=1)
 
         # Publishers (for visualization)
-        self.marker_pub = rospy.Publisher('/kakao_api/markers', MarkerArray, queue_size=1, latch=True)
+        self.marker_pub = rospy.Publisher('/kakao/markers', MarkerArray, queue_size=1, latch=True)
 
         rospy.loginfo("✅ 웨이포인트 관리자 초기화 완료")
         rospy.loginfo("📡 /kakao/path 대기 중...")
