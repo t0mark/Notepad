@@ -25,11 +25,8 @@ class FRNetSegmentation:
         self.checkpoint_path = rospy.get_param('~checkpoint', '/home/tomark/catkin_ws/src/frnet_ros/checkpoints/frnet_semantickitti.pth')
         self.device = rospy.get_param('~device', 'cuda:0')
 
-        # 디버깅 모드 및 설정
-        self.debug = rospy.get_param('~debug', True)
-
         # 필터링할 클래스 인덱스 리스트 (SemanticKITTI 클래스 기준)
-        self.filtered_indices = rospy.get_param('~filtered_indices', [0])
+        self.filtered_indices = rospy.get_param('~filtered_indices', [1])
 
         # 스캔 주사율 제어: N번에 한 번씩만 처리
         self.process_every_n_scans = rospy.get_param('~process_every_n_scans', 5)
@@ -75,8 +72,6 @@ class FRNetSegmentation:
         if self.scan_counter % self.process_every_n_scans != 0:
             return
 
-        rospy.loginfo(f"포인트 클라우드 데이터 처리 중 (스캔 #{self.scan_counter})")
-
         try:
             # PointCloud2 메시지에서 직접 포인트 데이터 추출
             points = []
@@ -89,9 +84,6 @@ class FRNetSegmentation:
 
             points = np.array(points, dtype=np.float32)
 
-            # 디버깅 정보 출력
-            if self.debug:
-                rospy.loginfo(f"포인트 클라우드 형태: {points.shape}, 타입: {points.dtype}")
 
             # 이상치 제거 (너무 멀리 있는 포인트 제거)
             distance = np.sqrt(np.sum(points[:, :3] ** 2, axis=1))
@@ -104,12 +96,9 @@ class FRNetSegmentation:
             # 포인트 클라우드 추론
             pred_labels = self.infer_pointcloud(points)
 
-            # 필터링된 포인트 클라우드 생성 (필터링 인덱스에 해당하지 않는 포인트만 유지)
+            # 필터링된 포인트 클라우드 생성
             filtered_mask = np.isin(pred_labels, self.filtered_indices, invert=True)
             filtered_points = points[filtered_mask]
-
-            if self.debug:
-                rospy.loginfo(f"원본 포인트 수: {points.shape[0]}, 필터링 후: {filtered_points.shape[0]}")
 
             # 결과를 ROS 메시지로 변환하여 발행
             self.publish_filtered_pointcloud(msg.header, filtered_points)
@@ -140,8 +129,6 @@ class FRNetSegmentation:
                 # 데이터 전처리 수행
                 try:
                     processed_data = self.model.data_preprocessor(model_inputs, False)
-                    if self.debug:
-                        rospy.loginfo("데이터 전처리 완료")
                 except Exception as e:
                     rospy.logerr(f"데이터 전처리 중 오류: {e}")
                     return np.zeros(points.shape[0], dtype=np.int32)
@@ -149,19 +136,12 @@ class FRNetSegmentation:
                 # 모델 추론
                 try:
                     results = self.model.forward(**processed_data, mode='predict')
-                    if self.debug:
-                        rospy.loginfo("모델 추론 완료")
                 except Exception as e:
                     rospy.logerr(f"모델 추론 중 오류: {e}")
                     return np.zeros(points.shape[0], dtype=np.int32)
 
                 # 예측된 레이블
                 pred_labels = results[0].pred_pts_seg.pts_semantic_mask.cpu().numpy()
-
-                # 디버깅 정보
-                if self.debug:
-                    unique_labels, counts = np.unique(pred_labels, return_counts=True)
-                    rospy.loginfo(f"세그먼테이션 결과 - 레이블 분포: {dict(zip(unique_labels, counts))}")
 
                 return pred_labels
         except Exception as e:
@@ -190,7 +170,6 @@ class FRNetSegmentation:
             # PointCloud2 메시지 생성 및 발행
             cloud_msg = pc2.create_cloud(header, fields, point_list)
             self.pub.publish(cloud_msg)
-            rospy.loginfo("필터링된 포인트 클라우드 발행 완료")
         except Exception as e:
             rospy.logerr(f"포인트 클라우드 발행 중 오류 발생: {e}")
             rospy.logerr(traceback.format_exc())

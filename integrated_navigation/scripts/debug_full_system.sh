@@ -22,7 +22,7 @@ sleep 5
 
 # 3. Kakao API Debug (INS TF 감지 후 실행)
 echo "[3/7] Launching Kakao API..."
-roslaunch kakao_api debug_kakao_api.launch rviz:=false &
+roslaunch kakao_api kakao_api.launch &
 KAKAO_PID=$!
 
 # WebSocket 연결 대기
@@ -50,7 +50,8 @@ sleep 2
 
 # 6. DWA Navigation (with Waypoint Manager for Kakao API)
 echo "[6/7] Launching DWA Navigation..."
-roslaunch dwa dwa_navigation.launch enable_rviz:=false odom_topic:=/faster_lio/odom enable_waypoint_manager:=true &
+roslaunch dwa dwa_navigation.launch enable_rviz:=false odom_topic:=/faster_lio/odom enable_waypoint_manager:=true lidar_topic:=/FRNet/points &
+# roslaunch dwa dwa_navigation.launch enable_rviz:=false odom_topic:=/faster_lio/odom enable_waypoint_manager:=true &
 DWA_PID=$!
 
 # 7. RViz 시각화

@@ -2,12 +2,12 @@
   <arg name="enable_rviz" default="true"/>
   <arg name="lidar_topic" default="/ouster/points"/>
   <arg name="process_every_n_scans" default="5"/>
-  <arg name="filtered_indices" default="[0, 1, 2, 3, 4, 5, 6, 7]"/>
+  <arg name="filtered_indices" default="[1]"/>
 
   <!-- FRNet 세그먼테이션 노드 -->
   <node name="frnet_segmentation" pkg="frnet_ros" type="frnet_segmentation_node.py" output="screen">
     <remap from="pointcloud_in" to="$(arg lidar_topic)"/>
-    <param name="config" value="$(find frnet_ros)/configs/frnet/frnet-semantickitti_seg.py"/>
+    <param name="config" value="$(find frnet_ros)/configs/frnet/frnet-school_seg.py"/>
     <param name="checkpoint" value="$(find frnet_ros)/checkpoints/checkpoints.pth"/>
     <param name="process_every_n_scans" value="$(arg process_every_n_scans)"/>
     <rosparam param="filtered_indices" subst_value="True">$(arg filtered_indices)</rosparam>

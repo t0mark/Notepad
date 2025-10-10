@@ -25,26 +25,15 @@
 ## 🚀 사용법
 실행 순서
 ```bash
-# 설치 필요
-sudo apt-get install ros-noetic-nmea-msgs
-
 # Ouster 실행
-roslaunch husky_dwa_navigation ouster_topics_only.launch
+roslaunch integrated_navigation lidar.launch
 # GPS 실행
-roslaunch ublox_gps ublox_device.launch
+roslaunch integrated_navigation gps.launch
 
-
-# 프레임 설정 , waypoints, global_path, gps+Odom
-roslaunch husky_dwa_navigation integrated_navigation.launch
-# faster-lio, DWA, 로봇 스폰 등등
-roslaunch husky_dwa_navigation husky_control_nav_localization.launch
-
-# 실제 구동: 직선주행으로 초기 Heading 맞추기 
-python3 move_front.py
-
-# bag 파일: 타임스탬프 맞추기 gps는 센서 
-rosrun husky_dwa_navigation sync2.py
-rosbag play <*.bag> /ouster/points:=/new_points /ouster/imu:=/new_imu
+# 시뮬레이션 실행
+rosrun integrated_navigation debug_full_system.launch
+# 실제 실행
+rosrun integrated_navigation debug_full_system.launch
 ```
 
 ## 🔧 핵심 구성요소
