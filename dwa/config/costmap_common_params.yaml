@@ -1,121 +1,120 @@
 # ============================================================
-# Costmap Common Parameters
-# This file contains common configuration options for the two costmaps
-# used in the navigation stack.
-# For more details: http://www.ros.org/wiki/costmap_2d
+# Costmap 공통 파라미터
+# 네비게이션 스택에서 사용하는 두 costmap의 공통 설정
+# 상세 문서: http://www.ros.org/wiki/costmap_2d
 # ============================================================
 
-# Costmap type configuration
-# Options: voxel, costmap
-# voxel: Uses 3D voxel grid for better handling of obstacles at different heights
-# costmap: Uses 2D grid
+# Costmap 타입 설정
+# 옵션: voxel, costmap
+# voxel: 3D 복셀 그리드 사용 (높이별 장애물 처리 우수)
+# costmap: 2D 그리드 사용
 map_type: voxel
 
-# ===== Voxel Grid Specific Parameters =====
-# (Only used when map_type: voxel)
+# ===== Voxel Grid 전용 파라미터 =====
+# (map_type: voxel일 때만 사용)
 
-# Origin z-coordinate of the voxel grid (meters)
+# 복셀 그리드의 원점 z 좌표 (미터)
 origin_z: 0.0
 
-# Resolution of each voxel in the z-dimension (meters)
+# z 방향 각 복셀의 해상도 (미터)
 z_resolution: 0.2
 
-# Number of voxels in the z-dimension
+# z 방향 복셀 개수
 z_voxels: 10
 
-# Number of unknown cells before a column is considered unknown
+# 열이 unknown으로 간주되기 위한 unknown 셀 개수
 unknown_threshold: 9
 
-# Number of marked cells before a column is considered occupied
+# 열이 occupied로 간주되기 위한 marked 셀 개수
 mark_threshold: 0
 
 # ===== Transform Tolerance =====
-# Maximum time delay allowed between transforms (seconds)
-# Set higher if you have slower computers or TF tree delays
-transform_tolerance: 0.5  # Increased from 0.3 for stability
+# Transform 간 허용되는 최대 시간 지연 (초)
+# 컴퓨터가 느리거나 TF tree 지연이 있으면 높게 설정
+transform_tolerance: 0.5  # 안정성을 위해 0.3에서 증가
 
-# ===== Obstacle Marking Parameters =====
+# ===== 장애물 마킹 파라미터 =====
 
-# Maximum range for marking obstacles (meters)
-# Obstacles beyond this range won't be added to the costmap
-obstacle_range: 5.0  # Customized for Ouster LiDAR
+# 장애물을 마킹하는 최대 거리 (미터)
+# 이 거리를 넘는 장애물은 costmap에 추가되지 않음
+obstacle_range: 5.0  # Ouster LiDAR에 맞게 커스터마이징
 
-# Maximum height of obstacles to be added to the costmap (meters)
+# Costmap에 추가될 장애물의 최대 높이 (미터)
 max_obstacle_height: 2.0
 
-# Maximum range for ray-tracing to clear space (meters)
-# Should be >= obstacle_range for proper clearing
-raytrace_range: 6.0  # Slightly larger than obstacle_range
+# 공간을 clear하기 위한 레이트레이싱 최대 거리 (미터)
+# obstacle_range 이상이어야 제대로 작동
+raytrace_range: 6.0  # obstacle_range보다 약간 크게 설정
 
-# ===== Robot Footprint =====
-# The footprint of the robot in the base_link frame
-# Format: [[x1, y1], [x2, y2], ...]
-# Counterclockwise from the front-right corner
+# ===== 로봇 풋프린트 =====
+# base_link 프레임에서의 로봇 풋프린트
+# 형식: [[x1, y1], [x2, y2], ...]
+# 전면 우측 모서리부터 반시계방향
 footprint: [[-0.5, -0.4], [-0.5, 0.4], [0.5, 0.4], [0.5, -0.4]]
 
-# Alternative: Use robot_radius for circular robots
+# 대안: 원형 로봇의 경우 robot_radius 사용
 # robot_radius: 0.64
 
-# Padding added to the footprint (meters)
+# 풋프린트에 추가되는 패딩 (미터)
 footprint_padding: 0.01
 
-# ===== Cost Function Parameters =====
+# ===== Cost 함수 파라미터 =====
 
-# Inflation radius around obstacles (meters)
-# The radius to which the cost values will be propagated from obstacles
-inflation_radius: 0.8  # Customized for safe navigation
+# 장애물 주변 inflation 반경 (미터)
+# 장애물로부터 cost 값이 전파되는 반경
+inflation_radius: 0.8  # 안전한 주행을 위해 커스터마이징
 
 # Cost scaling factor
-# The factor by which costs are scaled down (higher = more aggressive)
-# Formula: cost = 252 * exp(-k * distance / inflation_radius)
-# where k = cost_scaling_factor
+# Cost가 감소하는 비율 (높을수록 공격적)
+# 공식: cost = 252 * exp(-k * distance / inflation_radius)
+# k = cost_scaling_factor
 cost_scaling_factor: 10.0
 
-# The cost at which a cell is considered an obstacle when a map is read from map_server
-# Range: 0-255, where 0=free, 255=lethal obstacle
+# map_server로부터 맵을 읽을 때 장애물로 간주되는 cost 값
+# 범위: 0-255, 0=자유공간, 255=치명적 장애물
 lethal_cost_threshold: 100
 
 # ===== Observation Sources =====
-# Configuration for the sensors that the costmap will use to update the map
+# Costmap 업데이트에 사용할 센서 설정
 
 observation_sources: laser_scan_sensor
 
 laser_scan_sensor:
-  # Sensor frame ID
+  # 센서 프레임 ID
   sensor_frame: os_lidar
 
-  # Type of sensor data
-  # Options: LaserScan, PointCloud, PointCloud2
+  # 센서 데이터 타입
+  # 옵션: LaserScan, PointCloud, PointCloud2
   data_type: LaserScan
 
-  # Topic name
+  # 토픽 이름
   topic: /scan
 
-  # Whether this source should mark (add) obstacles
+  # 이 소스가 장애물을 마킹(추가)할지 여부
   marking: true
 
-  # Whether this source should clear (remove) obstacles
+  # 이 소스가 장애물을 clearing(제거)할지 여부
   clearing: true
 
-  # Minimum obstacle height to consider (meters)
+  # 고려할 장애물의 최소 높이 (미터)
   min_obstacle_height: -0.5
 
-  # Maximum obstacle height to consider (meters)
+  # 고려할 장애물의 최대 높이 (미터)
   max_obstacle_height: 2.0
 
-  # Expected update rate (Hz)
-  # Set to 0.0 to disable timeout checking
+  # 예상 업데이트 주파수 (Hz)
+  # 0.0으로 설정하면 타임아웃 체크 비활성화
   expected_update_rate: 0.0
 
-  # How long to keep observations in the buffer (seconds)
-  # 0.0 = don't persist observations
+  # observation을 버퍼에 유지하는 시간 (초)
+  # 0.0 = observation을 유지하지 않음
   observation_persistence: 0.0
 
-  # Minimum range to use from sensor (meters)
-  # inf_is_valid: true  # Treat infinite range readings as valid max range
+  # 센서로부터 사용할 최소 거리 (미터)
+  # inf_is_valid: true  # 무한대 거리 읽기를 유효한 최대 거리로 처리
 
-# ===== Additional Sensor Configuration (Examples) =====
-# Uncomment and configure additional sensors as needed
+# ===== 추가 센서 설정 예시 =====
+# 필요에 따라 주석 해제하고 설정
 
 # point_cloud_sensor:
 #   sensor_frame: camera_depth_frame
@@ -128,9 +127,9 @@ laser_scan_sensor:
 #   expected_update_rate: 0.0
 #   observation_persistence: 0.0
 
-# ===== Layer Configuration =====
-# The costmap uses plugins/layers to build the final map
-# Common layers: static_layer, obstacle_layer, inflation_layer
+# ===== Layer 설정 =====
+# Costmap은 플러그인/레이어를 사용하여 최종 맵 생성
+# 일반적인 레이어: static_layer, obstacle_layer, inflation_layer
 
 # plugins:
 #   - {name: static_layer,        type: "costmap_2d::StaticLayer"}

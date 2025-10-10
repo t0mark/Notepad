@@ -1,144 +1,144 @@
 # ============================================================
-# Move Base Node Parameters
-# For full documentation: http://wiki.ros.org/move_base#Parameters
+# Move Base Node 파라미터
+# 상세 문서: http://wiki.ros.org/move_base#Parameters
 # ============================================================
 
-# ===== Costmap Management =====
+# ===== Costmap 관리 =====
 
-# Determines whether or not to shutdown the costmaps when move_base is inactive
-# true: saves CPU when not navigating
-# false: keeps costmaps running (faster startup when new goal received)
+# move_base가 비활성 상태일 때 costmap을 종료할지 여부
+# true: 네비게이션하지 않을 때 CPU 절약
+# false: costmap을 계속 실행 (새 목표 수신 시 빠른 시작)
 shutdown_costmaps: false
 
-# ===== Control Loop Frequencies =====
+# ===== 제어 루프 주파수 =====
 
-# The rate in Hz at which to run the control loop and send velocity commands
-# Higher = more responsive, but more CPU usage
+# 제어 루프를 실행하고 속도 명령을 전송하는 주파수 (Hz)
+# 높을수록 반응이 빠르지만 CPU 사용량 증가
 controller_frequency: 10.0
 
-# How long the controller will wait in seconds without receiving a valid control
-# before space-clearing operations are performed
-# Increase if your local planner is slow
+# 유효한 제어를 받지 못하고 공간 정리 작업을 수행하기 전
+# 컨트롤러가 대기하는 시간 (초)
+# Local planner가 느리면 증가
 controller_patience: 3.0
 
-# ===== Planning Loop Frequencies =====
+# ===== 계획 루프 주파수 =====
 
-# The rate in Hz at which to run the global planning loop
-# If set to 0.0, the global planner will only run when:
-#   - A new goal is received
-#   - The local planner reports that its path is blocked
+# 전역 계획 루프를 실행하는 주파수 (Hz)
+# 0.0으로 설정하면 다음의 경우에만 전역 planner 실행:
+#   - 새 목표 수신 시
+#   - Local planner가 경로 차단을 보고할 때
 planner_frequency: 1.0
 
-# How long the planner will wait in seconds to find a valid plan
-# before space-clearing operations are performed
-# Increase if your global planner is slow or map is large
+# 유효한 계획을 찾기 위해 planner가 대기하는 시간 (초)
+# 공간 정리 작업이 수행되기 전
+# Global planner가 느리거나 맵이 크면 증가
 planner_patience: 5.0
 
-# ===== Oscillation Detection =====
+# ===== 진동 감지 =====
 
-# How long in seconds to allow for oscillation before executing recovery behaviors
-# A value of 0.0 corresponds to an infinite timeout
+# 복구 동작을 실행하기 전 진동을 허용하는 시간 (초)
+# 0.0 값은 무한 타임아웃에 해당
 oscillation_timeout: 10.0
 
-# How far in meters the robot must move to be considered not oscillating
-# Moving this far resets the timer counting up to oscillation_timeout
+# 로봇이 진동하지 않는다고 간주되기 위해 이동해야 하는 거리 (미터)
+# 이만큼 이동하면 oscillation_timeout까지 카운팅하는 타이머가 리셋됨
 oscillation_distance: 0.2
 
-# ===== Planner Selection =====
+# ===== Planner 선택 =====
 
-# The name of the plugin for the global planner to use with move_base
-# Must adhere to nav_core::BaseGlobalPlanner interface
-# Common options:
-#   - "navfn/NavfnROS" (Dijkstra-based)
-#   - "global_planner/GlobalPlanner" (A* based, more configurable)
-#   - "carrot_planner/CarrotPlanner" (simple planner that moves toward goal)
+# move_base와 함께 사용할 global planner 플러그인 이름
+# nav_core::BaseGlobalPlanner 인터페이스를 준수해야 함
+# 일반적인 옵션:
+#   - "navfn/NavfnROS" (Dijkstra 기반)
+#   - "global_planner/GlobalPlanner" (A* 기반, 더 많은 설정 가능)
+#   - "carrot_planner/CarrotPlanner" (목표로 이동하는 단순 planner)
 # base_global_planner: "global_planner/GlobalPlanner"
-# Note: Set in launch file
+# 참고: launch 파일에서 설정
 
-# The name of the plugin for the local planner to use with move_base
-# Must adhere to nav_core::BaseLocalPlanner interface
-# Common options:
-#   - "base_local_planner/TrajectoryPlannerROS" (original)
+# move_base와 함께 사용할 local planner 플러그인 이름
+# nav_core::BaseLocalPlanner 인터페이스를 준수해야 함
+# 일반적인 옵션:
+#   - "base_local_planner/TrajectoryPlannerROS" (원본)
 #   - "dwa_local_planner/DWAPlannerROS" (Dynamic Window Approach)
 #   - "teb_local_planner/TebLocalPlannerROS" (Timed Elastic Band)
 # base_local_planner: "dwa_local_planner/DWAPlannerROS"
-# Note: Set in launch file
+# 참고: launch 파일에서 설정
 
-# ===== Recovery Behaviors =====
+# ===== 복구 동작 =====
 
-# List of recovery behavior plugins to use when the robot gets stuck
-# Each behavior will be executed in order until one succeeds or all fail
-# Default behaviors: conservative_reset, rotate_recovery, aggressive_reset
+# 로봇이 막혔을 때 사용할 복구 동작 플러그인 목록
+# 각 동작은 하나가 성공하거나 모두 실패할 때까지 순서대로 실행됨
+# 기본 동작: conservative_reset, rotate_recovery, aggressive_reset
 recovery_behaviors:
-  # Conservative reset: clears obstacles within a small radius
+  # Conservative reset: 작은 반경 내 장애물 제거
   - name: conservative_reset
     type: clear_costmap_recovery/ClearCostmapRecovery
 
-  # Rotate recovery: rotates in place to clear space
+  # Rotate recovery: 공간을 확보하기 위해 제자리 회전
   - name: rotate_recovery
     type: rotate_recovery/RotateRecovery
 
-  # Aggressive reset: clears obstacles within a larger radius
+  # Aggressive reset: 큰 반경 내 장애물 제거
   - name: aggressive_reset
     type: clear_costmap_recovery/ClearCostmapRecovery
 
-# Whether recovery behaviors are enabled
-# Set to false to disable all recovery behaviors
+# 복구 동작 활성화 여부
+# false로 설정하면 모든 복구 동작 비활성화
 recovery_behavior_enabled: true
 
-# ===== Recovery Behavior Parameters =====
+# ===== 복구 동작 파라미터 =====
 
-# Conservative reset parameters
+# Conservative reset 파라미터
 conservative_reset:
-  # Reset distance for conservative clear (meters)
+  # Conservative clear를 위한 리셋 거리 (미터)
   reset_distance: 3.0
 
-  # Layer names to clear
+  # 제거할 레이어 이름
   # layer_names: ["obstacle_layer"]
 
-# Aggressive reset parameters
+# Aggressive reset 파라미터
 aggressive_reset:
-  # Reset distance for aggressive clear (meters)
+  # Aggressive clear를 위한 리셋 거리 (미터)
   reset_distance: 5.0
 
-  # Layer names to clear
+  # 제거할 레이어 이름
   # layer_names: ["obstacle_layer"]
 
-# Rotate recovery parameters
+# Rotate recovery 파라미터
 rotate_recovery:
-  # Simulation granularity (radians)
+  # 시뮬레이션 단위 (라디안)
   sim_granularity: 0.017
 
-  # Frequency of commanding rotation (Hz)
+  # 회전 명령 주파수 (Hz)
   frequency: 20.0
 
-# ===== Goal Tolerance =====
+# ===== 목표 허용 오차 =====
 
-# Conservative reset distance (meters)
-# How far from obstacles to clear when performing conservative reset
+# Conservative reset 거리 (미터)
+# Conservative reset 수행 시 장애물로부터 제거할 거리
 # conservative_reset_dist: 3.0
 
-# ===== Clearing Parameters =====
+# ===== Clearing 파라미터 =====
 
-# Whether to clear the costmap when starting to navigate
+# 네비게이션 시작 시 costmap을 제거할지 여부
 # clearing_rotation_allowed: true
 
-# Radius within which to clear costmap (meters)
+# Costmap을 제거할 반경 (미터)
 # clearing_radius: 0.5
 
-# ===== Planning Retries =====
+# ===== 계획 재시도 =====
 
-# Maximum number of times to retry planning before giving up
-# -1 = unlimited retries
+# 포기하기 전 계획을 재시도할 최대 횟수
+# -1 = 무제한 재시도
 # max_planning_retries: -1
 
-# ===== Additional Parameters =====
+# ===== 추가 파라미터 =====
 
-# Whether to make a plan before clearing costmap during recovery
+# 복구 중 costmap을 제거하기 전에 계획을 수립할지 여부
 # make_plan_clear_costmap: true
 
-# Whether to add unreachable goal to the plan
+# 도달 불가능한 목표를 계획에 추가할지 여부
 # make_plan_add_unreachable_goal: true
 
-# Restore defaults for unspecified parameters
+# 지정되지 않은 파라미터의 기본값 복원
 # restore_defaults: false

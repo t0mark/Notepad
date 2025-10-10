@@ -1,115 +1,115 @@
 # ============================================================
-# Global Planner Parameters
-# For GlobalPlanner (global_planner/GlobalPlanner)
-# For full documentation: http://wiki.ros.org/global_planner
+# Global Planner 파라미터
+# GlobalPlanner (global_planner/GlobalPlanner) 설정
+# 상세 문서: http://wiki.ros.org/global_planner
 # ============================================================
 
 GlobalPlanner:
-  # ===== General Parameters =====
+  # ===== 일반 파라미터 =====
 
-  # Whether to allow planning through unknown space
-  # true: can plan through unknown areas (useful for exploration)
-  # false: treats unknown space as obstacles
+  # Unknown 공간을 통한 계획 허용 여부
+  # true: unknown 영역을 통해 계획 가능 (탐사에 유용)
+  # false: unknown 공간을 장애물로 취급
   allow_unknown: true
 
-  # Tolerance in meters for the goal position
-  # If a plan cannot reach exactly to the goal, it will plan to within this distance
-  # 0.0 = must reach exact goal position
+  # 목표 위치에 대한 허용 오차 (미터)
+  # 계획이 정확한 목표에 도달할 수 없으면 이 거리 내로 계획
+  # 0.0 = 정확한 목표 위치에 도달해야 함
   default_tolerance: 0.0
 
-  # ===== Visualization Parameters =====
+  # ===== 시각화 파라미터 =====
 
-  # Whether to publish the potential (cost) field for visualization
-  # Useful for debugging in RViz
+  # 시각화를 위해 potential(cost) field 발행 여부
+  # RViz에서 디버깅에 유용
   visualize_potential: false
 
-  # Whether to publish the potential array
-  # Can be used for advanced visualization
+  # Potential 배열 발행 여부
+  # 고급 시각화에 사용 가능
   publish_potential: true
 
-  # Publish the global plan for visualization
+  # 시각화를 위한 전역 계획 발행
   # publish_plan: true
 
-  # ===== Algorithm Selection =====
+  # ===== 알고리즘 선택 =====
 
-  # Whether to use Dijkstra's algorithm
-  # true: Dijkstra (slower but optimal)
-  # false: A* (faster but requires heuristic)
+  # Dijkstra 알고리즘 사용 여부
+  # true: Dijkstra (느리지만 최적)
+  # false: A* (빠르지만 휴리스틱 필요)
   use_dijkstra: true
 
-  # Whether to use a quadratic approximation
-  # Smooths the potential field
+  # 2차 근사 사용 여부
+  # Potential field를 부드럽게 만듦
   use_quadratic: true
 
-  # Whether to use grid path
-  # false: follows gradient descent
-  # true: follows grid path (more direct but less smooth)
+  # Grid path 사용 여부
+  # false: gradient descent 따름
+  # true: grid path 따름 (더 직접적이지만 덜 부드러움)
   use_grid_path: false
 
-  # Whether to use old NavFn behavior
-  # For backwards compatibility
+  # 이전 NavFn 동작 사용 여부
+  # 하위 호환성을 위함
   old_navfn_behavior: false
 
-  # ===== Cost Parameters =====
+  # ===== Cost 파라미터 =====
 
-  # Cost value for lethal obstacles (0-255)
-  # Cells with cost >= this value are considered impassable
+  # 치명적 장애물에 대한 cost 값 (0-255)
+  # 이 값 이상의 cost를 가진 셀은 통과 불가능으로 간주
   lethal_cost: 253
 
-  # Cost value for neutral space (0-255)
-  # Cost assigned to cells with no obstacles
+  # 중립 공간에 대한 cost 값 (0-255)
+  # 장애물이 없는 셀에 할당되는 cost
   neutral_cost: 50
 
-  # Factor to multiply cost values
-  # Higher values make the planner prefer staying further from obstacles
+  # Cost 값을 곱할 계수
+  # 높은 값은 planner가 장애물로부터 더 멀리 유지하도록 함
   cost_factor: 3.0
 
-  # ===== Path Orientation Parameters =====
+  # ===== 경로 방향 파라미터 =====
 
-  # How to set the orientation of each point in the path
-  # 0 = No orientations (all quaternions set to 0)
-  # 1 = Forward (point towards next waypoint)
-  # 2 = Interpolate (smooth orientation changes)
-  # 3 = Forward, then interpolate
-  # 4 = Backward (point towards previous waypoint)
-  # 5 = Leftward
-  # 6 = Rightward
+  # 경로의 각 점 방향을 설정하는 방법
+  # 0 = 방향 없음 (모든 quaternion이 0으로 설정)
+  # 1 = Forward (다음 웨이포인트를 향함)
+  # 2 = Interpolate (부드러운 방향 변화)
+  # 3 = Forward, 그 다음 interpolate
+  # 4 = Backward (이전 웨이포인트를 향함)
+  # 5 = Leftward (왼쪽)
+  # 6 = Rightward (오른쪽)
   orientation_mode: 0
 
-  # Window size for orientation interpolation
-  # Number of poses to use when computing orientation
+  # 방향 보간을 위한 윈도우 크기
+  # 방향을 계산할 때 사용할 pose 개수
   orientation_window_size: 1
 
-  # ===== Performance Parameters =====
+  # ===== 성능 파라미터 =====
 
-  # Whether to outline the map
-  # Adds cells around the boundary of the map
+  # 맵 외곽선 그리기 여부
+  # 맵 경계 주변에 셀 추가
   # outline_map: true
 
-  # Whether to override the global costmap's inscribed radius
-  # Set a custom robot radius for planning
+  # Global costmap의 inscribed radius 오버라이드 여부
+  # 계획을 위한 커스텀 로봇 반경 설정
   # override_inscribed_radius: false
   # inscribed_radius: 0.0
 
-  # Whether to override the global costmap's circumscribed radius
+  # Global costmap의 circumscribed radius 오버라이드 여부
   # override_circumscribed_radius: false
   # circumscribed_radius: 0.0
 
-  # ===== Planner Limits =====
+  # ===== Planner 제한 =====
 
-  # Maximum number of planning cycles
-  # Limits computation time for very difficult planning problems
+  # 최대 계획 사이클 수
+  # 매우 어려운 계획 문제에 대한 연산 시간 제한
   # planner_window_x: 0.0
   # planner_window_y: 0.0
 
-  # Potential threshold for considering cells
-  # Lower values = more cells considered (slower but more thorough)
+  # 셀 고려를 위한 potential 임계값
+  # 낮은 값 = 더 많은 셀 고려 (느리지만 철저함)
   # default_tolerance: 0.0
 
-  # ===== Additional NavFn Compatibility Parameters =====
+  # ===== 추가 NavFn 호환성 파라미터 =====
 
-  # Whether to allow planning in unknown space (alias)
+  # Unknown 공간에서 계획 허용 여부 (별칭)
   # allow_unknown: true
 
-  # Whether to use simple planner in certain conditions
+  # 특정 조건에서 단순 planner 사용 여부
   # use_simple_planner: false

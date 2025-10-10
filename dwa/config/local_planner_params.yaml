@@ -1,167 +1,167 @@
 # ============================================================
-# DWA Local Planner Parameters
-# For full documentation: http://www.ros.org/wiki/dwa_local_planner
+# DWA Local Planner 파라미터
+# 상세 문서: http://www.ros.org/wiki/dwa_local_planner
 # ============================================================
 
 DWAPlannerROS:
-  # ===== Robot Configuration Parameters =====
+  # ===== 로봇 설정 파라미터 =====
 
-  # Maximum velocity in the x direction (m/s)
+  # x 방향 최대 속도 (m/s)
   max_vel_x: 1.0
 
-  # Minimum velocity in the x direction (m/s)
-  # Can be negative for reverse motion
+  # x 방향 최소 속도 (m/s)
+  # 후진을 위해 음수 가능
   min_vel_x: -0.5
 
-  # Maximum velocity in the y direction (m/s)
-  # Set to 0.0 for differential drive robots
+  # y 방향 최대 속도 (m/s)
+  # 차동구동 로봇의 경우 0.0으로 설정
   max_vel_y: 0.0
 
-  # Minimum velocity in the y direction (m/s)
-  # Set to 0.0 for differential drive robots
+  # y 방향 최소 속도 (m/s)
+  # 차동구동 로봇의 경우 0.0으로 설정
   min_vel_y: 0.0
 
-  # Maximum translational velocity (m/s)
-  # Choose slightly less than the robot's capability
+  # 최대 병진 속도 (m/s)
+  # 로봇 능력보다 약간 낮게 선택
   max_vel_trans: 1.0
 
-  # Minimum translational velocity (m/s)
-  # This is the min trans velocity when there is negligible rotational velocity
-  # WARNING: Do not set to 0.0 otherwise dwa will always think translational
-  # velocities are non-negligible and small in-place rotational velocities will be created
+  # 최소 병진 속도 (m/s)
+  # 회전 속도가 무시할 수 있을 때의 최소 병진 속도
+  # 경고: 0.0으로 설정하지 마세요. DWA가 항상 병진 속도를 무시할 수 없다고
+  # 판단하여 작은 제자리 회전 속도가 생성됩니다.
   min_vel_trans: 0.1
 
-  # Velocity below which the robot is considered stopped in translation (m/s)
+  # 병진 정지로 간주되는 속도 (m/s)
   trans_stopped_vel: 0.1
 
-  # Maximum rotational velocity (rad/s)
-  # Choose slightly less than the robot's capability
+  # 최대 회전 속도 (rad/s)
+  # 로봇 능력보다 약간 낮게 선택
   max_vel_theta: 1.5
 
-  # Minimum rotational velocity (rad/s)
-  # This is the min angular velocity when there is negligible translational velocity
+  # 최소 회전 속도 (rad/s)
+  # 병진 속도가 무시할 수 있을 때의 최소 각속도
   min_vel_theta: 0.4
 
-  # Velocity below which the robot is considered stopped in rotation (rad/s)
+  # 회전 정지로 간주되는 속도 (rad/s)
   rot_stopped_vel: 0.4
 
-  # Maximum acceleration in the x direction (m/s^2)
+  # x 방향 최대 가속도 (m/s^2)
   acc_lim_x: 2.5
 
-  # Maximum acceleration in the y direction (m/s^2)
-  # Set to 0.0 for differential drive robots
+  # y 방향 최대 가속도 (m/s^2)
+  # 차동구동 로봇의 경우 0.0으로 설정
   acc_lim_y: 0.0
 
-  # Maximum rotational acceleration (rad/s^2)
+  # 최대 회전 가속도 (rad/s^2)
   acc_lim_theta: 3.2
 
-  # ===== Goal Tolerance Parameters =====
+  # ===== 목표 도달 허용 오차 파라미터 =====
 
-  # Tolerance in the x & y distance to the goal (meters)
+  # 목표까지 x & y 거리 허용 오차 (미터)
   xy_goal_tolerance: 0.2
 
-  # Tolerance in the yaw to the goal (radians)
+  # 목표까지 yaw 각도 허용 오차 (라디안)
   yaw_goal_tolerance: 0.17
 
-  # If true, the robot will continue to rotate in place to achieve the goal orientation
-  # even if it has reached the goal position
+  # true인 경우, 목표 위치에 도달했더라도 목표 방향을 맞추기 위해
+  # 로봇이 계속 제자리 회전
   latch_xy_goal_tolerance: false
 
-  # ===== Forward Simulation Parameters =====
+  # ===== 전방 시뮬레이션 파라미터 =====
 
-  # Amount of time to forward-simulate trajectories (seconds)
-  # Higher values look further ahead but increase computation
+  # 궤적을 전방 시뮬레이션할 시간 (초)
+  # 높은 값은 더 앞을 보지만 연산량 증가
   sim_time: 1.5
 
-  # Step size for the trajectory simulation (meters)
-  # Smaller values = more accurate but slower
+  # 궤적 시뮬레이션의 스텝 크기 (미터)
+  # 작은 값 = 더 정확하지만 느림
   sim_granularity: 0.025
 
-  # Angular granularity with which to sample angular velocities (radians)
+  # 각속도를 샘플링할 각도 단위 (라디안)
   # angular_sim_granularity: 0.025
 
-  # Number of samples to use when exploring the x velocity space
+  # x 속도 공간을 탐색할 때 사용할 샘플 개수
   vx_samples: 20
 
-  # Number of samples to use when exploring the y velocity space
-  # Set to 0 for differential drive robots
+  # y 속도 공간을 탐색할 때 사용할 샘플 개수
+  # 차동구동 로봇의 경우 0으로 설정
   vy_samples: 0
 
-  # Number of samples to use when exploring the theta velocity space
+  # theta 속도 공간을 탐색할 때 사용할 샘플 개수
   vtheta_samples: 40
 
-  # ===== Trajectory Scoring Parameters =====
+  # ===== 궤적 점수화 파라미터 =====
 
-  # Weighting for staying close to the global path
-  # Higher values make the robot stick closer to the path
+  # 전역 경로를 따라가는 것에 대한 가중치
+  # 높은 값은 로봇이 경로에 더 가깝게 유지
   path_distance_bias: 32.0
 
-  # Weighting for progressing towards the goal
-  # Higher values make the robot drive more directly to the goal
+  # 목표를 향해 진행하는 것에 대한 가중치
+  # 높은 값은 로봇이 목표로 더 직접적으로 이동
   goal_distance_bias: 24.0
 
-  # Weighting for staying away from obstacles
-  # Higher values make the robot avoid obstacles more aggressively
+  # 장애물로부터 멀리 유지하는 것에 대한 가중치
+  # 높은 값은 로봇이 장애물을 더 공격적으로 회피
   occdist_scale: 0.01
 
-  # Distance from the robot to place a scoring point (meters)
-  # The point at which to compute heading error for trajectory scoring
+  # 궤적 점수화를 위한 로봇으로부터의 점 거리 (미터)
+  # 헤딩 오류를 계산할 지점
   forward_point_distance: 0.325
 
-  # Amount of time the robot must stop before a collision (seconds)
-  # Provides a safety margin for emergency stops
+  # 충돌 전 로봇이 정지해야 하는 시간 (초)
+  # 비상 정지를 위한 안전 여유
   stop_time_buffer: 0.2
 
-  # The absolute value of the velocity at which to start scaling the robot's footprint (m/s)
-  # Allows dynamic footprint adjustment based on speed
+  # 로봇 풋프린트 스케일링을 시작할 속도의 절대값 (m/s)
+  # 속도에 따른 동적 풋프린트 조정 허용
   scaling_speed: 0.25
 
-  # Maximum factor to scale the robot's footprint by
+  # 로봇 풋프린트를 스케일링할 최대 비율
   max_scaling_factor: 0.2
 
-  # ===== Oscillation Prevention Parameters =====
+  # ===== 진동 방지 파라미터 =====
 
-  # Distance the robot must travel before oscillation flags are reset (meters)
-  # Prevents the robot from getting stuck in place
+  # 진동 플래그가 리셋되기 전 로봇이 이동해야 하는 거리 (미터)
+  # 로봇이 제자리에서 멈추는 것을 방지
   oscillation_reset_dist: 0.05
 
-  # How far the robot must move to reset oscillation flags (meters)
+  # 진동 플래그를 리셋하기 위해 로봇이 이동해야 하는 거리 (미터)
   # oscillation_reset_angle: 0.2
 
-  # ===== Debugging / Visualization =====
+  # ===== 디버깅 / 시각화 =====
 
-  # Whether to publish the cost grid that the planner uses for trajectory evaluation
-  # Useful for debugging but increases CPU/network load
+  # Planner가 궤적 평가에 사용하는 cost grid 발행 여부
+  # 디버깅에 유용하지만 CPU/네트워크 부하 증가
   publish_cost_grid_pc: true
 
-  # Whether to publish the evaluated trajectories as a point cloud
-  # Useful for visualization in RViz
+  # 평가된 궤적을 포인트 클라우드로 발행할지 여부
+  # RViz에서 시각화에 유용
   publish_traj_pc: true
 
-  # Global frame ID for cost cloud visualization
+  # Cost cloud 시각화를 위한 전역 프레임 ID
   # global_frame_id: odom
 
-  # ===== Additional Parameters =====
+  # ===== 추가 파라미터 =====
 
-  # Whether to use the Dynamic Window Approach for velocity sampling
-  # If false, uses the full velocity space
+  # 속도 샘플링에 Dynamic Window Approach 사용 여부
+  # false인 경우 전체 속도 공간 사용
   # use_dwa: true
 
-  # Whether to restore defaults for parameters not explicitly set
+  # 명시적으로 설정되지 않은 파라미터의 기본값 복원 여부
   # restore_defaults: false
 
-  # Tolerance for the controller's execution time (seconds)
-  # If the controller takes longer than this, it will abort
+  # 컨트롤러 실행 시간에 대한 허용 오차 (초)
+  # 컨트롤러가 이보다 오래 걸리면 중단
   # controller_frequency: 20.0
 
-  # Penalize turns that change the direction of robot motion
+  # 로봇 움직임 방향을 바꾸는 회전에 페널티
   # twirling_scale: 0.0
 
-  # ===== Holonomic Robot Settings =====
-  # (Only for omnidirectional robots, not differential drive)
+  # ===== Holonomic Robot 설정 =====
+  # (전방향 이동 로봇 전용, 차동구동 아님)
 
-  # Set to true for holonomic robots (can move in any direction)
+  # Holonomic robot인 경우 true로 설정 (모든 방향 이동 가능)
   # holonomic_robot: false
 
-  # Set of y velocities to sample for holonomic robots
+  # Holonomic robot용 샘플링할 y 속도 집합
   # y_vels: [-0.3, -0.1, 0.1, 0.3]

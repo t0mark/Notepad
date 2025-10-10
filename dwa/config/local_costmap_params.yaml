@@ -1,80 +1,80 @@
 # ============================================================
-# Local Costmap Parameters
-# Independent settings for the local planner's costmap
-# For more details: http://www.ros.org/wiki/costmap_2d
+# Local Costmap 파라미터
+# Local planner의 costmap 독립 설정
+# 상세 문서: http://www.ros.org/wiki/costmap_2d
 # ============================================================
 
 local_costmap:
-  # ===== Frame Configuration =====
+  # ===== 프레임 설정 =====
 
-  # The global frame for the costmap to operate in
-  # For local costmap, typically 'odom' frame
+  # Costmap이 동작할 전역 프레임
+  # Local costmap의 경우 일반적으로 'odom' 프레임 사용
   global_frame: odom
 
-  # The name of the frame for the base link of the robot
+  # 로봇의 base link 프레임 이름
   robot_base_frame: base_link
 
-  # ===== Update and Publish Frequency =====
+  # ===== 업데이트 및 발행 주파수 =====
 
-  # How often to update the costmap (Hz)
+  # Costmap 업데이트 주파수 (Hz)
   update_frequency: 5.0
 
-  # How often to publish visualization info (Hz)
-  # Set to 0.0 to disable publishing
+  # 시각화 정보 발행 주파수 (Hz)
+  # 0.0으로 설정하면 발행 비활성화
   publish_frequency: 2.0
 
-  # ===== Map Configuration =====
+  # ===== 맵 설정 =====
 
-  # Whether to use a static map (from map_server)
-  # For local costmap, typically false (builds map from sensor data)
+  # 정적 맵(map_server로부터) 사용 여부
+  # Local costmap의 경우 일반적으로 false (센서 데이터로부터 맵 생성)
   static_map: false
 
-  # Whether the costmap should roll with the robot
-  # true: costmap is always centered on the robot
-  # false: costmap is fixed in place
+  # Costmap이 로봇과 함께 이동할지 여부
+  # true: costmap이 항상 로봇 중심
+  # false: costmap이 고정 위치
   rolling_window: true
 
-  # Width of the costmap (meters)
+  # Costmap의 폭 (미터)
   width: 10.0
 
-  # Height of the costmap (meters)
+  # Costmap의 높이 (미터)
   height: 10.0
 
-  # Resolution of the costmap (meters/cell)
-  # Smaller = more accurate but more computational cost
+  # Costmap의 해상도 (미터/셀)
+  # 작을수록 정확하지만 연산량 증가
   resolution: 0.05
 
-  # Origin of the costmap in the global frame
-  # For rolling window, these are typically 0.0
+  # 전역 프레임에서 costmap의 원점
+  # Rolling window의 경우 일반적으로 0.0
   origin_x: 0.0
   origin_y: 0.0
 
   # ===== Transform Tolerance =====
 
-  # Maximum allowable transform age (seconds)
-  # Overrides the common parameter if specified
+  # 허용 가능한 최대 transform 지연 시간 (초)
+  # 지정하면 공통 파라미터를 오버라이드
   transform_tolerance: 0.5
 
-  # ===== Visualization =====
+  # ===== 시각화 =====
 
-  # Whether to publish the voxel grid for visualization
-  # Only relevant when using voxel layer
+  # Voxel grid 시각화용 발행 여부
+  # Voxel layer 사용 시에만 관련
   publish_voxel_map: false
 
   # ===== Layer Plugins =====
-  # Uncomment to explicitly define costmap layers
+  # Costmap 레이어를 명시적으로 정의하려면 주석 해제
 
   # plugins:
   #   - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
   #   - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
 
-  # ===== Additional Parameters =====
+  # ===== 추가 파라미터 =====
 
-  # Whether to always send full costmap updates
+  # 항상 전체 costmap 업데이트를 전송할지 여부
   # always_send_full_costmap: false
 
-  # Track unknown space
+  # Unknown 공간 추적 여부
   # track_unknown_space: true
 
-  # Use maximum value for unknown space when combining layers
+  # 레이어 결합 시 unknown 공간에 사용할 최대값
   # unknown_cost_value: 255

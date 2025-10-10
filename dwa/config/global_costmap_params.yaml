@@ -1,93 +1,93 @@
 # ============================================================
-# Global Costmap Parameters
-# Independent settings for the global planner's costmap
-# For more details: http://www.ros.org/wiki/costmap_2d
+# Global Costmap 파라미터
+# Global planner의 costmap 독립 설정
+# 상세 문서: http://www.ros.org/wiki/costmap_2d
 # ============================================================
 
 global_costmap:
-  # ===== Frame Configuration =====
+  # ===== 프레임 설정 =====
 
-  # The global frame for the costmap to operate in
-  # For global costmap, typically 'map' frame
+  # Costmap이 동작할 전역 프레임
+  # Global costmap의 경우 일반적으로 'map' 프레임 사용
   global_frame: map
 
-  # The name of the frame for the base link of the robot
+  # 로봇의 base link 프레임 이름
   robot_base_frame: base_link
 
-  # ===== Update and Publish Frequency =====
+  # ===== 업데이트 및 발행 주파수 =====
 
-  # How often to update the costmap (Hz)
-  # Lower frequency than local costmap since global planning is slower
+  # Costmap 업데이트 주파수 (Hz)
+  # Global planning은 느리므로 local costmap보다 낮은 주파수 사용
   update_frequency: 1.0
 
-  # How often to publish visualization info (Hz)
-  # Set to 0.0 to disable publishing (saves bandwidth)
+  # 시각화 정보 발행 주파수 (Hz)
+  # 0.0으로 설정하면 발행 비활성화 (대역폭 절약)
   publish_frequency: 0.5
 
-  # ===== Map Configuration =====
+  # ===== 맵 설정 =====
 
-  # Whether to use a static map (from map_server)
-  # For global costmap with SLAM: false (builds map dynamically)
-  # For global costmap with pre-built map: true
+  # 정적 맵(map_server로부터) 사용 여부
+  # SLAM과 함께 사용하는 global costmap: false (동적으로 맵 생성)
+  # 미리 만들어진 맵과 함께 사용: true
   static_map: false
 
-  # Whether the costmap should roll with the robot
-  # true: costmap moves with robot (for large environments without static map)
-  # false: costmap is fixed to the map frame
+  # Costmap이 로봇과 함께 이동할지 여부
+  # true: costmap이 로봇과 함께 이동 (정적 맵 없이 넓은 환경에서 사용)
+  # false: costmap이 map 프레임에 고정
   rolling_window: true
 
-  # Width of the costmap (meters)
-  # Larger than local costmap for long-range planning
+  # Costmap의 폭 (미터)
+  # Local costmap보다 넓게 설정하여 장거리 계획 지원
   width: 50.0
 
-  # Height of the costmap (meters)
+  # Costmap의 높이 (미터)
   height: 50.0
 
-  # Resolution of the costmap (meters/cell)
-  # Can be coarser than local costmap for efficiency
+  # Costmap의 해상도 (미터/셀)
+  # 효율성을 위해 local costmap보다 거칠게 설정 가능
   resolution: 0.1
 
-  # Origin of the costmap in the global frame
-  # For rolling window or static map, typically handled automatically
+  # 전역 프레임에서 costmap의 원점
+  # Rolling window 또는 static map의 경우 자동으로 처리됨
   # origin_x: 0.0
   # origin_y: 0.0
 
   # ===== Transform Tolerance =====
 
-  # Maximum allowable transform age (seconds)
-  # Overrides the common parameter if specified
+  # 허용 가능한 최대 transform 지연 시간 (초)
+  # 지정하면 공통 파라미터를 오버라이드
   transform_tolerance: 0.5
 
-  # ===== Footprint =====
+  # ===== 풋프린트 =====
 
-  # Additional padding for the footprint in global costmap (meters)
-  # Provides extra safety margin for global planning
+  # Global costmap에서 풋프린트에 추가되는 패딩 (미터)
+  # Global planning을 위한 추가 안전 여유 제공
   footprint_padding: 0.02
 
   # ===== Layer Plugins =====
-  # Uncomment to explicitly define costmap layers
+  # Costmap 레이어를 명시적으로 정의하려면 주석 해제
 
-  # For static map with obstacles:
+  # 정적 맵 + 장애물:
   # plugins:
   #   - {name: static_layer,        type: "costmap_2d::StaticLayer"}
   #   - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
   #   - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
 
-  # For dynamic mapping (SLAM):
+  # 동적 매핑 (SLAM):
   # plugins:
   #   - {name: obstacle_layer,      type: "costmap_2d::VoxelLayer"}
   #   - {name: inflation_layer,     type: "costmap_2d::InflationLayer"}
 
-  # ===== Additional Parameters =====
+  # ===== 추가 파라미터 =====
 
-  # Whether to always send full costmap updates
+  # 항상 전체 costmap 업데이트를 전송할지 여부
   # always_send_full_costmap: false
 
-  # Track unknown space
+  # Unknown 공간 추적 여부
   # track_unknown_space: true
 
-  # Use maximum value for unknown space when combining layers
+  # 레이어 결합 시 unknown 공간에 사용할 최대값
   # unknown_cost_value: 255
 
-  # Whether to publish the voxel grid for visualization
+  # Voxel grid 시각화용 발행 여부
   # publish_voxel_map: false
