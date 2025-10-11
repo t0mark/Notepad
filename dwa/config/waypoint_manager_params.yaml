@@ -51,3 +51,22 @@ waypoint_manager:
   # true: 실패 시 move_base의 재계획 기능 사용
   # false: 그대로 재시도
   replan_on_failure: true
+
+  # ===== 사전 검증 (NEW!) =====
+
+  # 웨이포인트 코스트 체크 활성화
+  # true: 웨이포인트 전송 전 make_plan으로 도달 가능성 체크
+  # false: 체크 없이 바로 전송
+  check_waypoint_cost: true
+
+  # 치명적 코스트 임계값 (0-255)
+  # 이 값 이상의 cost를 가진 웨이포인트는 건너뜀
+  lethal_cost_threshold: 253
+
+  # Global costmap 크기 (m)
+  # Rolling window 모드의 costmap 크기 (width/height)
+  global_costmap_size: 50.0
+
+  # 웨이포인트 분할 거리 (m)
+  # 웨이포인트가 이 거리보다 멀리 있으면 중간 지점 추가
+  split_distance: 15.0

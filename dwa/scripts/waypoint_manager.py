@@ -36,6 +36,10 @@ class WaypointManager:
         self.goal_tolerance = rospy.get_param('~goal_tolerance', 0.5)
         self.max_deviation = rospy.get_param('~max_deviation', 5.0)
         self.skip_unreachable = rospy.get_param('~skip_unreachable', True)
+        self.check_waypoint_cost = rospy.get_param('~check_waypoint_cost', True)
+        self.lethal_cost_threshold = rospy.get_param('~lethal_cost_threshold', 253)
+        self.global_costmap_size = rospy.get_param('~global_costmap_size', 50.0)
+        self.split_distance = rospy.get_param('~split_distance', 15.0)
 
         rospy.loginfo("=" * 60)
         rospy.loginfo("웨이포인트 관리자 파라미터:")
@@ -47,6 +51,10 @@ class WaypointManager:
         rospy.loginfo(f"  목표 허용 오차: {self.goal_tolerance}m")
         rospy.loginfo(f"  최대 편차: {self.max_deviation}m")
         rospy.loginfo(f"  도달 불가능 지점 건너뛰기: {self.skip_unreachable}")
+        rospy.loginfo(f"  웨이포인트 코스트 체크: {self.check_waypoint_cost}")
+        rospy.loginfo(f"  치명적 코스트 임계값: {self.lethal_cost_threshold}")
+        rospy.loginfo(f"  Global costmap 크기: {self.global_costmap_size}m")
+        rospy.loginfo(f"  분할 거리: {self.split_distance}m")
         rospy.loginfo("=" * 60)
 
         # State
@@ -66,6 +74,12 @@ class WaypointManager:
         rospy.loginfo("move_base 액션 서버 대기 중...")
         self.move_base_client.wait_for_server()
         rospy.loginfo("✅ move_base 액션 서버 연결됨")
+
+        # Service Clients
+        rospy.loginfo("make_plan 서비스 대기 중...")
+        rospy.wait_for_service('/move_base/make_plan', timeout=10.0)
+        self.make_plan_service = rospy.ServiceProxy('/move_base/make_plan', GetPlan)
+        rospy.loginfo("✅ make_plan 서비스 연결됨")
 
         # Subscribers
         rospy.Subscriber('/kakao/path', Path, self.path_callback, queue_size=1)
@@ -199,6 +213,141 @@ class WaypointManager:
 
         return closest_idx
 
+    def check_waypoint_reachable(self, waypoint):
+        """
+        웨이포인트가 도달 가능한지 체크 (make_plan 서비스 사용)
+        Returns: (reachable: bool, plan_length: float)
+        """
+        if not self.check_waypoint_cost:
+            return True, 0.0
+
+        robot_pose = self.get_robot_pose()
+        if not robot_pose:
+            rospy.logwarn("⚠️  로봇 위치를 가져올 수 없어 waypoint 체크를 건너뜁니다")
+            return True, 0.0
+
+        try:
+            # make_plan 서비스 호출
+            req = GetPlan()
+            req.start = robot_pose
+            req.goal = waypoint
+            req.tolerance = self.goal_tolerance
+
+            resp = self.make_plan_service(req.start, req.goal, req.tolerance)
+
+            if resp.plan and len(resp.plan.poses) > 0:
+                # 경로 길이 계산
+                plan_length = 0.0
+                for i in range(1, len(resp.plan.poses)):
+                    plan_length += self.calculate_distance(
+                        resp.plan.poses[i-1], resp.plan.poses[i]
+                    )
+                return True, plan_length
+            else:
+                rospy.logwarn(f"⚠️  Waypoint ({waypoint.pose.position.x:.2f}, {waypoint.pose.position.y:.2f})로의 경로를 찾을 수 없습니다")
+                return False, 0.0
+
+        except rospy.ServiceException as e:
+            rospy.logwarn(f"⚠️  make_plan 서비스 호출 실패: {e}")
+            return True, 0.0  # 서비스 실패 시 웨이포인트 유지
+
+    def is_waypoint_in_costmap(self, waypoint, robot_pose):
+        """
+        웨이포인트가 global costmap 범위 안에 있는지 체크
+        """
+        if not robot_pose:
+            return True
+
+        # Rolling window의 경우 로봇 중심으로 costmap_size/2 반경
+        max_range = self.global_costmap_size / 2.0
+
+        dx = waypoint.pose.position.x - robot_pose.pose.position.x
+        dy = waypoint.pose.position.y - robot_pose.pose.position.y
+        distance = math.sqrt(dx*dx + dy*dy)
+
+        return distance < max_range
+
+    def split_waypoint(self, start_pose, end_pose, num_splits=2):
+        """
+        두 웨이포인트 사이를 num_splits개로 분할
+        Returns: List[PoseStamped] (중간 지점들, end_pose 포함)
+        """
+        result = []
+
+        for i in range(1, num_splits + 1):
+            t = i / num_splits  # 0 < t <= 1
+
+            new_pose = PoseStamped()
+            new_pose.header.frame_id = end_pose.header.frame_id
+            new_pose.header.stamp = rospy.Time.now()
+
+            # 선형 보간
+            new_pose.pose.position.x = start_pose.pose.position.x + t * (end_pose.pose.position.x - start_pose.pose.position.x)
+            new_pose.pose.position.y = start_pose.pose.position.y + t * (end_pose.pose.position.y - start_pose.pose.position.y)
+            new_pose.pose.position.z = start_pose.pose.position.z + t * (end_pose.pose.position.z - start_pose.pose.position.z)
+
+            # 방향은 end_pose를 향하도록
+            angle = math.atan2(
+                end_pose.pose.position.y - start_pose.pose.position.y,
+                end_pose.pose.position.x - start_pose.pose.position.x
+            )
+            new_pose.pose.orientation.z = math.sin(angle / 2.0)
+            new_pose.pose.orientation.w = math.cos(angle / 2.0)
+
+            result.append(new_pose)
+
+        return result
+
+    def validate_and_split_waypoints(self, waypoints):
+        """
+        웨이포인트 검증 및 필요시 분할
+        - 코스트가 높은 waypoint는 건너뛰기
+        - Costmap 범위 밖의 waypoint는 중간 지점 추가
+        """
+        if not waypoints:
+            return []
+
+        robot_pose = self.get_robot_pose()
+        validated = []
+        skipped_count = 0
+
+        i = 0
+        while i < len(waypoints):
+            wp = waypoints[i]
+
+            # 1. 도달 가능성 체크
+            reachable, _ = self.check_waypoint_reachable(wp)
+            if not reachable:
+                rospy.logwarn(f"⚠️  Waypoint {i+1} 건너뜀: 장애물 또는 높은 코스트")
+                skipped_count += 1
+                i += 1
+                continue
+
+            # 2. Costmap 범위 체크 및 분할
+            if robot_pose and not self.is_waypoint_in_costmap(wp, robot_pose):
+                # 현재 로봇 위치(또는 마지막 validated waypoint)에서 거리 계산
+                start_pose = validated[-1] if validated else robot_pose
+                distance = self.calculate_distance(start_pose, wp)
+
+                if distance > self.split_distance:
+                    # 분할 필요
+                    num_splits = int(math.ceil(distance / self.split_distance))
+                    rospy.loginfo(f"📏 Waypoint {i+1}이 {distance:.1f}m 떨어져 있어 {num_splits}개로 분할합니다")
+
+                    split_poses = self.split_waypoint(start_pose, wp, num_splits)
+                    validated.extend(split_poses)
+                else:
+                    validated.append(wp)
+            else:
+                validated.append(wp)
+
+            i += 1
+
+        if skipped_count > 0:
+            rospy.loginfo(f"📊 웨이포인트 검증: {len(waypoints)}개 중 {skipped_count}개 건너뜀, {len(validated)}개 유효")
+
+        return validated
+
     def publish_waypoint_markers(self):
         """웨이포인트를 MarkerArray로 발행하여 시각화"""
         marker_array = MarkerArray()
@@ -295,6 +444,9 @@ class WaypointManager:
 
         # 웨이포인트 필터링
         waypoints = self.filter_waypoints(path_msg)
+
+        # 웨이포인트 검증 및 분할 (새로운 기능!)
+        waypoints = self.validate_and_split_waypoints(waypoints)
 
         # 각 웨이포인트의 방향을 다음 웨이포인트를 향하도록 수정
         for i in range(len(waypoints) - 1):

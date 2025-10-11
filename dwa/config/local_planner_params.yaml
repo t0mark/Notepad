@@ -1,169 +1,48 @@
 # ============================================================
 # DWA Local Planner 파라미터
-# 상세 문서: http://www.ros.org/wiki/dwa_local_planner
+# @25_Jairlab/husky_dwa_navigation/config/ 값을 기반으로 수정됨
 # ============================================================
 
 DWAPlannerROS:
-  # ===== 로봇 설정 파라미터 =====
-
-  # x 방향 최대 속도 (m/s)
+  # ===== 로봇 동역학 파라미터 (from robot_dynamics_params.yaml) =====
   max_vel_x: 1.0
-
-  # x 방향 최소 속도 (m/s)
-  # 0.0으로 설정하여 후진 방지
-  min_vel_x: 0.0
-
-  # y 방향 최대 속도 (m/s)
-  # 차동구동 로봇의 경우 0.0으로 설정
+  min_vel_x: -1.0      # 후진 허용
   max_vel_y: 0.0
-
-  # y 방향 최소 속도 (m/s)
-  # 차동구동 로봇의 경우 0.0으로 설정
   min_vel_y: 0.0
-
-  # 최대 병진 속도 (m/s)
-  # 로봇 능력보다 약간 낮게 선택
   max_vel_trans: 1.0
-
-  # 최소 병진 속도 (m/s)
-  # 회전 속도가 무시할 수 있을 때의 최소 병진 속도
-  # 경고: 0.0으로 설정하지 마세요. DWA가 항상 병진 속도를 무시할 수 없다고
-  # 판단하여 작은 제자리 회전 속도가 생성됩니다.
   min_vel_trans: 0.1
-
-  # 병진 정지로 간주되는 속도 (m/s)
-  trans_stopped_vel: 0.1
-
-  # 최대 회전 속도 (rad/s)
-  # 로봇 능력보다 약간 낮게 선택
-  max_vel_theta: 1.5
-
-  # 최소 회전 속도 (rad/s)
-  # 병진 속도가 무시할 수 있을 때의 최소 각속도
-  min_vel_theta: 0.4
-
-  # 회전 정지로 간주되는 속도 (rad/s)
-  rot_stopped_vel: 0.4
-
-  # x 방향 최대 가속도 (m/s^2)
+  max_vel_theta: 0.8
+  min_vel_theta: 0.08
   acc_lim_x: 2.5
-
-  # y 방향 최대 가속도 (m/s^2)
-  # 차동구동 로봇의 경우 0.0으로 설정
   acc_lim_y: 0.0
+  acc_lim_theta: 2.5
 
-  # 최대 회전 가속도 (rad/s^2)
-  acc_lim_theta: 3.2
-
-  # ===== 목표 도달 허용 오차 파라미터 =====
-
-  # 목표까지 x & y 거리 허용 오차 (미터)
+  # ===== 목표 도달 허용 오차 (from robot_dynamics_params.yaml) =====
   xy_goal_tolerance: 0.5
+  yaw_goal_tolerance: 3.14   # 방향 제약 거의 없음
+  latch_xy_goal_tolerance: false
 
-  # 목표까지 yaw 각도 허용 오차 (라디안)
-  # 3.15 (약 180도)로 설정하여 사실상 방향 제약 무시
-  yaw_goal_tolerance: 3.15
-
-  # true인 경우, 목표 위치에 도달했더라도 목표 방향을 맞추기 위해
-  # 로봇이 계속 제자리 회전
-  # yaw_goal_tolerance가 매우 크므로, XY 도달 후 바로 성공 처리됨
-  latch_xy_goal_tolerance: true
-
-  # ===== 전방 시뮬레이션 파라미터 =====
-
-  # 궤적을 전방 시뮬레이션할 시간 (초)
-  # 높은 값은 더 앞을 보지만 연산량 증가
-  sim_time: 1.5
-
-  # 궤적 시뮬레이션의 스텝 크기 (미터)
-  # 작은 값 = 더 정확하지만 느림
-  sim_granularity: 0.025
-
-  # 각속도를 샘플링할 각도 단위 (라디안)
-  # angular_sim_granularity: 0.025
-
-  # x 속도 공간을 탐색할 때 사용할 샘플 개수
-  vx_samples: 20
-
-  # y 속도 공간을 탐색할 때 사용할 샘플 개수
-  # 차동구동 로봇의 경우 0으로 설정
+  # ===== 궤적 시뮬레이션 설정 (from path_planning_params.yaml) =====
+  sim_time: 4.0
+  sim_granularity: 0.05
+  vx_samples: 10
   vy_samples: 0
+  vth_samples: 20
 
-  # theta 속도 공간을 탐색할 때 사용할 샘플 개수
-  vtheta_samples: 40
+  # ===== 궤적 평가 가중치 (from path_planning_params.yaml) =====
+  path_distance_bias: 32.0
+  goal_distance_bias: 32.0
+  occdist_scale: 0.02
+  forward_point_distance: 0.5
 
-  # ===== 궤적 점수화 파라미터 =====
-
-  # 전역 경로를 따라가는 것에 대한 가중치
-  # 높은 값은 로봇이 경로에 더 가깝게 유지
-  path_distance_bias: 64.0
-
-  # 목표를 향해 진행하는 것에 대한 가중치
-  # 높은 값은 로봇이 목표로 더 직접적으로 이동
-  goal_distance_bias: 48.0
-
-  # 장애물로부터 멀리 유지하는 것에 대한 가중치
-  # 높은 값은 로봇이 장애물을 더 공격적으로 회피
-  occdist_scale: 0.005
-
-  # 궤적 점수화를 위한 로봇으로부터의 점 거리 (미터)
-  # 헤딩 오류를 계산할 지점
-  forward_point_distance: 1.0
-
-  # 충돌 전 로봇이 정지해야 하는 시간 (초)
-  # 비상 정지를 위한 안전 여유
+  # ===== 안전 및 진동 방지 (from robot_dynamics_params.yaml) =====
   stop_time_buffer: 0.2
+  scaling_speed: 0.1
+  max_scaling_factor: 0.5
+  oscillation_reset_dist: 0.1
+  penalize_negative_x: false # 후진 패널티 비활성화
 
-  # 로봇 풋프린트 스케일링을 시작할 속도의 절대값 (m/s)
-  # 속도에 따른 동적 풋프린트 조정 허용
-  scaling_speed: 0.25
-
-  # 로봇 풋프린트를 스케일링할 최대 비율
-  max_scaling_factor: 0.2
-
-  # ===== 진동 방지 파라미터 =====
-
-  # 진동 플래그가 리셋되기 전 로봇이 이동해야 하는 거리 (미터)
-  # 로봇이 제자리에서 멈추는 것을 방지
-  oscillation_reset_dist: 0.05
-
-  # 진동 플래그를 리셋하기 위해 로봇이 이동해야 하는 거리 (미터)
-  # oscillation_reset_angle: 0.2
-
-  # ===== 디버깅 / 시각화 =====
-
-  # Planner가 궤적 평가에 사용하는 cost grid 발행 여부
-  # 디버깅에 유용하지만 CPU/네트워크 부하 증가
-  publish_cost_grid_pc: true
-
-  # 평가된 궤적을 포인트 클라우드로 발행할지 여부
-  # RViz에서 시각화에 유용
+  # ===== 시각화 설정 (from path_planning_params.yaml) =====
   publish_traj_pc: true
-
-  # Cost cloud 시각화를 위한 전역 프레임 ID
-  # global_frame_id: odom
-
-  # ===== 추가 파라미터 =====
-
-  # 속도 샘플링에 Dynamic Window Approach 사용 여부
-  # false인 경우 전체 속도 공간 사용
-  # use_dwa: true
-
-  # 명시적으로 설정되지 않은 파라미터의 기본값 복원 여부
-  # restore_defaults: false
-
-  # 컨트롤러 실행 시간에 대한 허용 오차 (초)
-  # 컨트롤러가 이보다 오래 걸리면 중단
-  # controller_frequency: 20.0
-
-  # 로봇 움직임 방향을 바꾸는 회전에 페널티
-  # twirling_scale: 0.0
-
-  # ===== Holonomic Robot 설정 =====
-  # (전방향 이동 로봇 전용, 차동구동 아님)
-
-  # Holonomic robot인 경우 true로 설정 (모든 방향 이동 가능)
-  # holonomic_robot: false
-
-  # Holonomic robot용 샘플링할 y 속도 집합
-  # y_vels: [-0.3, -0.1, 0.1, 0.3]
+  publish_cost_grid_pc: true
+  global_frame_id: map
