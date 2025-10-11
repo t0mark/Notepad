@@ -11,16 +11,16 @@ DWAPlannerROS:
   min_vel_y: 0.0
   max_vel_trans: 1.0
   min_vel_trans: 0.1
-  max_vel_theta: 0.8
+  max_vel_theta: 0.5       # 최대 회전 속도 감소 (부드러운 회전 유도)
   min_vel_theta: 0.08
   acc_lim_x: 2.5
   acc_lim_y: 0.0
-  acc_lim_theta: 2.5
+  acc_lim_theta: 1.8       # 회전 가속도 감소 (부드러운 회전 유도)
 
   # ===== 목표 도달 허용 오차 (from robot_dynamics_params.yaml) =====
   xy_goal_tolerance: 0.5
-  yaw_goal_tolerance: 3.14   # 방향 제약 거의 없음
-  latch_xy_goal_tolerance: false
+  yaw_goal_tolerance: 6.28   # 방향 제약 완전 무시 (2π rad = 360도)
+  latch_xy_goal_tolerance: true  # xy 도달 시 즉시 성공 처리
 
   # ===== 궤적 시뮬레이션 설정 (from path_planning_params.yaml) =====
   sim_time: 4.0
@@ -30,10 +30,10 @@ DWAPlannerROS:
   vth_samples: 20
 
   # ===== 궤적 평가 가중치 (from path_planning_params.yaml) =====
-  path_distance_bias: 32.0
-  goal_distance_bias: 32.0
+  path_distance_bias: 40.0   # 경로 추종 가중치 증가 (전진 우선)
+  goal_distance_bias: 40.0   # 목표 지향 가중치 증가 (전진 우선)
   occdist_scale: 0.02
-  forward_point_distance: 0.5
+  forward_point_distance: 1.0 # 전방 주시 거리 증가 (부드러운 경로 생성)
 
   # ===== 안전 및 진동 방지 (from robot_dynamics_params.yaml) =====
   stop_time_buffer: 0.2

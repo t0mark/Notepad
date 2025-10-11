@@ -3,7 +3,7 @@
 
 """
 Waypoint Manager Node
-- Kakao API의 /kakao/path를 구독하여 적절한 간격의 웨이포인트 생성
+- Kakao API의 /kakao/path를 구독하여 웨이포인트로 사용
 - move_base ActionClient를 통해 순차적으로 웨이포인트 전송
 - 장애물, costmap 경계, 타임아웃 등 다양한 예외 상황 처리
 """
@@ -28,34 +28,15 @@ class WaypointManager:
         rospy.init_node('waypoint_manager', anonymous=False)
 
         # Parameters
-        self.min_waypoint_distance = rospy.get_param('~min_waypoint_distance', 3.0)
-        self.max_waypoint_distance = rospy.get_param('~max_waypoint_distance', 10.0)
-        self.angle_threshold = rospy.get_param('~angle_threshold', 0.5)  # rad
         self.goal_timeout = rospy.get_param('~goal_timeout', 60.0)
         self.max_retries = rospy.get_param('~max_retries', 3)
-        self.goal_tolerance = rospy.get_param('~goal_tolerance', 0.5)
+        self.goal_tolerance = rospy.get_param('/move_base/DWAPlannerROS/xy_goal_tolerance', 0.5)
         self.max_deviation = rospy.get_param('~max_deviation', 5.0)
         self.skip_unreachable = rospy.get_param('~skip_unreachable', True)
         self.check_waypoint_cost = rospy.get_param('~check_waypoint_cost', True)
-        self.lethal_cost_threshold = rospy.get_param('~lethal_cost_threshold', 253)
-        self.global_costmap_size = rospy.get_param('~global_costmap_size', 50.0)
+        self.lethal_cost_threshold = rospy.get_param('/move_base/GlobalPlanner/lethal_cost', 253)
+        self.global_costmap_size = rospy.get_param('/move_base/global_costmap/width', 100.0)
         self.split_distance = rospy.get_param('~split_distance', 15.0)
-
-        rospy.loginfo("=" * 60)
-        rospy.loginfo("웨이포인트 관리자 파라미터:")
-        rospy.loginfo(f"  최소 웨이포인트 거리: {self.min_waypoint_distance}m")
-        rospy.loginfo(f"  최대 웨이포인트 거리: {self.max_waypoint_distance}m")
-        rospy.loginfo(f"  각도 임계값: {self.angle_threshold} rad")
-        rospy.loginfo(f"  목표 타임아웃: {self.goal_timeout}s")
-        rospy.loginfo(f"  최대 재시도 횟수: {self.max_retries}")
-        rospy.loginfo(f"  목표 허용 오차: {self.goal_tolerance}m")
-        rospy.loginfo(f"  최대 편차: {self.max_deviation}m")
-        rospy.loginfo(f"  도달 불가능 지점 건너뛰기: {self.skip_unreachable}")
-        rospy.loginfo(f"  웨이포인트 코스트 체크: {self.check_waypoint_cost}")
-        rospy.loginfo(f"  치명적 코스트 임계값: {self.lethal_cost_threshold}")
-        rospy.loginfo(f"  Global costmap 크기: {self.global_costmap_size}m")
-        rospy.loginfo(f"  분할 거리: {self.split_distance}m")
-        rospy.loginfo("=" * 60)
 
         # State
         self.waypoints = []
@@ -95,82 +76,6 @@ class WaypointManager:
         dx = pose1.pose.position.x - pose2.pose.position.x
         dy = pose1.pose.position.y - pose2.pose.position.y
         return math.sqrt(dx*dx + dy*dy)
-
-    def calculate_angle_diff(self, pose1, pose2, pose3):
-        """
-        세 점이 이루는 각도 변화 계산
-        pose1 -> pose2 -> pose3
-        """
-        # Vector 1: pose1 -> pose2
-        v1x = pose2.pose.position.x - pose1.pose.position.x
-        v1y = pose2.pose.position.y - pose1.pose.position.y
-
-        # Vector 2: pose2 -> pose3
-        v2x = pose3.pose.position.x - pose2.pose.position.x
-        v2y = pose3.pose.position.y - pose2.pose.position.y
-
-        # 각도 계산
-        angle1 = math.atan2(v1y, v1x)
-        angle2 = math.atan2(v2y, v2x)
-
-        # 각도 차이 (-pi ~ pi)
-        diff = angle2 - angle1
-        while diff > math.pi:
-            diff -= 2 * math.pi
-        while diff < -math.pi:
-            diff += 2 * math.pi
-
-        return abs(diff)
-
-    def filter_waypoints(self, path):
-        """
-        거리 + 각도 기반 웨이포인트 필터링
-        - 최소 거리 이상 떨어진 지점만 선택
-        - 큰 각도 변화가 있는 지점은 무조건 포함
-        - 마지막 지점은 항상 포함
-        """
-        if not path.poses or len(path.poses) < 2:
-            rospy.logwarn("빈 경로 또는 너무 짧은 경로가 수신됨")
-            return []
-
-        filtered = []
-        filtered.append(path.poses[0])  # 첫 지점
-
-        last_added = path.poses[0]
-
-        for i in range(1, len(path.poses) - 1):
-            current = path.poses[i]
-            next_pose = path.poses[i + 1] if i + 1 < len(path.poses) else None
-
-            # 거리 체크
-            dist = self.calculate_distance(last_added, current)
-
-            # 각도 변화 체크 (이전-현재-다음)
-            angle_change = 0
-            if len(filtered) >= 1 and next_pose:
-                angle_change = self.calculate_angle_diff(filtered[-1], current, next_pose)
-
-            # 추가 조건:
-            # 1. 최소 거리 이상
-            # 2. 또는 큰 각도 변화 (꺾이는 구간)
-            # 3. 최대 거리 초과 시 무조건 추가
-            if (dist >= self.min_waypoint_distance or
-                angle_change >= self.angle_threshold or
-                dist >= self.max_waypoint_distance):
-                # 중복점 추가 방지
-                if self.calculate_distance(filtered[-1], current) > 0.1:
-                    filtered.append(current)
-                    last_added = current
-
-        # 마지막 지점 (목적지)
-        if len(path.poses) > 0:
-            last_dist = self.calculate_distance(last_added, path.poses[-1])
-            if last_dist > 0.1:  # 중복 방지
-                filtered.append(path.poses[-1])
-
-        rospy.loginfo(f"📊 웨이포인트 필터링: {len(path.poses)} -> {len(filtered)} 개")
-
-        return filtered
 
     def get_robot_pose(self):
         """현재 로봇 위치 가져오기 (map frame)"""
@@ -249,7 +154,7 @@ class WaypointManager:
 
         except rospy.ServiceException as e:
             rospy.logwarn(f"⚠️  make_plan 서비스 호출 실패: {e}")
-            return True, 0.0  # 서비스 실패 시 웨이포인트 유지
+            return True, 0.0
 
     def is_waypoint_in_costmap(self, waypoint, robot_pose):
         """
@@ -284,15 +189,10 @@ class WaypointManager:
             # 선형 보간
             new_pose.pose.position.x = start_pose.pose.position.x + t * (end_pose.pose.position.x - start_pose.pose.position.x)
             new_pose.pose.position.y = start_pose.pose.position.y + t * (end_pose.pose.position.y - start_pose.pose.position.y)
-            new_pose.pose.position.z = start_pose.pose.position.z + t * (end_pose.pose.position.z - start_pose.pose.position.z)
+            new_pose.pose.position.z = 0.0  # 지면 레벨로 고정
 
-            # 방향은 end_pose를 향하도록
-            angle = math.atan2(
-                end_pose.pose.position.y - start_pose.pose.position.y,
-                end_pose.pose.position.x - start_pose.pose.position.x
-            )
-            new_pose.pose.orientation.z = math.sin(angle / 2.0)
-            new_pose.pose.orientation.w = math.cos(angle / 2.0)
+            # 방향은 기본값 (w=1.0)
+            new_pose.pose.orientation.w = 1.0
 
             result.append(new_pose)
 
@@ -397,8 +297,11 @@ class WaypointManager:
             text_marker.type = Marker.TEXT_VIEW_FACING
             text_marker.action = Marker.ADD
 
-            text_marker.pose = waypoint.pose
-            text_marker.pose.position.z += 1.0  # 텍스트를 구 위에 표시
+            # pose를 복사하여 원본을 수정하지 않도록 함
+            text_marker.pose.position.x = waypoint.pose.position.x
+            text_marker.pose.position.y = waypoint.pose.position.y
+            text_marker.pose.position.z = waypoint.pose.position.z + 1.0  # 텍스트를 구 위에 표시
+            text_marker.pose.orientation = waypoint.pose.orientation
 
             text_marker.scale.z = 0.5  # 텍스트 크기
             text_marker.color = ColorRGBA(1.0, 1.0, 1.0, 1.0)  # 흰색
@@ -442,35 +345,30 @@ class WaypointManager:
             self.move_base_client.cancel_all_goals()
             rospy.sleep(0.5)
 
-        # 웨이포인트 필터링
-        waypoints = self.filter_waypoints(path_msg)
+        # Path의 모든 포즈를 그대로 웨이포인트로 사용
+        waypoints = list(path_msg.poses)
 
-        # 웨이포인트 검증 및 분할 (새로운 기능!)
+        if not waypoints:
+            rospy.logwarn("❌ 빈 경로가 수신됨")
+            return
+
+        # z 좌표를 0으로 고정 (지면 레벨)
+        for wp in waypoints:
+            wp.pose.position.z = 0.0
+
+        # 웨이포인트 검증 및 분할
         waypoints = self.validate_and_split_waypoints(waypoints)
-
-        # 각 웨이포인트의 방향을 다음 웨이포인트를 향하도록 수정
-        for i in range(len(waypoints) - 1):
-            current_wp_pos = waypoints[i].pose.position
-            next_wp_pos = waypoints[i+1].pose.position
-
-            angle = math.atan2(next_wp_pos.y - current_wp_pos.y, next_wp_pos.x - current_wp_pos.x)
-            q = Quaternion(x=0, y=0, z=math.sin(angle / 2.0), w=math.cos(angle / 2.0))
-            waypoints[i].pose.orientation = q
-
-        # 마지막 웨이포인트는 이전 웨이포인트의 방향을 따름
-        if len(waypoints) > 1:
-            waypoints[-1].pose.orientation = waypoints[-2].pose.orientation
 
         self.waypoints = waypoints
 
-        # 쿼터니언 초기화: 경로에 방향 정보가 없는 경우를 대비 (위에서 이미 설정했으므로 보험용)
+        # 쿼터니언 초기화: 경로에 방향 정보가 없는 경우를 대비
         for wp in self.waypoints:
             q = wp.pose.orientation
             if q.x == 0 and q.y == 0 and q.z == 0 and q.w == 0:
                 q.w = 1.0
 
         if not self.waypoints:
-            rospy.logwarn("❌ 필터링 후 유효한 웨이포인트 없음")
+            rospy.logwarn("❌ 검증 후 유효한 웨이포인트 없음")
             return
 
         # 가장 가까운 웨이포인트부터 시작
