@@ -399,6 +399,11 @@ class WaypointManager:
         goal.target_pose = self.waypoints[self.current_waypoint_idx]
         goal.target_pose.header.stamp = rospy.Time.now()
 
+        # 방향 무시: goal의 orientation을 로봇의 현재 방향으로 설정
+        robot_pose = self.get_robot_pose()
+        if robot_pose:
+            goal.target_pose.pose.orientation = robot_pose.pose.orientation
+
         wp = self.waypoints[self.current_waypoint_idx]
         rospy.loginfo("─" * 60)
         rospy.loginfo(f"🚀 웨이포인트 전송 중 {self.current_waypoint_idx + 1}/{len(self.waypoints)}")

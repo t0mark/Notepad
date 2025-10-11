@@ -18,7 +18,7 @@ DWAPlannerROS:
   acc_lim_theta: 1.8       # 회전 가속도 감소 (부드러운 회전 유도)
 
   # ===== 목표 도달 허용 오차 (from robot_dynamics_params.yaml) =====
-  xy_goal_tolerance: 0.5
+  xy_goal_tolerance: 1.0
   yaw_goal_tolerance: 6.28   # 방향 제약 완전 무시 (2π rad = 360도)
   latch_xy_goal_tolerance: true  # xy 도달 시 즉시 성공 처리
 
