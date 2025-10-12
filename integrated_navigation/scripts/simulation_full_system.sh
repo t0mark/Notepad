@@ -7,42 +7,42 @@
 echo "Starting Integrated Navigation System..."
 
 # 1. Gazebo Spawn
-echo "[1/7] Launching Gazebo..."
+echo "[1/8] Launching Gazebo..."
 roslaunch gazebo_simulation gazebo_spawn.launch world_name:="custom" &
 # roslaunch gazebo_simulation gazebo_spawn_TF.launch world_name:="empty" &
 GAZEBO_PID=$!
 sleep 3
 
-# 2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
-echo "[2/7] Launching INS Fusion..."
-roslaunch ins ins_faster_lio.launch &
-INS_PID=$!
-echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
-sleep 5
-
-# 3. Faster-LIO Mapping - Launch AFTER Gazebo is ready
-echo "[3/7] Launching Faster-LIO..."
-roslaunch faster_lio mapping_ouster32.launch rviz:=false &
-FASTLIO_PID=$!
-sleep 2
-
-# # 2-2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
-# echo "[2/7] Launching INS Fusion..."
-# roslaunch ins ins_wheel.launch &
+# # 2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
+# echo "[2/8] Launching INS Fusion..."
+# roslaunch ins ins_faster_lio.launch &
 # INS_PID=$!
 # echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
 # sleep 5
 
+# # 3. Faster-LIO Mapping - Launch AFTER Gazebo is ready
+# echo "[3/8] Launching Faster-LIO..."
+# roslaunch faster_lio mapping_ouster32.launch rviz:=false &
+# FASTLIO_PID=$!
+# sleep 2
+
+# 2-2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
+echo "[2/8] Launching INS Fusion..."
+roslaunch ins ins_wheel.launch &
+INS_PID=$!
+echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
+sleep 5
+
 
 # 4. Kakao API Debug (INS TF 감지 후 실행)
-echo "[4/7] Launching Kakao API..."
+echo "[4/8] Launching Kakao API..."
 roslaunch kakao_api kakao_api.launch &
 KAKAO_PID=$!
 
 # WebSocket 연결 대기
 echo "⏳ Waiting for WebSocket server..."
 for i in {1..20}; do
-    if nc -z localhost 8765 2>/dev/null; then
+    if nc -z localhost 8865 2>/dev/null; then
         echo "✅ WebSocket server ready!"
         break
     fi
@@ -51,28 +51,30 @@ done
 sleep 2
 
 # 5. FRNet Segmentation
-echo "[5/7] Launching FRNet..."
+echo "[5/8] Launching FRNet..."
 roslaunch frnet_ros frnet.launch enable_rviz:=false &
 FRNET_PID=$!
 sleep 2
 
 # 6. DWA Navigation (with Waypoint Manager for Kakao API)
-echo "[6/7] Launching DWA Navigation..."
+echo "[6/8] Launching DWA Navigation..."
 roslaunch dwa dwa_navigation.launch enable_rviz:=false enable_waypoint_manager:=true lidar_topic:=/FRNet/points &
 # roslaunch dwa dwa_navigation.launch enable_rviz:=false enable_waypoint_manager:=true &
 DWA_PID=$!
 
 # 7. RViz 시각화
-echo "[7/7] Launching RViz..."
+echo "[7/8] Launching RViz..."
 rosrun rviz rviz -d $(rospack find integrated_navigation)/rviz/integrated_navigation.rviz &
 RVIZ_PID=$!
 
 # 8. Robot 연결
+echo "[8/8] Launching RViz..."
 roslaunch husky_base base.launch &
+CONTROL_PID=$!
 
 echo "All systems launched!"
 
 # Cleanup on exit
-trap "echo 'Shutting down...'; kill $KAKAO_PID $GAZEBO_PID $FASTLIO_PID $FRNET_PID $TF_PID $INS_PID $DWA_PID $RVIZ_PID 2>/dev/null; exit" SIGINT SIGTERM
+trap "echo 'Shutting down...'; kill $KAKAO_PID $GAZEBO_PID $FASTLIO_PID $FRNET_PID $INS_PID $DWA_PID $RVIZ_PID $CONTROL_PID 2>/dev/null; exit" SIGINT SIGTERM
 
 wait
