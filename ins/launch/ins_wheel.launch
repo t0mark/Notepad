@@ -17,18 +17,16 @@
 
   <!-- Global EKF (map frame) -->
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
-    <remap from="odometry/filtered" to="odometry/filtered/global"/>
+    <remap from="odometry/filtered" to="/global/odom"/>
   </node>
 
   <!-- GPS to Odometry converter -->
   <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true" output="screen">
     <remap from="imu" to="/ouster/imu"/>
     <remap from="gps/fix" to="/ublox/fix"/>
-    <remap from="odometry/filtered" to="odometry/filtered/global"/>
-    <remap from="odometry/gps" to="odometry/gps"/>
-
-    <!-- GPS 센서가 base_link에 있다고 가정 (URDF에 GPS 링크 없음) -->
-    <param name="broadcast_cartesian_transform" value="false"/>
+    <remap from="odometry/filtered" to="/global/odom"/>
+    
+    <remap from="odometry/gps" to="/map_frame/gps"/>
   </node>
 
 </launch>

@@ -18,7 +18,6 @@ obstacles_laser:
             raytrace_range: 55.0,
             observation_persistence: 0}
 
-# 25_Jairlab의 InflationLayer 설정을 따름
 inflation_layer:
   enabled: true
   cost_scaling_factor: 5.0

@@ -887,19 +887,11 @@ template <typename T>
 void LaserMapping::SetPosestamp(T &out) {
     out.pose.position.x = state_point_.pos(0);
     out.pose.position.y = state_point_.pos(1);
-    out.pose.position.z = 0.0;  // 2D 사영: z = 0
-
-    // 3D 회전에서 yaw만 추출하여 2D 회전 생성 (roll=0, pitch=0, yaw만 유지)
-    common::V3D euler = SO3ToEuler(state_point_.rot);
-    double yaw = euler(2);
-
-    // yaw만 사용한 쿼터니언 생성 (roll=0, pitch=0)
-    Eigen::Quaterniond q_2d(Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()));
-
-    out.pose.orientation.x = q_2d.coeffs()[0];
-    out.pose.orientation.y = q_2d.coeffs()[1];
-    out.pose.orientation.z = q_2d.coeffs()[2];
-    out.pose.orientation.w = q_2d.coeffs()[3];
+    out.pose.position.z = 0.0;
+    out.pose.orientation.x = state_point_.rot.coeffs()[0];
+    out.pose.orientation.y = state_point_.rot.coeffs()[1];
+    out.pose.orientation.z = state_point_.rot.coeffs()[2];
+    out.pose.orientation.w = state_point_.rot.coeffs()[3];
 }
 
 // 바디 좌표계 포인트를 월드 좌표계로 변환

@@ -13,25 +13,25 @@ roslaunch gazebo_simulation gazebo_spawn.launch world_name:="custom" &
 GAZEBO_PID=$!
 sleep 3
 
-# # 2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
-# echo "[2/8] Launching INS Fusion..."
-# roslaunch ins ins_faster_lio.launch &
-# INS_PID=$!
-# echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
-# sleep 5
-
-# # 3. Faster-LIO Mapping - Launch AFTER Gazebo is ready
-# echo "[3/8] Launching Faster-LIO..."
-# roslaunch faster_lio mapping_ouster32.launch rviz:=false &
-# FASTLIO_PID=$!
-# sleep 2
-
-# 2-2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
+# 2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
 echo "[2/8] Launching INS Fusion..."
-roslaunch ins ins_wheel.launch &
+roslaunch ins ins_faster_lio.launch &
 INS_PID=$!
 echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
 sleep 5
+
+# 3. Faster-LIO Mapping - Launch AFTER Gazebo is ready
+echo "[3/8] Launching Faster-LIO..."
+roslaunch faster_lio mapping_ouster32.launch rviz:=false &
+FASTLIO_PID=$!
+sleep 2
+
+# # 2-2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
+# echo "[2/8] Launching INS Fusion..."
+# roslaunch ins ins_wheel.launch &
+# INS_PID=$!
+# echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
+# sleep 5
 
 
 # 4. Kakao API Debug (INS TF 감지 후 실행)
