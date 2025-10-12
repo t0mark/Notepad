@@ -26,17 +26,8 @@
         type="joint_state_publisher"
         output="screen">
     <param name="use_gui" value="false"/>
-    <!-- source_list 제거: URDF의 모든 non-fixed joint의 기본값(0) 발행 -->
   </node>
 
   <!-- Robot State Publisher: URDF 기반 TF 발행 -->
-  <!-- /joint_states 구독 → base_link, os_sensor, gps_link, wheel_links 등 모든 link의 TF 발행 -->
-  <node name="robot_state_publisher"
-        pkg="robot_state_publisher"
-        type="robot_state_publisher"
-        output="screen">
-    <param name="publish_frequency" value="50.0"/>
-    <param name="use_tf_static" value="true"/>
-  </node>
-
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />
 </launch>
