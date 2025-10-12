@@ -761,12 +761,12 @@ void LaserMapping::PublishOdometry(const ros::Publisher &pub_odom_aft_mapped) {
         odom_aft_mapped_.pose.covariance[i * 6 + 5] = P(k, 2);
     }
 
-    // TF 변환 브로드캐스트
+    // TF 변환 브로드캐스트 (2D 사영 적용됨 - z=0, roll=0, pitch=0)
     static tf::TransformBroadcaster br;
     tf::Transform transform;
     tf::Quaternion q;
     transform.setOrigin(tf::Vector3(odom_aft_mapped_.pose.pose.position.x, odom_aft_mapped_.pose.pose.position.y,
-                                    odom_aft_mapped_.pose.pose.position.z));
+                                    odom_aft_mapped_.pose.pose.position.z));  // z는 이미 SetPosestamp에서 0으로 설정됨
     q.setW(odom_aft_mapped_.pose.pose.orientation.w);
     q.setX(odom_aft_mapped_.pose.pose.orientation.x);
     q.setY(odom_aft_mapped_.pose.pose.orientation.y);
@@ -882,15 +882,24 @@ void LaserMapping::Savetrajectory(const std::string &traj_file) {
 
 // 현재 상태를 ROS 메시지 형태로 설정
 // 위치와 자세 정보를 ROS geometry_msgs에 맞는 형태로 변환
+// 2D 사영: z, roll, pitch를 0으로 설정
 template <typename T>
 void LaserMapping::SetPosestamp(T &out) {
     out.pose.position.x = state_point_.pos(0);
     out.pose.position.y = state_point_.pos(1);
-    out.pose.position.z = state_point_.pos(2);
-    out.pose.orientation.x = state_point_.rot.coeffs()[0];
-    out.pose.orientation.y = state_point_.rot.coeffs()[1];
-    out.pose.orientation.z = state_point_.rot.coeffs()[2];
-    out.pose.orientation.w = state_point_.rot.coeffs()[3];
+    out.pose.position.z = 0.0;  // 2D 사영: z = 0
+
+    // 3D 회전에서 yaw만 추출하여 2D 회전 생성 (roll=0, pitch=0, yaw만 유지)
+    common::V3D euler = SO3ToEuler(state_point_.rot);
+    double yaw = euler(2);
+
+    // yaw만 사용한 쿼터니언 생성 (roll=0, pitch=0)
+    Eigen::Quaterniond q_2d(Eigen::AngleAxisd(yaw, Eigen::Vector3d::UnitZ()));
+
+    out.pose.orientation.x = q_2d.coeffs()[0];
+    out.pose.orientation.y = q_2d.coeffs()[1];
+    out.pose.orientation.z = q_2d.coeffs()[2];
+    out.pose.orientation.w = q_2d.coeffs()[3];
 }
 
 // 바디 좌표계 포인트를 월드 좌표계로 변환

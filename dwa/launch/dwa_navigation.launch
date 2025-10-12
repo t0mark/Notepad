@@ -55,7 +55,7 @@
   <!-- ===== move_base 네비게이션 스택 ===== -->
   <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <!-- 토픽 리매핑 -->
-    <remap from="odom" to="$(arg odom_topic)"/>
+    <!-- <remap from="odom" to="$(arg odom_topic)"/> -->
     <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
 
     <!-- 파라미터 로드 -->

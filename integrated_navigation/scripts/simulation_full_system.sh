@@ -8,30 +8,30 @@ echo "Starting Integrated Navigation System..."
 
 # 1. Gazebo Spawn
 echo "[1/7] Launching Gazebo..."
-roslaunch gazebo_simulation gazebo_spawn.launch world_name:="empty" &
+roslaunch gazebo_simulation gazebo_spawn.launch world_name:="custom" &
 # roslaunch gazebo_simulation gazebo_spawn_TF.launch world_name:="empty" &
 GAZEBO_PID=$!
 sleep 3
 
-# # 2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
-# echo "[2/7] Launching INS Fusion..."
-# roslaunch ins ins_faster_lio.launch &
-# INS_PID=$!
-# echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
-# sleep 5
-
-# # 3. Faster-LIO Mapping - Launch AFTER Gazebo is ready
-# echo "[3/7] Launching Faster-LIO..."
-# roslaunch faster_lio mapping_ouster32.launch rviz:=false &
-# FASTLIO_PID=$!
-# sleep 2
-
-# 2-2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
+# 2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
 echo "[2/7] Launching INS Fusion..."
-roslaunch ins ins_wheel.launch &
+roslaunch ins ins_faster_lio.launch &
 INS_PID=$!
 echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
 sleep 5
+
+# 3. Faster-LIO Mapping - Launch AFTER Gazebo is ready
+echo "[3/7] Launching Faster-LIO..."
+roslaunch faster_lio mapping_ouster32.launch rviz:=false &
+FASTLIO_PID=$!
+sleep 2
+
+# # 2-2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
+# echo "[2/7] Launching INS Fusion..."
+# roslaunch ins ins_wheel.launch &
+# INS_PID=$!
+# echo "⏳ Waiting for INS to initialize datum and publish utm→map TF..."
+# sleep 5
 
 
 # 4. Kakao API Debug (INS TF 감지 후 실행)
@@ -58,14 +58,17 @@ sleep 2
 
 # 6. DWA Navigation (with Waypoint Manager for Kakao API)
 echo "[6/7] Launching DWA Navigation..."
-roslaunch dwa dwa_navigation.launch enable_rviz:=false odom_topic:=/faster_lio/odom enable_waypoint_manager:=true lidar_topic:=/FRNet/points &
-# roslaunch dwa dwa_navigation.launch enable_rviz:=false odom_topic:=/faster_lio/odom enable_waypoint_manager:=true &
+roslaunch dwa dwa_navigation.launch enable_rviz:=false enable_waypoint_manager:=true lidar_topic:=/FRNet/points &
+# roslaunch dwa dwa_navigation.launch enable_rviz:=false enable_waypoint_manager:=true &
 DWA_PID=$!
 
 # 7. RViz 시각화
 echo "[7/7] Launching RViz..."
 rosrun rviz rviz -d $(rospack find integrated_navigation)/rviz/integrated_navigation.rviz &
 RVIZ_PID=$!
+
+# 8. Robot 연결
+roslaunch husky_base base.launch &
 
 echo "All systems launched!"
 
