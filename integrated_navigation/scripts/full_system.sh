@@ -6,9 +6,9 @@
 
 echo "Starting Integrated Navigation System..."
 
-# 1. Robot Description
+# 1. Robot Description (joint_state_publisher disabled for real hardware)
 echo "[1/8] Launching Robot Description..."
-roslaunch robot_description robot_description.launch &
+roslaunch robot_description robot_description.launch use_joint_state_publisher:=false &
 ROBOT_DESCRIPTION_PID=$!
 echo "⏳ Waiting for Robot Description..."
 sleep 5

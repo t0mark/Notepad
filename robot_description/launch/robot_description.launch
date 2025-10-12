@@ -8,25 +8,31 @@
   <!-- Argument for controlling odom TF publishing -->
   <arg name="publish_odom_tf" default="true"/>
 
+  <!-- Argument for enabling joint_state_publisher (disable for real hardware) -->
+  <arg name="use_joint_state_publisher" default="true"/>
+
   <!-- URDF 모델 로드 -->
   <param name="robot_description"
          command="$(find xacro)/xacro '$(find robot_description)/urdf/custom_description.urdf.xacro' publish_odom_tf:=$(arg publish_odom_tf)"/>
 
   <!-- Joint State Publisher: joint_states 발행 -->
   <!-- Gazebo가 없을 때 GUI로 joint를 제어하거나 기본값 발행 -->
+  <!-- 실제 하드웨어 연결 시에는 use_joint_state_publisher:=false로 비활성화 -->
   <arg name="use_gui" default="false"/>
 
-  <node if="$(arg use_gui)" name="joint_state_publisher_gui"
-        pkg="joint_state_publisher_gui"
-        type="joint_state_publisher_gui"
-        output="screen"/>
+  <group if="$(arg use_joint_state_publisher)">
+    <node if="$(arg use_gui)" name="joint_state_publisher_gui"
+          pkg="joint_state_publisher_gui"
+          type="joint_state_publisher_gui"
+          output="screen"/>
 
-  <node unless="$(arg use_gui)" name="joint_state_publisher"
-        pkg="joint_state_publisher"
-        type="joint_state_publisher"
-        output="screen">
-    <param name="use_gui" value="false"/>
-  </node>
+    <node unless="$(arg use_gui)" name="joint_state_publisher"
+          pkg="joint_state_publisher"
+          type="joint_state_publisher"
+          output="screen">
+      <param name="use_gui" value="false"/>
+    </node>
+  </group>
 
   <!-- Robot State Publisher: URDF 기반 TF 발행 -->
   <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher" />

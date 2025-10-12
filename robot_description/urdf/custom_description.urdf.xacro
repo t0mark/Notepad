@@ -17,34 +17,27 @@
   <!-- 3) GPS 추가 -->
   <xacro:include filename="$(find robot_description)/urdf/gps.urdf.xacro"/>
 
-  <!-- 4) Husky Differential Drive Plugin (Gazebo 표준) -->
+  <!-- 4) Gazebo ROS Control Plugin (PID-based control for all 4 wheels) -->
   <gazebo>
-    <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
+    <plugin name="gazebo_ros_control" filename="libgazebo_ros_control.so">
+      <robotNamespace>/</robotNamespace>
+      <legacyModeNS>true</legacyModeNS>
+    </plugin>
+  </gazebo>
+
+  <!-- 5) IMU Plugin (for sensor fusion) -->
+  <gazebo>
+    <plugin name="imu_controller" filename="libhector_gazebo_ros_imu.so">
+      <robotNamespace>/</robotNamespace>
       <updateRate>50.0</updateRate>
-
-      <!-- Wheel joints -->
-      <leftJoint>front_left_wheel</leftJoint>
-      <leftJoint>rear_left_wheel</leftJoint>
-      <rightJoint>front_right_wheel</rightJoint>
-      <rightJoint>rear_right_wheel</rightJoint>
-
-      <!-- Kinematics -->
-      <wheelSeparation>0.5708</wheelSeparation>
-      <wheelDiameter>0.3302</wheelDiameter>
-      <wheelTorque>200</wheelTorque>
-
-      <!-- Topics -->
-      <commandTopic>husky_velocity_controller/cmd_vel</commandTopic>
-      <odometryTopic>husky_velocity_controller/odom</odometryTopic>
-
-      <!-- Frames -->
-      <odometryFrame>odom</odometryFrame>
-      <robotBaseFrame>base_link</robotBaseFrame>
-
-      <!-- Publish odom TF -->
-      <publishOdomTF>$(arg publish_odom_tf)</publishOdomTF>
-      <publishWheelTF>false</publishWheelTF>
-      <publishWheelJointState>false</publishWheelJointState>
+      <bodyName>base_link</bodyName>
+      <topicName>imu/data</topicName>
+      <accelDrift>0.005 0.005 0.005</accelDrift>
+      <accelGaussianNoise>0.005 0.005 0.005</accelGaussianNoise>
+      <rateDrift>0.005 0.005 0.005</rateDrift>
+      <rateGaussianNoise>0.005 0.005 0.005</rateGaussianNoise>
+      <headingDrift>0.005</headingDrift>
+      <headingGaussianNoise>0.005</headingGaussianNoise>
     </plugin>
   </gazebo>
 </robot>
