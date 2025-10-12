@@ -30,10 +30,10 @@ DWAPlannerROS:
   vth_samples: 20
 
   # ===== 궤적 평가 가중치 (from path_planning_params.yaml) =====
-  path_distance_bias: 40.0   # 경로 추종 가중치 증가 (전진 우선)
-  goal_distance_bias: 40.0   # 목표 지향 가중치 증가 (전진 우선)
+  path_distance_bias: 64.0   # 경로 추종 가중치 대폭 증가 (global plan 따라가기)
+  goal_distance_bias: 24.0   # 목표 지향 가중치 감소 (직진 방지)
   occdist_scale: 0.02
-  forward_point_distance: 1.0 # 전방 주시 거리 증가 (부드러운 경로 생성)
+  forward_point_distance: 0.8 # 전방 주시 거리 증가 (더 부드러운 경로 생성)
 
   # ===== 안전 및 진동 방지 (from robot_dynamics_params.yaml) =====
   stop_time_buffer: 0.2
