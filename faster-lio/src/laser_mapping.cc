@@ -310,12 +310,7 @@ void LaserMapping::Run() {
 
     // 첫 번째 스캔 처리 - 초기 지도 구축
     if (flg_first_scan_) {
-        state_point_ = kf_.get_x();
-        scan_down_world_->resize(scan_undistort_->size());
-        for (int i = 0; i < scan_undistort_->size(); i++) {
-            PointBodyToWorld(&scan_undistort_->points[i], &scan_down_world_->points[i]);
-        }
-        ivox_->AddPoints(scan_down_world_->points);
+        ivox_->AddPoints(scan_undistort_->points);
         first_lidar_time_ = measures_.lidar_bag_time_;
         flg_first_scan_ = false;
         return;

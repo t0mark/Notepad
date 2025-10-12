@@ -31,7 +31,7 @@
 
   <!-- URDF 모델 로드 및 TF 발행 -->
   <include file="$(find robot_description)/launch/robot_description.launch">
-    <arg name="publish_odom_tf" value="false"/>
+    <arg name="publish_odom_tf" value="true"/>
   </include>
 
   <!-- 시뮬레이션: map = odom (오차 없음) -->
