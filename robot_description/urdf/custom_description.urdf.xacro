@@ -8,7 +8,7 @@
   <xacro:include filename="$(find husky_description)/urdf/husky.urdf.xacro" />
 
   <!-- 2) OS1-32 LiDAR 추가 -->
-  <xacro:include filename="$(find robot_description)/urdf/OS1-32.urdf.xacro"/>
+  <xacro:include filename="$(find ouster_description)/urdf/OS1-32.urdf.xacro"/>
   <xacro:OS1-32 parent="top_plate_link">
     <!-- front_wheel 쪽으로 이동 + 60cm 위로 -->
     <origin xyz="0.3 0.0 0.6" rpy="0 0 0"/>
