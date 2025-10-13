@@ -42,6 +42,10 @@ Visualization Manager:
         Expand Link Details: false
         Expand Tree: false
         Link Tree Style: Links in Alphabetic Order
+        base_footprint:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         base_link:
           Alpha: 1
           Show Axes: false
@@ -67,6 +71,10 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
+        imu_link:
+          Alpha: 1
+          Show Axes: false
+          Show Trail: false
         inertial_link:
           Alpha: 1
           Show Axes: false
@@ -390,6 +398,8 @@ Visualization Manager:
       Frame Timeout: 15
       Frames:
         All Enabled: true
+        base_footprint:
+          Value: true
         base_link:
           Value: true
         front_bumper_link:
@@ -399,6 +409,8 @@ Visualization Manager:
         front_right_wheel_link:
           Value: true
         gps_link:
+          Value: true
+        imu_link:
           Value: true
         inertial_link:
           Value: true
@@ -442,11 +454,15 @@ Visualization Manager:
         map:
           odom:
             base_link:
+              base_footprint:
+                {}
               front_bumper_link:
                 {}
               front_left_wheel_link:
                 {}
               front_right_wheel_link:
+                {}
+              imu_link:
                 {}
               inertial_link:
                 {}
@@ -504,7 +520,7 @@ Visualization Manager:
   Global Options:
     Background Color: 48; 48; 48
     Default Light: true
-    Fixed Frame: map
+    Fixed Frame: odom
     Frame Rate: 30
   Name: root
   Tools:
@@ -564,5 +580,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1245
-  X: 70
+  X: 1315
   Y: 27
