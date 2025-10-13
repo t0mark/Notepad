@@ -16,35 +16,4 @@
 
   <!-- 3) GPS 추가 -->
   <xacro:include filename="$(find robot_description)/urdf/gps.urdf.xacro"/>
-
-  <!-- 4) Husky Differential Drive Plugin (Gazebo 표준) -->
-  <gazebo>
-    <plugin name="differential_drive_controller" filename="libgazebo_ros_diff_drive.so">
-      <updateRate>50.0</updateRate>
-
-      <!-- Wheel joints -->
-      <leftJoint>front_left_wheel</leftJoint>
-      <leftJoint>rear_left_wheel</leftJoint>
-      <rightJoint>front_right_wheel</rightJoint>
-      <rightJoint>rear_right_wheel</rightJoint>
-
-      <!-- Kinematics -->
-      <wheelSeparation>0.5708</wheelSeparation>
-      <wheelDiameter>0.3302</wheelDiameter>
-      <wheelTorque>200</wheelTorque>
-
-      <!-- Topics -->
-      <commandTopic>husky_velocity_controller/cmd_vel</commandTopic>
-      <odometryTopic>husky_velocity_controller/odom</odometryTopic>
-
-      <!-- Frames -->
-      <odometryFrame>odom</odometryFrame>
-      <robotBaseFrame>base_link</robotBaseFrame>
-
-      <!-- Publish odom TF -->
-      <publishOdomTF>$(arg publish_odom_tf)</publishOdomTF>
-      <publishWheelTF>false</publishWheelTF>
-      <publishWheelJointState>false</publishWheelJointState>
-    </plugin>
-  </gazebo>
 </robot>
