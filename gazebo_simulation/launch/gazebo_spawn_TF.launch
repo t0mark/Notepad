@@ -6,7 +6,7 @@
   <!-- ===================================================== -->
 
   <!-- Arguments -->
-  <arg name="world_name" default="example" doc="World name: empty, example, city"/>
+  <arg name="world_name" default="citysim" doc="World name: empty, example, citysim"/>
   <arg name="z_position" default="0.2" doc="Initial height of the robot"/>
 
   <!-- GPU 가속화 -->
