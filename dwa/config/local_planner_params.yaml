@@ -45,4 +45,4 @@ DWAPlannerROS:
   # ===== 시각화 설정 (from path_planning_params.yaml) =====
   publish_traj_pc: true
   publish_cost_grid_pc: true
-  global_frame_id: map
+  global_frame_id: odom
