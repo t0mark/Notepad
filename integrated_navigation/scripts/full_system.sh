@@ -6,12 +6,12 @@
 
 echo "Starting Integrated Navigation System..."
 
-# 1. Robot Description (joint_state_publisher disabled for real hardware)
-echo "[1/8] Launching Robot Description..."
-roslaunch robot_description robot_description.launch use_joint_state_publisher:=false &
-ROBOT_DESCRIPTION_PID=$!
-echo "⏳ Waiting for Robot Description..."
-sleep 5
+# # 1. Robot Description (joint_state_publisher disabled for real hardware)
+# echo "[1/8] Launching Robot Description..."
+# roslaunch robot_description robot_description.launch use_joint_state_publisher:=false &
+# ROBOT_DESCRIPTION_PID=$!
+# echo "⏳ Waiting for Robot Description..."
+# sleep 5
 
 # # 2. INS Fusion (GPS + IMU) - Launch FIRST to initialize datum
 # echo "[2/8] Launching INS Fusion..."
