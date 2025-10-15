@@ -29,4 +29,12 @@
     <remap from="odometry/gps" to="/map_frame/gps"/>
   </node>
 
+  <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="global_trajectory_server" output="screen">
+    <param name="target_frame_name" value="map" />
+    <param name="source_frame_name" value="base_link" />
+    <param name="trajectory_update_rate" value="4.0" />
+    <param name="trajectory_publish_rate" value="1.0" />
+    <remap from="trajectory" to="/global/trajectory" />
+  </node>
+
 </launch>
