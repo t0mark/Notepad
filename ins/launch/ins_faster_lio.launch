@@ -1,23 +1,28 @@
 <launch>
 
+  <!-- Load parameters for the localization nodes -->
   <rosparam command="load" file="$(find ins)/params/ins_faster_lio.yaml" />
 
-  <!-- Local EKF (odom frame) -->
-  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true">
-    <remap from="odometry/filtered" to="/local/odom"/>
+  <!-- ===================================================================================== -->
+  <!-- 1. Faster-LIO Node (Assumed to be running separately)                               -->
+  <!--    - This node MUST publish the odom -> base_link transform.                        -->
+  <!-- ===================================================================================== -->
+
+  <!-- ===================================================================================== -->
+  <!-- 2. Navsat Transform: Converts GPS data to the map frame for the global EKF          -->
+  <!-- ===================================================================================== -->
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true">
+    <remap from="imu/data" to="/ouster/imu"/>
+    <remap from="gps/fix" to="/ublox/fix"/>
+    <remap from="odometry/filtered" to="/global/odom"/>
+    <remap from="odometry/gps" to="/map_frame/gps"/>
   </node>
 
-  <!-- Global EKF (map frame) -->
+  <!-- ===================================================================================== -->
+  <!-- 3. Global EKF (Map Frame): Fuses LIO and GPS to publish the map -> odom transform   -->
+  <!-- ===================================================================================== -->
   <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
     <remap from="odometry/filtered" to="/global/odom"/>
-  </node>
-
-  <!-- GPS to Odometry converter -->
-  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true" output="screen">
-    <remap from="gps/fix" to="/ublox/fix"/>
-    <remap from="odometry/filtered" to="/local/odom"/>
-    
-    <remap from="odometry/gps" to="/map_frame/gps"/>
   </node>
 
 </launch>

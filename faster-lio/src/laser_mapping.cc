@@ -767,7 +767,7 @@ void LaserMapping::PublishOdometry(const ros::Publisher &pub_odom_aft_mapped) {
     q.setY(odom_aft_mapped_.pose.pose.orientation.y);
     q.setZ(odom_aft_mapped_.pose.pose.orientation.z);
     transform.setRotation(q);
-    // br.sendTransform(tf::StampedTransform(transform, odom_aft_mapped_.header.stamp, tf_world_frame_, tf_imu_frame_));
+    br.sendTransform(tf::StampedTransform(transform, odom_aft_mapped_.header.stamp, tf_world_frame_, tf_imu_frame_));
 }
 
 // 월드 좌표계 포인트클라우드 발행 및 PCD 파일 저장

@@ -11,6 +11,7 @@ Panels:
         - /Odometry1/Odometry1/Covariance1
         - /Odometry1/Odometry1/Covariance1/Position1
         - /Odometry1/Odometry1/Covariance1/Orientation1
+        - /Odometry2
       Splitter Ratio: 0.6432291865348816
     Tree Height: 1143
   - Class: rviz/Selection
@@ -440,7 +441,7 @@ Visualization Manager:
           Color: 204; 51; 204
           Scale: 1
           Value: true
-        Value: true
+        Value: false
       Enabled: true
       Keep: 100
       Name: Odometry
@@ -455,8 +456,8 @@ Visualization Manager:
         Head Radius: 0.10000000149011612
         Shaft Length: 1
         Shaft Radius: 0.05000000074505806
-        Value: Arrow
-      Topic: /faster_lio/odom
+        Value: Axes
+      Topic: /global/odom
       Unreliable: false
       Value: true
     - Class: rviz/TF
@@ -588,7 +589,7 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 87.13671112060547
+      Distance: 75.25614929199219
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
@@ -596,9 +597,9 @@ Visualization Manager:
         Value: false
       Field of View: 0.7853981852531433
       Focal Point:
-        X: 12.206024169921875
-        Y: 20.40606117248535
-        Z: -23.902482986450195
+        X: 13.325035095214844
+        Y: 19.590972900390625
+        Z: -23.945980072021484
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
