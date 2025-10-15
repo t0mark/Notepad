@@ -26,7 +26,6 @@ ekf_se_map:
   two_d_mode: true
 
   frequency: 50
-  two_d_mode: false
   sensor_timeout: 0.01
   # -------------------------------------
   # External IMU:
