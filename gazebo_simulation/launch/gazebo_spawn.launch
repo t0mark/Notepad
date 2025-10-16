@@ -8,6 +8,7 @@
   <!-- Arguments -->
   <arg name="world_name" default="custom" doc="World name: empty, example, city"/>
   <arg name="z_position" default="0.2" doc="Initial height of the robot"/>
+  <arg name="publish_robot_tf" default="true"/>
 
   <!-- GPU 가속화 -->
   <env name="CUDA_VISIBLE_DEVICES" value="0"/>
@@ -32,6 +33,7 @@
   <!-- URDF 모델 로드 -->
   <include file="$(find robot_description)/launch/robot_description.launch">
     <arg name="publish_odom_tf" value="false"/>
+    <arg name="publish_robot_tf" value="$(arg publish_robot_tf)"/>
   </include>
 
   <!-- Gazebo에 로봇 스폰 -->

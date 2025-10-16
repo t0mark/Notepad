@@ -17,8 +17,8 @@
   </include> -->
 
   <!-- Load robot description -->
-  <!-- <include file="$(find husky_description)/launch/description.launch" > -->
-  <!-- </include> -->
+  <!-- <include file="$(find husky_description)/launch/description.launch" >
+  </include> -->
 
   <!-- Load controller configuration -->
   <rosparam command="load" file="$(find husky_control)/config/control.yaml"/>
@@ -41,7 +41,7 @@
     <param name="link_name" value="base_link"/>
   </node>
 
-  <!-- <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/> -->
+  <node name="robot_state_publisher" pkg="robot_state_publisher" type="robot_state_publisher"/>
 
   <node pkg="twist_mux" type="twist_mux" name="twist_mux">
     <rosparam command="load" file="$(find husky_control)/config/twist_mux.yaml"/>
