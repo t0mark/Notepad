@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 import os
 import sys
+
 import numpy as np
 import torch
-from types import SimpleNamespace
+import types
 import rospy
 import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import PointCloud2, PointField
@@ -20,31 +21,36 @@ try:
 except ImportError:
     dist = None
 
-if dist is None or not hasattr(dist, 'ReduceOp'):
-    class _DummyReduceOp:
-        SUM = 'sum'
-        MAX = 'max'
-        MIN = 'min'
-        PRODUCT = 'product'
+def _ensure_attr(module, name, default):
+    if not hasattr(module, name):
+        setattr(module, name, default)
 
-    def _noop(*args, **kwargs):
-        return None
+if dist is None:
+    dist = types.ModuleType('torch.distributed')
 
-    torch.distributed = SimpleNamespace(
-        ReduceOp=_DummyReduceOp,
-        is_available=lambda: False,
-        is_initialized=lambda: False,
-        destroy_process_group=_noop,
-        get_world_size=lambda: 1,
-        get_rank=lambda: 0,
-        barrier=_noop,
-        broadcast=_noop,
-        all_reduce=_noop,
-        new_group=_noop
-    )
+class _DummyReduceOp:
+    SUM = 'sum'
+    MAX = 'max'
+    MIN = 'min'
+    PRODUCT = 'product'
 
-if not hasattr(torch, 'distribution'):
-    torch.distribution = torch.distributed
+def _noop(*args, **kwargs):
+    return None
+
+_ensure_attr(dist, 'ReduceOp', _DummyReduceOp)
+_ensure_attr(dist, 'is_available', lambda: False)
+_ensure_attr(dist, 'is_initialized', lambda: False)
+_ensure_attr(dist, 'destroy_process_group', _noop)
+_ensure_attr(dist, 'get_world_size', lambda: 1)
+_ensure_attr(dist, 'get_rank', lambda: 0)
+_ensure_attr(dist, 'barrier', _noop)
+_ensure_attr(dist, 'broadcast', _noop)
+_ensure_attr(dist, 'all_reduce', _noop)
+_ensure_attr(dist, 'new_group', _noop)
+
+torch.distributed = dist
+sys.modules['torch.distributed'] = dist
+sys.modules['torch.distribution'] = dist
 import mmengine
 from mmdet3d.structures import Det3DDataSample, PointData
 from mmdet3d.apis import init_model
