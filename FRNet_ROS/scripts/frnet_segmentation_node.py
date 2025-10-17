@@ -3,6 +3,7 @@ import os
 import sys
 import numpy as np
 import torch
+from types import SimpleNamespace
 import rospy
 import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import PointCloud2, PointField
@@ -14,7 +15,37 @@ from mmdet3d.apis import init_model
 import traceback
 
 # FRNet 경로 추가
+# FRNet 경로 추가
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+# Jetson에서는 torch.distributed 모듈이 완전하지 않아 ReduceOp 접근 시 오류가 발생할 수 있음.
+try:
+    import torch.distributed as dist
+except ImportError:
+    dist = None
+
+if dist is None or not hasattr(dist, 'ReduceOp'):
+    class _DummyReduceOp:
+        SUM = 'sum'
+        MAX = 'max'
+        MIN = 'min'
+        PRODUCT = 'product'
+
+    def _noop(*args, **kwargs):
+        return None
+
+    torch.distributed = SimpleNamespace(
+        ReduceOp=_DummyReduceOp,
+        is_available=lambda: False,
+        is_initialized=lambda: False,
+        destroy_process_group=_noop,
+        get_world_size=lambda: 1,
+        get_rank=lambda: 0,
+        barrier=_noop,
+        broadcast=_noop,
+        all_reduce=_noop,
+        new_group=_noop
+    )
 
 class FRNetSegmentation:
     def __init__(self):
