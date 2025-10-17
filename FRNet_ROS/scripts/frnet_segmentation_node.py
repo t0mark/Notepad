@@ -8,13 +8,9 @@ import rospy
 import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import PointCloud2, PointField
 from std_msgs.msg import Header
-import mmengine
 import struct
-from mmdet3d.structures import Det3DDataSample, PointData
-from mmdet3d.apis import init_model
 import traceback
 
-# FRNet 경로 추가
 # FRNet 경로 추가
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
@@ -46,6 +42,12 @@ if dist is None or not hasattr(dist, 'ReduceOp'):
         all_reduce=_noop,
         new_group=_noop
     )
+
+if not hasattr(torch, 'distribution'):
+    torch.distribution = torch.distributed
+import mmengine
+from mmdet3d.structures import Det3DDataSample, PointData
+from mmdet3d.apis import init_model
 
 class FRNetSegmentation:
     def __init__(self):
