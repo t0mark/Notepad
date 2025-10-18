@@ -1,22 +1,20 @@
 #!/usr/bin/env python3
 import os
 import sys
-
 import numpy as np
-import jetson_patch  # noqa: F401  # Jetson용 torch.distributed 패치 적용
 import torch
 import rospy
 import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import PointCloud2, PointField
 from std_msgs.msg import Header
+import mmengine
 import struct
+from mmdet3d.structures import Det3DDataSample, PointData
+from mmdet3d.apis import init_model
 import traceback
 
 # FRNet 경로 추가
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-import mmengine
-from mmdet3d.structures import Det3DDataSample, PointData
-from mmdet3d.apis import init_model
 
 class FRNetSegmentation:
     def __init__(self):
