@@ -3,8 +3,8 @@ import os
 import sys
 
 import numpy as np
+import jetson_patch  # noqa: F401  # Jetson용 torch.distributed 패치 적용
 import torch
-import types
 import rospy
 import sensor_msgs.point_cloud2 as pc2
 from sensor_msgs.msg import PointCloud2, PointField
@@ -14,43 +14,6 @@ import traceback
 
 # FRNet 경로 추가
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-
-# Jetson에서는 torch.distributed 모듈이 완전하지 않아 ReduceOp 접근 시 오류가 발생할 수 있음.
-try:
-    import torch.distributed as dist
-except ImportError:
-    dist = None
-
-def _ensure_attr(module, name, default):
-    if not hasattr(module, name):
-        setattr(module, name, default)
-
-if dist is None:
-    dist = types.ModuleType('torch.distributed')
-
-class _DummyReduceOp:
-    SUM = 'sum'
-    MAX = 'max'
-    MIN = 'min'
-    PRODUCT = 'product'
-
-def _noop(*args, **kwargs):
-    return None
-
-_ensure_attr(dist, 'ReduceOp', _DummyReduceOp)
-_ensure_attr(dist, 'is_available', lambda: False)
-_ensure_attr(dist, 'is_initialized', lambda: False)
-_ensure_attr(dist, 'destroy_process_group', _noop)
-_ensure_attr(dist, 'get_world_size', lambda: 1)
-_ensure_attr(dist, 'get_rank', lambda: 0)
-_ensure_attr(dist, 'barrier', _noop)
-_ensure_attr(dist, 'broadcast', _noop)
-_ensure_attr(dist, 'all_reduce', _noop)
-_ensure_attr(dist, 'new_group', _noop)
-
-torch.distributed = dist
-sys.modules['torch.distributed'] = dist
-sys.modules['torch.distribution'] = dist
 import mmengine
 from mmdet3d.structures import Det3DDataSample, PointData
 from mmdet3d.apis import init_model
