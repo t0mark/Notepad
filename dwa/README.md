@@ -1,45 +1,57 @@
 # DWA Navigation Package
 
-Husky 로봇과 Ouster LiDAR를 활용한 DWA(Dynamic Window Approach) 기반 장애물 회피 네비게이션 패키지입니다.
+## 1. 개요
 
-## 개요
+Husky A200 로봇과 Ouster OS1-32 LiDAR를 활용한 자율 주행 패키지입니다. DWA(Dynamic Window Approach) Local Planner를 기반으로 장애물 회피 네비게이션을 수행합니다.
 
-본 패키지는 Husky A200 로봇에 Ouster OS1-32 LiDAR를 장착하여 DWA Local Planner를 이용한 자율 주행 네비게이션을 구현합니다. 실제 로봇과 시뮬레이션 환경 모두에서 사용 가능합니다.
+실제 로봇과 Gazebo 시뮬레이션 환경을 모두 지원하며, 3D PointCloud를 2D LaserScan으로 변환하여 `move_base` 네비게이션 스택에서 활용합니다. Kakao API 등 외부에서 수신한 경로(`nav_msgs/Path`)를 순차적으로 추종하는 `waypoint_manager` 노드가 포함되어 있습니다.
 
-### 주요 특징
+### 주요 기능
 
-- **DWA Local Planner**: 동적 장애물 회피 경로 계획
-- **실시간 Costmap**: Laser scan 기반 장애물 맵 생성
-- **지능형 목표 관리**: Costmap 범위 밖 목표 자동 처리
-- **Navigation Manager**: 장애물 회피를 위한 중간 목표 자동 생성
-- **실제 로봇 및 시뮬레이션 지원**: 별도의 gazebo_simulation 패키지와 연동
+- **센서 데이터 처리**
+  Ouster 3D PointCloud를 VoxelGrid 필터로 다운샘플링한 후, `pointcloud_to_laserscan`을 통해 2D LaserScan으로 변환하여 네비게이션에 활용합니다.
 
-## 주요 기능
+- **동적 장애물 회피**
+  DWA Local Planner를 통해 실시간으로 동적/정적 장애물을 회피하며 경로를 재계획합니다.
 
-### 1. 센서 처리 파이프라인
-```
-Ouster PointCloud2 → VoxelGrid Filter → PointCloud to LaserScan → Move Base
-```
+- **Costmap 관리**
+  Rolling window 방식의 Local/Global Costmap을 활용하여 로봇 주변 환경을 지속적으로 업데이트합니다.
 
-- **VoxelGrid Filter**: 0.1m leaf size로 포인트 클라우드 다운샘플링
-- **PointCloud to LaserScan**: 3D 포인트 클라우드를 2D 레이저 스캔으로 변환
-- **높이 필터링**: -0.8m ~ 0.5m 범위만 사용
+- **지능형 웨이포인트 관리 (`waypoint_manager.py`)**
+  - `/kakao/path` 토픽으로 수신된 경로를 웨이포인트로 변환
+  - `move_base` Action Client를 통한 웨이포인트 순차 전송
+  - Costmap 외부 목표 감지 시 중간 목표 자동 생성
+  - 목표 도달 실패 시 재시도 및 건너뛰기 지원
+  - RViz를 통한 현재 목표, 남은 경로, 완료된 경로 시각화
 
-### 2. 네비게이션 스택
-- **Global Planner**: Global Planner (Dijkstra 기반)
-- **Local Planner**: DWA Local Planner (동적 장애물 회피)
-- **Costmap**: Rolling window 기반 local/global costmap
-  - Local: 10x10m, 0.05m 해상도
-  - Global: 50x50m, 0.1m 해상도
+## 2. 의존성
 
-### 3. Navigation Manager
-- **중간 목표 생성**: Costmap 범위 밖 목표를 자동으로 중간 목표로 분할
-- **장애물 회피**: 경로 실패 시 좌우로 이동하며 우회 경로 탐색
-- **재시도 로직**: 최대 6회 재시도 후 다른 접근 방식 시도
+본 패키지는 다음 ROS 패키지들에 의존합니다:
 
-## 설치 방법
+**Core ROS**
+- `roscpp`, `rospy`
 
-### 1. 의존성 설치
+**TF & Transforms**
+- `tf`, `tf2_ros`, `tf2_geometry_msgs`
+
+**Message Types**
+- `std_msgs`, `geometry_msgs`, `sensor_msgs`, `nav_msgs`
+
+**Navigation Stack**
+- `move_base`
+- `dwa_local_planner`, `global_planner`
+- `costmap_2d`
+
+**Sensor Processing**
+- `pcl_ros`, `nodelet`, `pointcloud_to_laserscan`
+
+**Localization & Utils**
+- `robot_localization`
+- `python3-numpy`
+
+## 3. 설치 방법
+
+### 3.1. ROS 패키지 의존성 설치
 
 ```bash
 sudo apt-get update
@@ -52,141 +64,136 @@ sudo apt-get install -y \
     ros-noetic-pcl-ros \
     ros-noetic-nodelet \
     ros-noetic-robot-localization \
-    ros-noetic-tf2-ros
+    ros-noetic-geodesy
 ```
 
-### 2. 워크스페이스 설정
+### 3.2. 워크스페이스 빌드
 
 ```bash
-# 워크스페이스 생성
-mkdir -p ~/catkin_ws/src
 cd ~/catkin_ws
-
-# 빌드
 catkin_make
-
-# 환경 설정
 source devel/setup.bash
 ```
 
-## 실행 방법
+## 4. 사용법
 
-### 시뮬레이션 환경에서 실행
+### 4.1. 시뮬레이션 환경 실행
 
-시뮬레이션 환경에서 사용하려면 먼저 `gazebo_simulation` 패키지를 실행해야 합니다:
-
-```bash
-# Terminal 1: Gazebo 시뮬레이션 환경 실행
-roslaunch gazebo_simulation gazebo_spawn.launch
-
-# Terminal 2: DWA 네비게이션 실행
-roslaunch dwa dwa_navigation.launch
-```
-
-### 실제 로봇에서 실행
-
-실제 로봇에서는 네비게이션 스택만 실행합니다:
+Gazebo 시뮬레이션과 네비게이션 스택을 함께 실행합니다.
 
 ```bash
-roslaunch dwa dwa_navigation.launch
+# world_name: empty, example, city (기본값: example)
+roslaunch dwa dwa_simulation.launch [world_name:=<world>]
 ```
 
-### RViz에서 목표 설정
+### 4.2. 실제 로봇 실행
 
-1. RViz 창에서 상단 메뉴의 **"2D Nav Goal"** 버튼 클릭
-2. 목표 지점을 클릭하고 드래그하여 방향 설정
-3. 로봇이 자동으로 경로를 계획하고 이동
+실제 로봇에서는 네비게이션 스택만 실행합니다.
 
-## 패키지 구성
-
-```
-dwa/
-├── launch/
-│   └── dwa_navigation.launch  # DWA 네비게이션 실행
-├── config/
-│   ├── costmap_common_params.yaml
-│   ├── local_costmap_params.yaml
-│   ├── global_costmap_params.yaml
-│   ├── local_planner_params.yaml
-│   ├── global_planner_params.yaml
-│   └── move_base_params.yaml
-├── scripts/
-│   └── navigation_manager.py  # 지능형 목표 관리 노드
-└── rviz/
-    └── dwa.rviz              # RViz 설정 파일
+```bash
+roslaunch dwa dwa_navigation.launch [enable_rviz:=true] [enable_waypoint_manager:=false]
 ```
 
-## 주요 토픽
+**Launch 파라미터**
+- `enable_rviz`: RViz 시각화 실행 여부 (기본값: `true`)
+- `enable_waypoint_manager`: 웨이포인트 관리 노드 실행 여부 (기본값: `false`, Kakao API 경로 주행 시 `true`로 설정)
 
-| 토픽 | 타입 | 설명 |
-|------|------|------|
-| `/ouster/points` | `sensor_msgs/PointCloud2` | Ouster LiDAR 원시 데이터 |
-| `/points_filtered` | `sensor_msgs/PointCloud2` | VoxelGrid 필터링 후 |
-| `/scan` | `sensor_msgs/LaserScan` | 2D Laser scan |
-| `/husky_velocity_controller/cmd_vel` | `geometry_msgs/Twist` | 로봇 속도 명령 |
-| `/move_base_simple/goal` | `geometry_msgs/PoseStamped` | 네비게이션 목표 |
-| `/move_base/local_costmap/costmap` | `nav_msgs/OccupancyGrid` | Local costmap |
-| `/move_base/global_costmap/costmap` | `nav_msgs/OccupancyGrid` | Global costmap |
+### 4.3. RViz에서 목표 설정
 
-## 설정 파일
+1. `dwa_navigation.launch` 또는 `dwa_simulation.launch` 실행
+2. RViz 상단의 **"2D Nav Goal"** 버튼 클릭
+3. 맵에서 목표 지점 클릭 후 드래그하여 최종 방향 지정
+4. 로봇이 자동으로 경로 계획 및 주행 시작
 
-### DWA 플래너 파라미터 (local_planner_params.yaml)
+## 5. 패키지 구조
 
-```yaml
-max_vel_x: 1.0           # 최대 전진 속도 (m/s)
-max_vel_theta: 1.5       # 최대 회전 속도 (rad/s)
-acc_lim_x: 2.5           # 전진 가속도 제한 (m/s²)
-acc_lim_theta: 3.2       # 회전 가속도 제한 (rad/s²)
-xy_goal_tolerance: 0.2   # 목표 위치 허용 오차 (m)
-yaw_goal_tolerance: 0.17 # 목표 방향 허용 오차 (rad)
+### 5.1. Launch 파일
+
+**`dwa_navigation.launch`**
+센서 처리 파이프라인과 `move_base` 노드를 실행하는 메인 네비게이션 런치 파일입니다.
+
+**`dwa_simulation.launch`**
+Gazebo 시뮬레이션(`gazebo_spawn_TF_2.launch`)과 네비게이션 스택을 통합 실행합니다.
+
+### 5.2. Configuration 파일
+
+**`costmap_common_params.yaml`**
+Global/Local Costmap 공통 설정으로, 로봇 footprint, 장애물 레이어, inflation_radius 등을 정의합니다.
+
+**`global_costmap_params.yaml`**
+`map` 프레임 기준 100x100m rolling window를 사용하는 Global Costmap 설정입니다.
+
+**`local_costmap_params.yaml`**
+`odom` 프레임 기준 50x50m rolling window를 사용하는 Local Costmap 설정입니다.
+
+**`global_planner_params.yaml`**
+Dijkstra 기반 GlobalPlanner 설정으로, `allow_unknown: true`를 통해 미지 영역으로의 경로 계획을 허용합니다.
+
+**`local_planner_params.yaml`**
+DWAPlannerROS 설정 파일입니다.
+- `max_vel_x: 1.0`, `min_vel_x: -1.0` - 전/후진 속도 (후진 허용)
+- `yaw_goal_tolerance: 6.28` - 목표 방향 제약 완전 해제 (360도)
+- `path_distance_bias: 64.0` - 경로 추종 가중치 강화
+
+**`move_base_params.yaml`**
+move_base 노드 핵심 설정입니다.
+- `base_local_planner`: `dwa_local_planner/DWAPlannerROS`
+- `base_global_planner`: `global_planner/GlobalPlanner`
+- `controller_frequency: 5.0` - 5Hz 제어 주기
+- `recovery_behavior_enabled: false` - 복구 동작 비활성화
+
+**`waypoint_manager_params.yaml`**
+waypoint_manager 노드 설정입니다.
+- `goal_timeout: 60.0` - 단일 웨이포인트 최대 도달 시간(초)
+- `max_retries: 3` - 재시도 횟수
+- `skip_unreachable: true` - 도달 불가 웨이포인트 건너뛰기
+
+### 5.3. Scripts
+
+**`waypoint_manager.py`**
+지능형 웨이포인트 관리 노드입니다.
+
+- **구독**: `/kakao/path` (nav_msgs/Path)
+- **발행**: `/kakao/markers` (visualization_msgs/MarkerArray)
+- **Action Client**: move_base
+
+**동작 로직**:
+1. 새 경로 수신 시 기존 목표 취소 및 웨이포인트 목록 업데이트
+2. 로봇 위치에서 가장 가까운 순방향 웨이포인트부터 시작
+3. 목표 전송 전 Global Costmap 외부 여부 확인
+4. Costmap 외부 목표 감지 시 중간 지점 자동 생성
+5. move_base 상태(SUCCEEDED, ABORTED 등)에 따라 재시도/건너뛰기 결정
+
+### 5.4. RViz
+
+**`dwa.rviz`**
+로봇 모델, Costmap, 경로, LaserScan, PointCloud 등을 시각화하는 RViz 설정 파일입니다.
+
+## 6. 시스템 아키텍처
+
+### 6.1. 데이터 흐름
+
+```
+Ouster LiDAR
+    ↓ /ouster/points (PointCloud2)
+VoxelGrid Filter
+    ↓ /points_filtered (PointCloud2)
+PointCloud to LaserScan
+    ↓ /scan (LaserScan)
+move_base (DWA Planner)
+    ↓ /husky_velocity_controller/cmd_vel (Twist)
+Robot
 ```
 
-### Costmap 설정 (costmap_common_params.yaml)
+**단계별 처리**:
+1. Ouster LiDAR가 3D 포인트 클라우드를 `/ouster/points` 토픽으로 발행
+2. VoxelGrid Filter가 다운샘플링 후 `/points_filtered`로 재발행
+3. PointCloud to LaserScan 노드가 2D LaserScan으로 변환 후 `/scan`으로 발행
+4. move_base가 `/scan` 데이터로 Costmap 생성 및 DWA 알고리즘 적용
+5. 계산된 속도 명령을 `/husky_velocity_controller/cmd_vel`로 전송
 
-```yaml
-obstacle_range: 5.0      # 장애물 감지 범위 (m)
-raytrace_range: 6.0      # 레이트레이싱 범위 (m)
-inflation_radius: 0.8    # 인플레이션 반경 (m)
-footprint: [[-0.5, -0.4], [-0.5, 0.4], [0.5, 0.4], [0.5, -0.4]]
-```
+### 6.2. TF 트리
 
-## Navigation Manager 기능
-
-### 중간 목표 관리
-- 목표가 costmap 범위 밖에 있으면 자동으로 중간 목표 생성
-- 로봇-목표 직선과 costmap 경계의 교차점을 중간 목표로 설정
-- 중간 목표를 주기적으로 업데이트 (2Hz)
-
-### 장애물 회피
-- 경로 계획 실패 감지 ("Failed to get a plan." 메시지 모니터링)
-- 2회 연속 실패 시 중간 목표를 좌우로 이동
-- 좌우 번갈아 가며 최대 6회 시도
-- 실패 시 더 가까운 중간 목표로 재설정
-
-## 관련 패키지
-
-- **gazebo_simulation**: Gazebo 시뮬레이션 환경 제공
-- **robot_description**: Husky 로봇 URDF 정의
-
-## 시스템 구조
-
-### 주요 노드
-- `move_base`: 네비게이션 스택 코어
-- `pointcloud_to_laserscan`: 3D → 2D 변환
-- `voxel_grid`: 포인트 클라우드 다운샘플링
-- `navigation_manager`: 지능형 목표 관리
-
-### TF 트리
 ```
 map → odom → base_link → os_lidar
 ```
-
-## 참고 자료
-
-- [DWA Local Planner](http://wiki.ros.org/dwa_local_planner)
-- [Move Base](http://wiki.ros.org/move_base)
-- [Costmap 2D](http://wiki.ros.org/costmap_2d)
-
-## 라이선스
-
-MIT License
