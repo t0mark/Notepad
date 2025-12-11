@@ -1,0 +1,30 @@
+<launch>
+
+  <rosparam command="load" file="$(find api_navigation)/config/localization/robot_localization/gps+imu+wheel.yaml" />
+
+  <!-- Local EKF (odom frame) -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_odom" clear_params="true"/>
+
+  <!-- Global EKF (map frame) -->
+  <node pkg="robot_localization" type="ekf_localization_node" name="ekf_se_map" clear_params="true">
+    <remap from="odometry/filtered" to="/global/odom"/>
+  </node>
+
+  <!-- GPS to Odometry converter -->
+  <node pkg="robot_localization" type="navsat_transform_node" name="navsat_transform" clear_params="true" output="screen">
+    <remap from="imu" to="/ouster/imu"/>
+    <remap from="gps/fix" to="/ublox/fix"/>
+    <remap from="odometry/filtered" to="/global/odom"/>
+    
+    <remap from="odometry/gps" to="/map_frame/gps"/>
+  </node>
+
+  <node pkg="hector_trajectory_server" type="hector_trajectory_server" name="global_trajectory_server" output="screen">
+    <param name="target_frame_name" value="map" />
+    <param name="source_frame_name" value="base_link" />
+    <param name="trajectory_update_rate" value="4.0" />
+    <param name="trajectory_publish_rate" value="1.0" />
+    <remap from="trajectory" to="/global/trajectory" />
+  </node>
+
+</launch>
