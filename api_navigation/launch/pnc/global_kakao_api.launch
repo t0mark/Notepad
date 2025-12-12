@@ -2,7 +2,15 @@
 <launch>
   <!-- Kakao API Package Launch File -->
 
-  <!-- 웹 인터페이스 서버 (HTTP + WebSocket) -->
-  <node pkg="api_navigation" type="web_server.py" name="web_server" output="screen"/>
+  <arg name="debug" default="false" />
+
+  <!-- 웹 인터페이스 서버 (HTTP + 브리지) -->
+  <node pkg="api_navigation" type="global_kakao_api.py" name="global_kakao_api" output="screen">
+    <param name="web_dir" value="$(find api_navigation)/web" />
+  </node>
   
+  <group if="$(arg debug)">
+    <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find api_navigation)/rviz/default.rviz" output="screen" />
+  </group> 
+
 </launch>

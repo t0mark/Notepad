@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kakao Navigation</title>
+    <link rel="icon" href="data:,">
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=5aefe0539358793ca2935a52f01e03db&libraries=services"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+        #map { width: 100vw; height: 100vh; }
+
+        .panel {
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            padding: 16px;
+            z-index: 10;
+        }
+
+        #status {
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 600;
+            color: #333;
+        }
+
+        #controls {
+            top: 16px;
+            right: 16px;
+            width: 240px;
+        }
+
+        .control-group {
+            margin-bottom: 16px;
+        }
+
+        .control-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .control-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #555;
+        }
+
+        .control-input {
+            width: 100%;
+            cursor: pointer;
+        }
+
+        .control-value {
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .status-connected { color: #00C73C; }
+        .status-error { color: #FF4444; }
+        .status-warning { color: #FFA500; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="status" class="panel">Connecting...</div>
+    <div id="controls" class="panel">
+        <div class="control-group">
+            <label class="control-label">Waypoint Spacing</label>
+            <input type="range" class="control-input" id="spacing" min="3" max="15" value="8">
+            <div class="control-value" id="spacing-value">8m</div>
+        </div>
+        <div class="control-group">
+            <label class="control-label">Curve Sensitivity</label>
+            <input type="range" class="control-input" id="curve" min="3" max="15" value="8">
+            <div class="control-value" id="curve-value">8°</div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            WS_URL: 'ws://localhost:8800',
+            KAKAO_REST_KEY: '0a115b0069642fd0547386e225798817',
+            INITIAL_CENTER: { lat: 35.8450893, lng: 127.1330415 },
+            MARKER_THRESHOLD: 10
+        };
+
+        class KakaoMap {
+            constructor() {
+                this.map = new kakao.maps.Map(document.getElementById('map'), {
+                    center: new kakao.maps.LatLng(CONFIG.INITIAL_CENTER.lat, CONFIG.INITIAL_CENTER.lng),
+                    level: 3
+                });
+
+                this.markers = {
+                    current: null,
+                    destination: null,
+                    waypoints: []
+                };
+
+                this.polylines = {
+                    route: null,
+                    passed: new kakao.maps.Polyline({
+                        strokeWeight: 5,
+                        strokeColor: '#00FF00',
+                        strokeOpacity: 0.8,
+                        map: this.map
+                    })
+                };
+
+                this.route = {
+                    waypoints: [],
+                    currentIndex: 0
+                };
+
+                this.settings = {
+                    spacing: 8,
+                    curveSensitivity: 8
+                };
+
+                this.initialized = false;
+
+                this.map.addListener('click', (e) => this.onMapClick(e.latLng));
+            }
+
+            updateCurrentPosition(lat, lng) {
+                const pos = new kakao.maps.LatLng(lat, lng);
+
+                if (!this.markers.current) {
+                    this.markers.current = new kakao.maps.Marker({
+                        position: pos,
+                        map: this.map
+                    });
+                } else {
+                    this.markers.current.setPosition(pos);
+                }
+
+                if (!this.initialized) {
+                    this.map.setCenter(pos);
+                    this.initialized = true;
+                }
+
+                this.checkWaypointProgress(lat, lng);
+            }
+
+            onMapClick(latLng) {
+                if (!this.markers.destination) {
+                    this.markers.destination = new kakao.maps.Marker({
+                        position: latLng,
+                        map: this.map
+                    });
+                } else {
+                    this.markers.destination.setPosition(latLng);
+                }
+
+                if (this.markers.current) {
+                    this.fetchRoute(this.markers.current.getPosition(), latLng);
+                }
+            }
+
+            async fetchRoute(start, end) {
+                const url = `https://apis-navi.kakaomobility.com/v1/directions?origin=${start.getLng()},${start.getLat()}&destination=${end.getLng()},${end.getLat()}&priority=DISTANCE`;
+
+                try {
+                    const response = await fetch(url, {
+                        headers: { 'Authorization': `KakaoAK ${CONFIG.KAKAO_REST_KEY}` }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.routes && data.routes[0]) {
+                        this.processRoute(data.routes[0]);
+                    }
+                } catch (error) {
+                    console.error('Route fetch error:', error);
+                }
+            }
+
+            processRoute(route) {
+                const vertices = [];
+
+                route.sections[0].roads.forEach(road => {
+                    for (let i = 0; i < road.vertexes.length; i += 2) {
+                        vertices.push(new kakao.maps.LatLng(road.vertexes[i + 1], road.vertexes[i]));
+                    }
+                });
+
+                this.route.waypoints = this.optimizeWaypoints(vertices);
+                this.route.currentIndex = 0;
+
+                this.drawRoute();
+                this.drawWaypoints();
+                this.sendToROS();
+
+                this.polylines.passed.setPath([]);
+            }
+
+            optimizeWaypoints(vertices) {
+                if (vertices.length < 3) return vertices;
+
+                const waypoints = [vertices[0]];
+                const { spacing, curveSensitivity } = this.settings;
+
+                for (let i = 1; i < vertices.length - 1; i++) {
+                    const last = waypoints[waypoints.length - 1];
+                    const current = vertices[i];
+
+                    const dist = this.distance(
+                        last.getLat(), last.getLng(),
+                        current.getLat(), current.getLng()
+                    );
+
+                    let shouldAdd = dist >= spacing;
+
+                    if (waypoints.length >= 2) {
+                        const angle = this.calculateAngle(
+                            waypoints[waypoints.length - 2],
+                            last,
+                            current
+                        );
+
+                        if (angle > curveSensitivity) {
+                            shouldAdd = true;
+                        }
+                    }
+
+                    if (shouldAdd) {
+                        waypoints.push(current);
+                    }
+                }
+
+                waypoints.push(vertices[vertices.length - 1]);
+
+                return waypoints;
+            }
+
+            calculateAngle(p1, p2, p3) {
+                const bearing1 = this.bearing(p1.getLat(), p1.getLng(), p2.getLat(), p2.getLng());
+                const bearing2 = this.bearing(p2.getLat(), p2.getLng(), p3.getLat(), p3.getLng());
+                let diff = Math.abs(bearing1 - bearing2);
+                if (diff > 180) diff = 360 - diff;
+                return diff;
+            }
+
+            bearing(lat1, lng1, lat2, lng2) {
+                const toRad = d => d * Math.PI / 180;
+                const toDeg = r => r * 180 / Math.PI;
+
+                const dLng = toRad(lng2 - lng1);
+                const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+                const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+                          Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+
+                return (toDeg(Math.atan2(y, x)) + 360) % 360;
+            }
+
+            distance(lat1, lng1, lat2, lng2) {
+                const R = 6371000;
+                const toRad = d => d * Math.PI / 180;
+                const dLat = toRad(lat2 - lat1);
+                const dLng = toRad(lng2 - lng1);
+                const a = Math.sin(dLat / 2) ** 2 +
+                          Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+                          Math.sin(dLng / 2) ** 2;
+                return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+            }
+
+            drawRoute() {
+                if (this.polylines.route) {
+                    this.polylines.route.setMap(null);
+                }
+
+                this.polylines.route = new kakao.maps.Polyline({
+                    path: this.route.waypoints,
+                    strokeWeight: 5,
+                    strokeColor: '#FF0000',
+                    strokeOpacity: 0.8,
+                    map: this.map
+                });
+            }
+
+            drawWaypoints() {
+                this.markers.waypoints.forEach(m => m.setMap(null));
+                this.markers.waypoints = [];
+
+                this.route.waypoints.forEach((pos, idx) => {
+                    const marker = new kakao.maps.Marker({
+                        position: pos,
+                        map: this.map,
+                        image: new kakao.maps.MarkerImage(
+                            'https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png',
+                            new kakao.maps.Size(24, 35)
+                        )
+                    });
+                    this.markers.waypoints.push(marker);
+                });
+            }
+
+            checkWaypointProgress(lat, lng) {
+                if (this.route.currentIndex >= this.route.waypoints.length) return;
+
+                const wp = this.route.waypoints[this.route.currentIndex];
+                const dist = this.distance(lat, lng, wp.getLat(), wp.getLng());
+
+                if (dist < CONFIG.MARKER_THRESHOLD) {
+                    this.markers.waypoints[this.route.currentIndex].setMap(null);
+                    this.route.currentIndex++;
+
+                    const path = this.polylines.passed.getPath();
+                    path.push(wp);
+                    this.polylines.passed.setPath(path);
+                }
+            }
+
+            sendToROS() {
+                const waypoints = this.route.waypoints.map(wp => ({
+                    lat: wp.getLat(),
+                    lon: wp.getLng()
+                }));
+
+                window.wsClient.send({ type: 'path', waypoints });
+            }
+
+            updateSettings(spacing, curve) {
+                this.settings.spacing = spacing;
+                this.settings.curveSensitivity = curve;
+            }
+        }
+
+        class WebSocketClient {
+            constructor(url) {
+                this.url = url;
+                this.ws = null;
+                this.reconnectDelay = 5000;
+                this.connect();
+            }
+
+            connect() {
+                this.ws = new WebSocket(this.url);
+
+                this.ws.onopen = () => {
+                    console.log('WebSocket connected');
+                    updateStatus('GPS Connected', 'connected');
+                };
+
+                this.ws.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+
+                    if (msg.type === 'gps' && msg.data) {
+                        const { lat, lon } = msg.data;
+                        if (lat && lon) {
+                            window.map.updateCurrentPosition(lat, lon);
+                        }
+                    }
+                };
+
+                this.ws.onerror = () => {
+                    updateStatus('Connection Error', 'error');
+                };
+
+                this.ws.onclose = () => {
+                    updateStatus('Reconnecting...', 'warning');
+                    setTimeout(() => this.connect(), this.reconnectDelay);
+                };
+            }
+
+            send(data) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify(data));
+                }
+            }
+        }
+
+        function updateStatus(text, type) {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = `panel status-${type}`;
+        }
+
+        document.getElementById('spacing').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('spacing-value').textContent = `${val}m`;
+            window.map.updateSettings(val, window.map.settings.curveSensitivity);
+        });
+
+        document.getElementById('curve').addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            document.getElementById('curve-value').textContent = `${val}°`;
+            window.map.updateSettings(window.map.settings.spacing, val);
+        });
+
+        window.map = new KakaoMap();
+        window.wsClient = new WebSocketClient(CONFIG.WS_URL);
+    </script>
+</body>
+</html>

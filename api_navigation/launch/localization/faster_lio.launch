@@ -1,5 +1,5 @@
 <launch>
-<!-- Launch file for ouster OS2-32 LiDAR -->
+    <!-- Launch file for ouster OS2-32 LiDAR -->
 
     <arg name="debug" default="false" />
     <rosparam command="load" file="$(find api_navigation)/config/localization/faster_lio/ouster32.yaml" />
