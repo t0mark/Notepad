@@ -3,18 +3,13 @@
   <!-- ===================================================== -->
   <!-- DWA Navigation Launch -->
   <!-- DWA 기반 자율 주행 네비게이션 -->
-  <!-- -->
-  <!-- NOTE: 시뮬레이션 환경에서 사용하려면 먼저 -->
-  <!-- simulation 패키지를 실행하세요: -->
-  <!-- roslaunch simulation gazebo_spawn.launch -->
+  <!-- Global path (/global_path)를 직접 사용 -->
   <!-- ===================================================== -->
 
   <!-- Arguments -->
-  <arg name="enable_rviz" default="true"/>
-  <arg name="rviz_config" default="$(find api_navigation)/rviz/dwa.rviz"/>
+  <arg name="debug" default="false"/>
   <arg name="odom_topic" default="odom"/>
   <arg name="lidar_topic" default="/ouster/points"/>
-  <arg name="enable_waypoint_manager" default="false"/>
 
   <!-- ===== 포인트 클라우드 처리 파이프라인 ===== -->
   <node pkg="nodelet" type="nodelet" name="pcl_manager" args="manager" output="screen"/>
@@ -52,35 +47,26 @@
     <param name="inf_epsilon" value="1.0"/>
   </node>
 
-  <!-- ===== move_base 네비게이션 스택 ===== -->
-  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
+  <!-- ===== move_base_flex 네비게이션 스택 ===== -->
+  <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" respawn="false" name="move_base_flex" output="screen">
     <!-- 토픽 리매핑 -->
-    <!-- <remap from="odom" to="$(arg odom_topic)"/> -->
+    <remap from="odom" to="$(arg odom_topic)"/>
     <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
 
-    <!-- 파라미터 로드 -->
-    <rosparam file="$(find api_navigation)/config/dwa/move_base_params.yaml" command="load"/>
-    <rosparam file="$(find api_navigation)/config/dwa/global_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find api_navigation)/config/dwa/local_costmap_params.yaml" command="load"/>
-    <rosparam file="$(find api_navigation)/config/dwa/costmap_common_params.yaml" command="load" ns="global_costmap"/>
-    <rosparam file="$(find api_navigation)/config/dwa/costmap_common_params.yaml" command="load" ns="local_costmap"/>
-    <rosparam file="$(find api_navigation)/config/dwa/global_planner_params.yaml" command="load"/>
-    <rosparam file="$(find api_navigation)/config/dwa/local_planner_params.yaml" command="load"/>
+    <!-- move_base_flex 파라미터 로드 -->
+    <rosparam file="$(find api_navigation)/config/pnc/move_base_params.yaml" command="load"/>
 
-    <!-- 플래너 선택 -->
-    <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
-    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
-  </node>
+    <!-- Costmap 파라미터 -->
+    <rosparam file="$(find api_navigation)/config/pnc/local_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find api_navigation)/config/pnc/costmap_common_params.yaml" command="load" ns="local_costmap"/>
 
-  <!-- ===== Waypoint Manager ===== -->
-  <!-- Kakao API 경로를 사용할 때만 활성화 -->
-  <node if="$(arg enable_waypoint_manager)" pkg="api_navigation" type="waypoint_manager.py" name="waypoint_manager" output="screen">
-    <rosparam file="$(find api_navigation)/config/dwa/waypoint_manager_params.yaml" command="load"/>
+    <!-- Controller 파라미터 -->
+    <rosparam file="$(find api_navigation)/config/pnc/local_planner_params.yaml" command="load"/>
   </node>
 
   <!-- ===== RViz 시각화 ===== -->
-  <node if="$(arg enable_rviz)" name="rviz" pkg="rviz" type="rviz"
-        args="-d $(arg rviz_config)"
+  <node if="$(arg debug)" name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find api_navigation)/rviz/dwa.rviz"
         output="screen"/>
 
 </launch>

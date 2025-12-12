@@ -30,6 +30,9 @@
 ```bash
 sudo apt-get update
 sudo apt-get install -y libgoogle-glog-dev libeigen3-dev libpcl-dev libyaml-cpp-dev
+
+# DWA Navigation dependencies
+sudo apt-get install -y ros-noetic-mbf-costmap-nav ros-noetic-mbf-msgs
 ```
 
 ## 3. Installation
