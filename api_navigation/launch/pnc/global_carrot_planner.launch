@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- Carrot Planner Global Navigation Launch File -->
+
+  <arg name="debug" default="false" />
+
+  <!-- Carrot Planner Node -->
+  <node pkg="api_navigation" type="global_carrot_planner.py" name="global_carrot_planner" output="screen">
+    <param name="web_dir" value="$(find api_navigation)/web" />
+  </node>
+
+  <group if="$(arg debug)">
+    <node launch-prefix="nice" pkg="rviz" type="rviz" name="rviz" args="-d $(find api_navigation)/rviz/default.rviz" output="screen" />
+  </group>
+
+</launch>

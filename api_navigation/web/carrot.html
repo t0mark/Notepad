@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carrot Planner</title>
+    <link rel="icon" href="data:,">
+    <script src="https://dapi.kakao.com/v2/maps/sdk.js?appkey=5aefe0539358793ca2935a52f01e03db"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+
+        #map { width: 100vw; height: 100vh; }
+
+        .panel {
+            position: absolute;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            padding: 16px;
+            z-index: 10;
+        }
+
+        #status {
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-weight: 600;
+            color: #333;
+        }
+
+        #info {
+            bottom: 16px;
+            left: 16px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .status-connected { color: #00C73C; }
+        .status-error { color: #FF4444; }
+        .status-warning { color: #FFA500; }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <div id="status" class="panel">Connecting...</div>
+    <div id="info" class="panel">
+        <strong>Carrot Planner</strong><br>
+        Click to set goal destination
+    </div>
+
+    <script>
+        const CONFIG = {
+            WS_URL: 'ws://localhost:8801',
+            INITIAL_CENTER: { lat: 35.8450893, lng: 127.1330415 }
+        };
+
+        class CarrotPlannerMap {
+            constructor() {
+                this.map = new kakao.maps.Map(document.getElementById('map'), {
+                    center: new kakao.maps.LatLng(CONFIG.INITIAL_CENTER.lat, CONFIG.INITIAL_CENTER.lng),
+                    level: 3
+                });
+
+                this.markers = {
+                    current: null,
+                    goal: null
+                };
+
+                this.polyline = null;
+                this.initialized = false;
+
+                this.map.addListener('click', (e) => this.onMapClick(e.latLng));
+            }
+
+            updateCurrentPosition(lat, lng) {
+                const pos = new kakao.maps.LatLng(lat, lng);
+
+                if (!this.markers.current) {
+                    this.markers.current = new kakao.maps.Marker({
+                        position: pos,
+                        map: this.map,
+                        image: new kakao.maps.MarkerImage(
+                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTUiIGN5PSIxNSIgcj0iMTAiIGZpbGw9IiMwMDdiZmYiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==',
+                            new kakao.maps.Size(30, 30)
+                        )
+                    });
+                } else {
+                    this.markers.current.setPosition(pos);
+                }
+
+                if (!this.initialized) {
+                    this.map.setCenter(pos);
+                    this.initialized = true;
+                }
+
+                this.drawLine();
+            }
+
+            onMapClick(latLng) {
+                // Set goal marker
+                if (!this.markers.goal) {
+                    this.markers.goal = new kakao.maps.Marker({
+                        position: latLng,
+                        map: this.map,
+                        image: new kakao.maps.MarkerImage(
+                            'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMTUiIGN5PSIxNSIgcj0iMTAiIGZpbGw9IiNkYzM1NDUiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIvPjwvc3ZnPg==',
+                            new kakao.maps.Size(30, 30)
+                        )
+                    });
+                } else {
+                    this.markers.goal.setPosition(latLng);
+                }
+
+                this.drawLine();
+                this.sendGoalToROS(latLng);
+            }
+
+            drawLine() {
+                if (!this.markers.current || !this.markers.goal) return;
+
+                const path = [
+                    this.markers.current.getPosition(),
+                    this.markers.goal.getPosition()
+                ];
+
+                if (this.polyline) {
+                    this.polyline.setMap(null);
+                }
+
+                this.polyline = new kakao.maps.Polyline({
+                    path: path,
+                    strokeWeight: 3,
+                    strokeColor: '#FF4444',
+                    strokeOpacity: 0.7,
+                    strokeStyle: 'dash',
+                    map: this.map
+                });
+            }
+
+            sendGoalToROS(latLng) {
+                const lat = latLng.getLat();
+                const lng = latLng.getLng();
+
+                // Calculate theta (bearing from current to goal)
+                let theta = 0;
+                if (this.markers.current) {
+                    const currentPos = this.markers.current.getPosition();
+                    theta = this.calculateBearing(
+                        currentPos.getLat(), currentPos.getLng(),
+                        lat, lng
+                    );
+                }
+
+                // Convert GPS to map coordinates (mock - will be done by navsat_transform)
+                // For now, send relative offset in meters
+                const mapCoords = this.gpsToMapCoords(lat, lng);
+
+                window.wsClient.sendGoal(mapCoords.x, mapCoords.y, theta);
+            }
+
+            calculateBearing(lat1, lng1, lat2, lng2) {
+                const toRad = d => d * Math.PI / 180;
+                const toDeg = r => r * 180 / Math.PI;
+
+                const dLng = toRad(lng2 - lng1);
+                const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+                const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+                          Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+
+                return Math.atan2(y, x);
+            }
+
+            gpsToMapCoords(lat, lng) {
+                // Simple approximation: 1 degree ≈ 111km
+                // This should match navsat_transform conversion
+                const refLat = CONFIG.INITIAL_CENTER.lat;
+                const refLng = CONFIG.INITIAL_CENTER.lng;
+
+                const y = (lat - refLat) * 111000; // meters north
+                const x = (lng - refLng) * 111000 * Math.cos(refLat * Math.PI / 180); // meters east
+
+                return { x, y };
+            }
+        }
+
+        class WebSocketClient {
+            constructor(url) {
+                this.url = url;
+                this.ws = null;
+                this.reconnectDelay = 5000;
+                this.connect();
+            }
+
+            connect() {
+                this.ws = new WebSocket(this.url);
+
+                this.ws.onopen = () => {
+                    console.log('WebSocket connected');
+                    updateStatus('Connected', 'connected');
+                };
+
+                this.ws.onmessage = (event) => {
+                    const msg = JSON.parse(event.data);
+
+                    if (msg.type === 'gps' && msg.data) {
+                        const { lat, lon } = msg.data;
+                        if (lat && lon) {
+                            window.map.updateCurrentPosition(lat, lon);
+                        }
+                    }
+
+                    if (msg.type === 'ack') {
+                        console.log('Goal acknowledged:', msg);
+                        updateStatus('Goal Sent!', 'connected');
+                        setTimeout(() => updateStatus('Connected', 'connected'), 2000);
+                    }
+                };
+
+                this.ws.onerror = () => {
+                    updateStatus('Connection Error', 'error');
+                };
+
+                this.ws.onclose = () => {
+                    updateStatus('Reconnecting...', 'warning');
+                    setTimeout(() => this.connect(), this.reconnectDelay);
+                };
+            }
+
+            sendGoal(x, y, theta) {
+                if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+                    this.ws.send(JSON.stringify({
+                        type: 'goal',
+                        goal: { x, y, theta }
+                    }));
+                    console.log('Goal sent:', { x, y, theta });
+                }
+            }
+        }
+
+        function updateStatus(text, type) {
+            const status = document.getElementById('status');
+            status.textContent = text;
+            status.className = `panel status-${type}`;
+        }
+
+        window.map = new CarrotPlannerMap();
+        window.wsClient = new WebSocketClient(CONFIG.WS_URL);
+    </script>
+</body>
+</html>

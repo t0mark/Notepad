@@ -1,0 +1,54 @@
+# ============================================================
+# Waypoint Manager Parameters
+# /kakao/path를 받아 모든 포즈를 웨이포인트로 사용하고
+# move_base로 순차적으로 전송하는 노드 설정
+# ============================================================
+
+waypoint_manager:
+  # ===== Goal 관리 =====
+
+  # Goal 타임아웃 (초)
+  # 이 시간 내에 웨이포인트에 도달하지 못하면 실패 처리
+  goal_timeout: 60.0
+
+  # 재시도 최대 횟수
+  # Goal 실패 시 재시도 횟수
+  max_retries: 3
+
+  # Goal 도달 판정 거리는 DWA의 xy_goal_tolerance를 사용
+  # (local_planner_params.yaml에서 설정됨 - 중복 제거)
+
+  # ===== 경로 검증 =====
+
+  # 경로 이탈 최대 허용 거리 (m)
+  # 로봇이 계획된 경로에서 이 거리 이상 벗어나면 경고
+  max_deviation: 5.0
+
+  # ===== 행동 설정 =====
+
+  # 도달 불가능한 웨이포인트 스킵 여부
+  # true: max_retries 후 다음 웨이포인트로 이동
+  # false: 실패 시 전체 경로 중단
+  skip_unreachable: true
+
+  # 실패 시 재계획 활성화
+  # true: 실패 시 move_base의 재계획 기능 사용
+  # false: 그대로 재시도
+  replan_on_failure: true
+
+  # ===== 사전 검증 =====
+
+  # 웨이포인트 코스트 체크 활성화
+  # true: 웨이포인트 전송 전 make_plan으로 도달 가능성 체크
+  # false: 체크 없이 바로 전송
+  check_waypoint_cost: true
+
+  # 치명적 코스트 임계값은 GlobalPlanner의 lethal_cost를 사용
+  # (global_planner_params.yaml에서 설정됨 - 중복 제거)
+
+  # Global costmap 크기는 global_costmap의 width를 사용
+  # (global_costmap_params.yaml에서 설정됨 - 중복 제거)
+
+  # 웨이포인트 분할 거리 (m)
+  # 웨이포인트가 이 거리보다 멀리 있으면 중간 지점 추가
+  split_distance: 15.0

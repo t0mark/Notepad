@@ -1,0 +1,70 @@
+<?xml version="1.0"?>
+<launch>
+  <!-- ===================================================== -->
+  <!-- Full Navigation System Launch -->
+  <!-- Gazebo + Localization + Global Planners + Local DWA -->
+  <!-- Sequential startup with delays to ensure stability -->
+  <!-- ===================================================== -->
+
+  <!-- Arguments -->
+  <arg name="debug" default="false" doc="Enable RViz visualization"/>
+
+  <!-- ===== 1. Gazebo Simulation ===== -->
+  <include file="$(find simulation)/launch/gazebo.launch">
+    <arg name="world_name" value="custom"/>
+    <arg name="z_position" value="0.2"/>
+    <arg name="publish_robot_tf" value="true"/>
+  </include>
+
+  <!-- ===== 2. Localization (GPS + IMU + Wheel Odometry) ===== -->
+  <!-- Wait for Gazebo sensors to start publishing (3s delay) -->
+  <node pkg="rostopic" type="rostopic" name="wait_for_sensors"
+        args="echo -n 1 /ouster/imu" output="log"
+        launch-prefix="bash -c 'sleep 3; $0 $@'" required="false"/>
+
+  <include file="$(find api_navigation)/launch/localization/localization_v2.launch"/>
+
+  <!-- ===== 3. Global Path Planners ===== -->
+  <!-- Wait for localization to initialize (5s delay) -->
+  <node pkg="rostopic" type="rostopic" name="wait_for_localization"
+        args="echo -n 1 /odometry/filtered" output="log"
+        launch-prefix="bash -c 'sleep 5; $0 $@'" required="false"/>
+  
+  <!-- Kakao Map API Path Planner -->
+  <include file="$(find api_navigation)/launch/pnc/global_kakao_api.launch">
+    <arg name="debug" value="$(arg debug)"/>
+  </include>
+
+  <!-- Carrot Planner Goal Publisher -->
+  <!-- <include file="$(find api_navigation)/launch/pnc/global_carrot_planner.launch">
+    <arg name="debug" value="$(arg debug)"/>
+  </include> -->
+
+  <!-- ===== 4. FRNet Semantic Segmentation ===== -->
+  <!-- Wait for LiDAR data (8s delay) -->
+  <!-- <node pkg="rostopic" type="rostopic" name="wait_for_lidar"
+        args="echo -n 1 /ouster/points" output="log"
+        launch-prefix="bash -c 'sleep 8; $0 $@'" required="false"/>
+
+  <include file="$(find api_navigation)/launch/pnc/frnet.launch">
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="lidar_topic" value="/ouster/points"/>
+  </include> -->
+
+  <!-- ===== 5. Local DWA Navigation ===== -->
+  <!-- Wait for FRNet segmentation (12s delay) -->
+  <node pkg="rostopic" type="rostopic" name="wait_for_frnet"
+        args="echo -n 1 /ouster/points" output="log"
+        launch-prefix="bash -c 'sleep 12; $0 $@'" required="false"/>
+
+  <include file="$(find api_navigation)/launch/pnc/local_dwa.launch">
+    <arg name="debug" value="$(arg debug)"/>
+    <arg name="odom_topic" value="odom"/>
+    <!-- <arg name="lidar_topic" value="/segmented/points"/> -->
+    <arg name="lidar_topic" value="/ouster/points"/>
+  </include>
+
+  <!-- ===== 6. RViz Visualization (Optional) ===== -->
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find api_navigation)/rviz/default.rviz" output="screen"/>
+
+</launch>

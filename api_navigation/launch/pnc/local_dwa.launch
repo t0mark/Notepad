@@ -3,7 +3,7 @@
   <!-- ===================================================== -->
   <!-- DWA Navigation Launch -->
   <!-- DWA 기반 자율 주행 네비게이션 -->
-  <!-- Global path (/global_path)를 직접 사용 -->
+  <!-- NOTE: 시뮬레이션에서는 먼저 Gazebo를 실행하세요 -->
   <!-- ===================================================== -->
 
   <!-- Arguments -->
@@ -47,26 +47,37 @@
     <param name="inf_epsilon" value="1.0"/>
   </node>
 
-  <!-- ===== move_base_flex 네비게이션 스택 ===== -->
-  <node pkg="mbf_costmap_nav" type="mbf_costmap_nav" respawn="false" name="move_base_flex" output="screen">
+  <!-- ===== move_base 네비게이션 스택 ===== -->
+  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen">
     <!-- 토픽 리매핑 -->
-    <remap from="odom" to="$(arg odom_topic)"/>
+    <!-- <remap from="odom" to="$(arg odom_topic)"/> -->
     <remap from="cmd_vel" to="husky_velocity_controller/cmd_vel"/>
 
-    <!-- move_base_flex 파라미터 로드 -->
+    <!-- 파라미터 로드 -->
     <rosparam file="$(find api_navigation)/config/pnc/move_base_params.yaml" command="load"/>
-
-    <!-- Costmap 파라미터 -->
+    <rosparam file="$(find api_navigation)/config/pnc/global_costmap_params.yaml" command="load"/>
     <rosparam file="$(find api_navigation)/config/pnc/local_costmap_params.yaml" command="load"/>
+    <rosparam file="$(find api_navigation)/config/pnc/costmap_common_params.yaml" command="load" ns="global_costmap"/>
     <rosparam file="$(find api_navigation)/config/pnc/costmap_common_params.yaml" command="load" ns="local_costmap"/>
-
-    <!-- Controller 파라미터 -->
+    <rosparam file="$(find api_navigation)/config/pnc/global_planner_params.yaml" command="load"/>
     <rosparam file="$(find api_navigation)/config/pnc/local_planner_params.yaml" command="load"/>
+
+    <!-- 플래너 선택 -->
+    <param name="base_global_planner" value="global_planner/GlobalPlanner"/>
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS"/>
+  </node>
+
+  <!-- ===== Waypoint Manager (필요 시 if 조건을 true로 수정) ===== -->
+  <node pkg="api_navigation"
+        type="waypoint_manager.py"
+        name="waypoint_manager"
+        output="screen">
+    <rosparam file="$(find api_navigation)/config/pnc/waypoint_manager_params.yaml" command="load"/>
   </node>
 
   <!-- ===== RViz 시각화 ===== -->
   <node if="$(arg debug)" name="rviz" pkg="rviz" type="rviz"
-        args="-d $(find api_navigation)/rviz/dwa.rviz"
+        args="-d $(find api_navigation)/rviz/default.rviz"
         output="screen"/>
 
 </launch>
